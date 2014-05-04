@@ -1,0 +1,10 @@
+.idea/
+app/config/config.local.neon
+composer.lock
+files/*
+lang/*
+log/*
+nbproject/
+temp/*
+vendor/*
+!vendor/others
