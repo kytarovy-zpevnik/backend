@@ -1,6 +1,5 @@
 .idea/
 app/config/config.local.neon
-composer.lock
 files/*
 lang/*
 log/*
