@@ -1,22 +1,31 @@
 {
-    "name": "markatom/rest-app-project",
-    "description": "Rest application (markatom/rest-app) sample project.",
-    "type": "project",
-    "keywords": ["rest", "nette"],
     "license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Tomáš Markacz",
-			"email": "tomas@markacz.cz",
+    "authors": [
+        {
+            "name": "Tomáš Jirásek"
+        },
+        {
+            "name": "Jan Kotrlík"
+        },
+        {
+            "name": "Jiří Mantlík"
+        },
+        {
+            "name": "Tomáš Markacz",
+            "email": "tomas@markacz.cz",
             "homepage": "http://tomas.markacz.cz"
-		}
-	],
+        },
+        {
+            "name": "Pavel Peroutka"
+        }
+    ],
     "minimum-stability": "dev",
     "require": {
         "php": ">= 5.3.0",
         "nette/nette": "v2.2-rc2",
         "kdyby/console": "~2.1",
-        "kdyby/doctrine": "~1.1"
+        "kdyby/doctrine": "~1.1",
+        "doctrine/inflector": "~1.0"
     },
     "require-dev": {
         "nette/tester": "~1.1"

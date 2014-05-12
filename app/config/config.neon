@@ -16,6 +16,9 @@ nette:
 	session:
 		expiration: 14 days
 
+extensions:
+	restApp: Markatom\RestApp\DI\Extension
 
 services:
-	
+	- Nette\Application\Routers\RouteList
+	router: Routing\RouterFactory::create()
