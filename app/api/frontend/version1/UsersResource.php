@@ -12,9 +12,6 @@ use Markatom\RestApp\Resource\Resource;
 class UsersResource extends Resource
 {
 
-	public function read($id)
-    {
-        return Response::data(['id' => $id]);
-    }
+	// todo
 
-} 
+}

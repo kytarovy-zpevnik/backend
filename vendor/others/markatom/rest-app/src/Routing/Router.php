@@ -101,7 +101,10 @@ class Router extends ArrayList implements IRouter
             . ':' . $params['resource']
             . ':' . $params['handler'];
 
-        switch ($httpRequest->getHeader('Content-Type')) {
+		$contentType = $httpRequest->getHeader('Content-Type');
+		$contentType = trim(explode(';', $contentType, 2)[0]);
+
+        switch ($contentType) {
             case 'application/json':
                 $post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
                 break;

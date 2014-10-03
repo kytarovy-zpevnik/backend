@@ -5,7 +5,8 @@
 # http://nette.org/security-warning
 #
 parameters:
-
+	security:
+		hashingCost: 12
 
 php:
 	date.timezone: Europe/Prague
@@ -18,7 +19,29 @@ nette:
 
 extensions:
 	restApp: Markatom\RestApp\DI\Extension
+	console: Kdyby\Console\DI\ConsoleExtension
+	events: Kdyby\Events\DI\EventsExtension
+	annotations: Kdyby\Annotations\DI\AnnotationsExtension
+	doctrine: Kdyby\Doctrine\DI\OrmExtension
+
+doctrine:
+    metadata:
+        App\Model\Entity: %appDir%/model/entity
+
+console:
+	url: http://localhost
 
 services:
-	- Nette\Application\Routers\RouteList
-	router: Routing\RouterFactory::create()
+	router: Nette\Application\Routers\RouteList
+	apiRouter: Routing\RouterFactory::create()
+
+	#################### services ####################
+
+	- App\Model\Service\UserService(%security.hashingCost%, ...)
+	- App\Model\Service\SessionService
+
+	#################### commands ####################
+
+	addUserCommand:
+		class: App\Console\AddUserCommand
+		tags: [kdyby.console.command]

@@ -14,6 +14,9 @@ use Utils\FunctionMapper;
 class Resource extends Object implements IResource
 {
 
+	/** @var Request */
+	protected $request;
+
     /**
      * @param Request $request
      * @throws \InvalidArgumentException
@@ -21,6 +24,8 @@ class Resource extends Object implements IResource
      */
     public function handle(Request $request)
     {
+		$this->request = $request;
+
         $handler = $request->getParam('handler');
 
         if (!method_exists($this, $handler)) {

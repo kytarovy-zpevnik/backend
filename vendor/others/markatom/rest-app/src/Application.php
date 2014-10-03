@@ -2,6 +2,7 @@
 
 namespace Markatom\RestApp;
 
+use ErrorException;
 use Markatom\RestApp\Api\Request;
 use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Naming\Naming;
@@ -75,7 +76,7 @@ class Application extends Object
      * @param IResponse $httpResponse
      * @param IRouter $router
      * @param IResourceFactory $resourceFactory
-     * @param Naming\Naming $naming
+     * @param Naming $naming
      * @param Container $dic
      */
     public function __construct(IRequest $httpRequest, IResponse $httpResponse, IRouter $router, IResourceFactory $resourceFactory, Naming $naming, Container $dic)
@@ -124,47 +125,6 @@ class Application extends Object
         $response->send($this->httpRequest, $this->httpResponse);
 
         $this->responseSent = TRUE;
-    }
-
-    /**
-     * @param Application $application
-     * @param \Exception $e
-     */
-    public function defaultErrorHandler(Application $application, \Exception $e)
-    {
-        $response = $this->createErrorResponse($e);
-
-        if ($e instanceof NoRouteException || $e instanceof NoHandlerException) {
-            $response->setHttpStatus(Response::HTTP_NOT_FOUND);
-        }
-
-        if ($e instanceof MethodNotAllowedException) {
-            $response->setHttpStatus(Response::HTTP_METHOD_NOT_ALLOWED);
-        }
-
-        $application->sendResponse($response);
-    }
-
-    /**
-     * @param \Exception $e
-     * @return \Markatom\RestApp\Api\Response
-     */
-    public function createErrorResponse(\Exception $e)
-    {
-        $stored = Debugger::log($e, Debugger::EXCEPTION);
-
-        $data = Debugger::$productionMode
-            ? NULL
-            : [
-                'message' => $e->getMessage(),
-                'code'    => $e->getCode(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'stored'  => $stored
-            ];
-
-        return Response::data($data)
-            ->setHttpStatus(Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**

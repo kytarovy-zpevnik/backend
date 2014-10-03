@@ -1,10 +1,16 @@
 <?php
 
-// Uncomment this line if you must temporarily take down your site for maintenance.
-// require '.maintenance.php';
+use Markatom\RestApp\ErrorHandlers;
 
 $container = require __DIR__ . '/../app/bootstrap.php';
 
-$application = $container->getService('restApp.application');
-$application->onError[] = $application->defaultErrorHandler;
-$application->run();
+if (php_sapi_name() === 'cli') {
+	$container->getService('application')->run();
+
+} else {
+	$application = $container->getService('restApp.application');
+
+	ErrorHandlers::register($application);
+
+	$application->run();
+}
