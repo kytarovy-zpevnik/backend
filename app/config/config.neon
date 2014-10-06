@@ -25,8 +25,8 @@ extensions:
 	doctrine: Kdyby\Doctrine\DI\OrmExtension
 
 doctrine:
-    metadata:
-        App\Model\Entity: %appDir%/model/entity
+	metadata:
+		App\Model\Entity: %appDir%/model/entity
 
 console:
 	url: http://localhost
