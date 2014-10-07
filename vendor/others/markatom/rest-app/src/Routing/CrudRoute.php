@@ -46,7 +46,7 @@ class CrudRoute extends Object implements IRoute
                 'resource' => $resource
             ], $options);
 
-        $this->route = new Route($methods, $resourceMask . '[/<id [0-9]+>[/<relation>[/<relationId>]]]', $options, $sinceVersion, $untilVersion);
+        $this->route = new Route($methods, $resourceMask . '[/<id [0-9]+>[/<relation>[/<relationId [0-9]+>]]]', $options, $sinceVersion, $untilVersion);
     }
 
     /**
