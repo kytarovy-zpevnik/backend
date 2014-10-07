@@ -30,9 +30,9 @@ class ErrorHandlers extends Object
 		$application->onError[] = [__CLASS__, 'exceptionHandler'];
 
 		Debugger::$onFatalError = [function (Exception $e) use ($application) {
-			ob_clean(); // try to clean output buffer
+			ob_clean(); // clean output buffer
 
-			if (!headers_sent()) { // if no output sent (all was in buffer)
+			if (!headers_sent()) { // if no output sent (all output was in buffer)
 				self::exceptionHandler($application, $e); // send exception
 
 			} else {
@@ -71,14 +71,5 @@ class ErrorHandlers extends Object
 
 		$application->sendResponse($response);
     }
-
-	/**
-	 * @param Application $application
-	 * @param Exception $e
-	 */
-	public static function fatalErrorHandler(Application $application, Exception $e)
-	{
-		self::exceptionHandler($application, $e);
-	}
 
 }
