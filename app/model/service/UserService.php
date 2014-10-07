@@ -2,10 +2,14 @@
 
 namespace App\Model\Service;
 
+use App\DuplicateEmailException;
+use App\DuplicateUsernameException;
 use App\Model\Entity\Role;
 use App\Model\Entity\User;
 use App\SecurityException;
+use Kdyby\Doctrine\DuplicateEntryException;
 use Kdyby\Doctrine\EntityManager;
+use Kdyby\Doctrine\Tools\NonLockingUniqueInserter;
 use Nette\Object;
 
 /**
@@ -21,6 +25,9 @@ class UserService extends Object
 	/** @var EntityManager */
 	private $em;
 
+	/** @var NonLockingUniqueInserter */
+	private $inserter;
+
 	/**
 	 * @param int $hashingCost
 	 * @param EntityManager $em
@@ -29,6 +36,7 @@ class UserService extends Object
 	{
 		$this->hashingCost = $hashingCost;
 		$this->em          = $em;
+		$this->inserter    = new NonLockingUniqueInserter($em);
 	}
 
 	/**
@@ -47,7 +55,17 @@ class UserService extends Object
 		$user->passwordHash = $this->getPasswordHash($password, $email);
 		$user->role         = $role;
 
-		$this->em->persist($user);
+		$user = $this->inserter->persist($user); // reassign needed!
+
+		if (!$user) {
+			if ($this->em->getDao(User::class)->findOneBy(['username' => $username])) {
+				throw self::duplicateUsername();
+			}
+
+			if($this->em->getDao(User::class)->findOneBy(['email' => $email])) {
+				throw self::duplicateEmail();
+			}
+		}
 
 		return $user;
 	}
@@ -85,6 +103,22 @@ class UserService extends Object
 	private static function passwordNeedsRehash()
 	{
 		return new SecurityException('Password needs rehash.');
+	}
+
+	/**
+	 * @return DuplicateUsernameException
+	 */
+	private static function duplicateUsername()
+	{
+		return new DuplicateUsernameException('Duplicated username.');
+	}
+
+	/**
+	 * @return DuplicateEmailException
+	 */
+	private static function duplicateEmail()
+	{
+		return new DuplicateEmailException('Duplicated email.');
 	}
 
 }

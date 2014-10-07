@@ -30,7 +30,7 @@ class User extends BaseEntity
 
 	/**
 	 * @var string
-	 * @ORM\Column(type="string")
+	 * @ORM\Column(type="string", unique=true)
 	 */
 	protected $username;
 
@@ -48,7 +48,7 @@ class User extends BaseEntity
 
 	/**
 	 * @var string
-	 * @ORM\Column(type="string")
+	 * @ORM\Column(type="string", unique=true)
 	 */
 	protected $email;
 

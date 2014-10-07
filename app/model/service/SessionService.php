@@ -34,8 +34,8 @@ class SessionService extends Object
 	public function create(User $user, $longLife = FALSE)
 	{
 		$expiration = $longLife
-			? new DateTime('+ 20 minutes')
-			: new DateTime('+ 14 days');
+			? new DateTime('+ 14 days')
+			: new DateTime('+ 20 minutes');
 
 		$session = new Session();
 
