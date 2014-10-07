@@ -1,0 +1,4 @@
+doctrine:
+    user: root
+    password: my-secret-password
+    dbname: kz
