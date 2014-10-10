@@ -106,7 +106,7 @@ class Song extends BaseEntity
     /**
      * @var User[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\User", inversedBy="sharedNotEditableSongs")
-     * @ORM\joinTable(name="viewers_songs")
+     * @ORM\JoinTable(name="viewers_songs")
      */
     protected $viewers;
 
