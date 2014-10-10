@@ -12,7 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $wish
- * @property DateTime $createdOn
+ * @property DateTime $created
+ * @property User $user
  *
  * Wish entity.
  * @author Tomáš Jirásek
@@ -33,7 +34,7 @@ class Wish extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var User

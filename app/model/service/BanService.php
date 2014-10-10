@@ -37,7 +37,7 @@ class BanService extends Object
 
         $ban->legitimate = true;
         $ban->comment    = $comment;
-        $ban->createdOn  = new DateTime();
+        $ban->created    = new DateTime();
         $ban->user       = $user;
 
         $this->em->persist($ban);
@@ -46,32 +46,23 @@ class BanService extends Object
     }
 
     /**
-     * @param $banId
-     * @return Ban
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @param $id
      */
-    public function delete($banId)
+    public function delete($id)
     {
-        $ban = $this->em->find("Ban",$banId);
+        $ban = $this->em->find("Ban",$id);
         if ($ban) {
             $this->em->remove($ban);
         }
-        return $ban;
     }
 
     /**
-     * @param $banId
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @internal param int $banID
+     * @param $id
      * @return Ban
      */
-    public function deactivateBan($banId)
+    public function deactivateBan($id)
     {
-        $ban = $this->em->find("Ban",$banId);
+        $ban = $this->em->find("Ban",$id);
         if ($ban) {
             $ban->legitimate = false;
         }

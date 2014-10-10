@@ -12,10 +12,15 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $name
- * @property DateTime $createdOn
- * @property DateTime $modifiedOn
+ * @property DateTime $created
+ * @property DateTime $modified
  * @property bool $archived
  * @property string $public
+ * @property User $owner
+ * @property User[] $viewers
+ * @property User[] $editors
+ * @property SongbookComment[] $songbookComments
+ * @property SongbookRating[] $songbookRatings
  *
  * Songbook entity.
  * @author Tomáš Jirásek
@@ -35,13 +40,13 @@ class Songbook extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $modifiedOn;
+    protected $modified;
 
     /**
      * @var bool
@@ -62,14 +67,14 @@ class Songbook extends BaseEntity
     protected $owner;
 
     /**
-     * @var User
+     * @var User[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\User", inversedBy="sharedNotEditableSongbooks")
      * @ORM\JoinTable(name="viewers_songbooks")
      */
     protected $viewers;
 
     /**
-     * @var User
+     * @var User[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\User", inversedBy="sharedEditableSongbooks")
      * @ORM\JoinTable(name="editors_songbooks")
      */

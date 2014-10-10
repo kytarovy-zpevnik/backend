@@ -13,14 +13,21 @@ use Doctrine\ORM\Mapping as ORM;
  * @property-read int $id
  * @property string $title
  * @property string $song
- * @property DateTime $createdOn
- * @property DateTime $modifiedOn
+ * @property DateTime $created
+ * @property DateTime $modified
  * @property string $album
  * @property string $author
  * @property string $originalAuthor
  * @property int $year
  * @property bool $archived
  * @property string $public
+ * @property User $owner
+ * @property User[] $viewers
+ * @property User[] $editors
+ * @property BadContent[] $badContents
+ * @property SongComments[] $songComments
+ * @property SongRating[] $songRatings
+ * @property Tag[] $tags
  *
  * Song entity.
  * @author Tomáš Jirásek
@@ -46,13 +53,13 @@ class Song extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $modifiedOn;
+    protected $modified;
 
     /**
      * @var string
@@ -112,7 +119,7 @@ class Song extends BaseEntity
 
     /**
      * @var BadContent[]
-     * @ORM\OneToMany(targetEntity="App\Model\Entity\Song", mappedBy="song")
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\BadContent", mappedBy="song")
      */
     protected $badContents;
 
@@ -127,4 +134,10 @@ class Song extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongRating", mappedBy="song")
      */
     protected $songRatings;
+
+    /**
+     * @var Tag[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\Tag", mappedBy="song")
+     */
+    protected $tags;
 }

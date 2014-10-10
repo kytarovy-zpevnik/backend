@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $comment
- * @property DateTime $createdOn
+ * @property DateTime $created
  * @property User $user
  *
  * Comment entity.
@@ -34,7 +34,7 @@ class Comment extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var User

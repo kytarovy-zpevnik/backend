@@ -12,7 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $comment
- * @property DateTime $createdOn
+ * @property DateTime $created
+ * @property User $recommendFrom
+ * @property User $recommendTo
  *
  * Recommendation entity.
  * @author Tomáš Jirásek
@@ -33,11 +35,17 @@ class Recommendation extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var User
      * @ORM\ManyToOne(targetEntity="App\Model\Entity\User")
      */
-    protected $user;
+    protected $recommendFrom;
+
+    /**
+     * @var User
+     * @ORM\ManyToOne(targetEntity="App\Model\Entity\User", inversedBy="myRecommendations")
+     */
+    protected $recommendTo;
 }

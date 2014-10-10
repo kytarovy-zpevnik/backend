@@ -18,6 +18,16 @@ use Doctrine\ORM\Mapping as ORM;
  * @property string $passwordHash
  * @property DateTime $lastLogin
  * @property Role $role
+ * @property Song[] $songs
+ * @property Song[] $sharedNotEditableSongs
+ * @property Song[] $sharedEditableSongs
+ * @property Songbook[] $songbooks
+ * @property Songbook[] $sharedNotEditableSongbooks
+ * @property Songbook[] $sharedEditableSongbooks
+ * @property Wish[] $wishes;
+ * @property Ban[] $bans
+ * @property Notification[] $notifications
+ * @property Recommendation[] $myRecommendations
  *
  * User entity.
  * @author Tomáš Markacz, Tomáš Jirásek
@@ -80,17 +90,16 @@ class User extends BaseEntity
      * @var Song[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\Song", mappedBy="viewers")
      */
-    private $sharedNotEditableSongs;
+    protected $sharedNotEditableSongs;
 
     /**
      * @var Song[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\Song", mappedBy="editors")
      */
-    private $sharedEditableSongs;
-
+    protected $sharedEditableSongs;
 
     /**
-     * @var Songbook[]
+     * @var Songbook[]$sharedNotEditableSongs
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="owner")
      */
     protected $songbooks;
@@ -99,13 +108,13 @@ class User extends BaseEntity
      * @var Songbook[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="viewers")
      */
-    private $sharedNotEditableSongbooks;
+    protected $sharedNotEditableSongbooks;
 
     /**
      * @var Songbook[]
      * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="editors")
      */
-    private $sharedEditableSongbooks;
+    protected $sharedEditableSongbooks;
 
     /**
      * @var Wish[]
@@ -124,4 +133,10 @@ class User extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Notification", mappedBy="user")
      */
     protected $notifications;
+
+    /**
+     * @var Recommendation[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\Recommendation", mappedBy="recommendTo")
+     */
+    protected $myRecommendations;
 }

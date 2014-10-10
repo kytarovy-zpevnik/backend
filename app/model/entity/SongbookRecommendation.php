@@ -2,11 +2,12 @@
 
 namespace App\Model\Entity;
 
-use Kdyby\Doctrine\Entities\Recommendation;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
+ *
+ * @property Songbook $songbook
  *
  * SongbookRecommendation entity.
  * @author Tomáš Jirásek

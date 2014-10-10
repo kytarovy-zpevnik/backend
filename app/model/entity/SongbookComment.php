@@ -2,7 +2,6 @@
 
 namespace App\Model\Entity;
 
-use Kdyby\Doctrine\Entities\Comment;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -18,7 +17,7 @@ class SongbookComment extends Comment
 {
     /**
      * @var Songbook
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook", inverseBy="songbookComments")
+     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook", inversedBy="songbookComments")
      */
     protected $songbook;
 }

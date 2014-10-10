@@ -12,8 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $comment
- * @property DateTime $createdOn
+ * @property DateTime $created
  * @property int $rating
+ * @property User $user
  *
  * Rating entity.
  * @author Tomáš Jirásek
@@ -34,7 +35,7 @@ class Rating extends BaseEntity
      * @var DateTime
      * @ORM\Column(type="datetime", nullable=true)
      */
-    protected $createdOn;
+    protected $created;
 
     /**
      * @var int
@@ -47,16 +48,4 @@ class Rating extends BaseEntity
      * @ORM\ManyToOne(targetEntity="App\Model\Entity\User")
      */
     protected $user;
-
-    /**
-     * @var Song
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song")
-     */
-    protected $song;
-
-    /**
-     * @var Songbook
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook")
-     */
-    protected $songbook;
 }

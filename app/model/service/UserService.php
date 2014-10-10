@@ -66,7 +66,6 @@ class UserService extends Object
 				throw self::duplicateEmail();
 			}
 		}
-
 		return $user;
 	}
 

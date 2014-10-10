@@ -2,7 +2,6 @@
 
 namespace App\Model\Entity;
 
-use Kdyby\Doctrine\Entities\Comment;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
