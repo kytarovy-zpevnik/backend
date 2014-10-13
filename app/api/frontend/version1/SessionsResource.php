@@ -87,14 +87,7 @@ class SessionsResource extends Resource
 
 		return Response::data([
 			'token' => $session->token,
-			'user'  => [
-				'username' => $user->username,
-				'email' => $user->email,
-				'role' => [
-					'slug' => $user->role->slug,
-					'name' => $user->role->name
-				]
-			]
+			'user'  => UsersResource::mapEntity($session->user)
 		]);
 	}
 
@@ -104,9 +97,9 @@ class SessionsResource extends Resource
 	 */
 	public function deleteActive()
 	{
-		$token = $this->request->getHeader('X-Session-Token');
+		$token = $this->request->getHeader('x-session-token');
 
-		$session = $this->em->getDao(Session::class)->findBy(['token' => $token]);
+		$session = $this->em->getDao(Session::class)->findOneBy(['token' => $token]);
 
 		if (!$session) {
 			return Response::data([
