@@ -51,6 +51,36 @@ class SessionService extends Object
 	}
 
 	/**
+	 * Returns authenticated session.
+	 * @param string $token
+	 * @return Session|FALSE
+	 */
+	public function getActiveSession($token)
+	{
+		/** @var Session $session */
+		$session = $this->em->getDao(Session::class)->findOneBy(['token' => $token]);
+
+		if (!$session) {
+			return FALSE;
+		}
+
+		if ($session->expiration < new DateTime) {
+			$this->em->remove($session);
+			$this->em->flush();
+
+			return FALSE;
+		}
+
+		$session->expiration = $session->longLife
+			? new DateTime('+ 14 days')
+			: new DateTime('+ 20 minutes');
+
+		$this->em->flush();
+
+		return $session;
+	}
+
+	/**
 	 * @return string
 	 */
 	private function generateToken()
