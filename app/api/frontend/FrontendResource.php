@@ -4,6 +4,7 @@ namespace FrontendApi;
 
 use App\Model\Entity\Session;
 use App\Model\Service\SessionService;
+use DateTime;
 use Markatom\RestApp\Resource\Resource;
 use Markatom\RestApp\Routing\AuthenticationException;
 use Markatom\RestApp\Routing\AuthorizationException;
@@ -72,6 +73,17 @@ class FrontendResource extends Resource
 		if ($this->getActiveSession()->user->role->slug !== self::ROLE_ADMIN) {
 			throw new AuthorizationException('Action not allowed.');
 		}
+	}
+
+	/**
+	 * @param DateTime $dateTime
+	 * @return string
+	 */
+	protected static function formatDateTime($dateTime)
+	{
+		return $dateTime instanceof DateTime
+			? $dateTime->format('Y-m-d H:i:s')
+			: NULL;
 	}
 
 }
