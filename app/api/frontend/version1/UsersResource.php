@@ -109,10 +109,12 @@ class UsersResource extends FrontendResource
 	public static function mapEntity(User $user)
 	{
 		return [
-			'id'       => $user->id,
-			'username' => $user->username,
-			'email'    => $user->email,
-			'role'     => [
+			'id'        => $user->id,
+			'username'  => $user->username,
+			'email'     => $user->email,
+			'lastLogin' => self::formatDateTime($user->lastLogin),
+			'role'      => [
+				'id'   => $user->role->id,
 				'name' => $user->role->name,
 				'slug' => $user->role->slug
 			]
