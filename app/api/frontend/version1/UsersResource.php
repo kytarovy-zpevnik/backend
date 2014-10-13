@@ -5,16 +5,18 @@ namespace FrontendApi\Version1;
 use App\DuplicateEmailException;
 use App\DuplicateUsernameException;
 use App\Model\Entity\Role;
+use App\Model\Entity\User;
+use App\Model\Service\SessionService;
 use App\Model\Service\UserService;
+use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
-use Markatom\RestApp\Resource\Resource;
 
 /**
  * @todo	Fill desc.
  * @author	Tomáš Markacz
  */
-class UsersResource extends Resource
+class UsersResource extends FrontendResource
 {
 
 	/** @var EntityManager */
@@ -26,11 +28,14 @@ class UsersResource extends Resource
 	/**
 	 * @param EntityManager $em
 	 * @param UserService $userService
+	 * @param SessionService $sessionService
 	 */
-	public function __construct(EntityManager $em, UserService $userService)
+	public function __construct(EntityManager $em, UserService $userService, SessionService $sessionService)
 	{
-		$this->em          = $em;
-		$this->userService = $userService;
+		parent::__construct($sessionService);
+
+		$this->em             = $em;
+		$this->userService    = $userService;
 	}
 
 	/**
@@ -58,7 +63,52 @@ class UsersResource extends Resource
 			])->setHttpStatus(Response::HTTP_CONFLICT);
 		}
 
-		return Response::data([
+		return Response::data($this->mapEntity($user));
+	}
+
+	/**
+	 * @return Response
+	 */
+	public function readAll()
+	{
+		$this->assumeAdmin(); // only admin can list all users
+
+		$users = $this->em->getDao(User::class)->findAll();
+
+		$data = array_map([$this, 'mapEntity'], $users);
+
+		return Response::data($data);
+	}
+
+	/**
+	 * @param int $id
+	 * @return Response
+	 */
+	public function update($id)
+	{
+		$this->assumeAdmin(); // only admin can change user
+
+		$roleSlug = $this->request->getPost('role')['slug'];
+		$role     = $this->em->getDao(Role::class)->findOneBy(['slug' => $roleSlug]);
+
+		$user = $this->em->getDao(User::class)->find($id);
+		$user->role = $role;
+
+		$this->em->flush();
+
+		$data = $this->mapEntity($user);
+
+		return Response::data($data);
+	}
+
+	/**
+	 * Maps entity to api object.
+	 * @param User $user
+	 * @return array
+	 */
+	public static function mapEntity(User $user)
+	{
+		return [
 			'id'       => $user->id,
 			'username' => $user->username,
 			'email'    => $user->email,
@@ -66,7 +116,7 @@ class UsersResource extends Resource
 				'name' => $user->role->name,
 				'slug' => $user->role->slug
 			]
-		]);
+		];
 	}
 
 }
