@@ -2,16 +2,15 @@
 
 namespace Markatom\RestApp;
 
-use ErrorException;
 use Exception;
 use Markatom\RestApp\Api\Response;
+use Markatom\RestApp\Routing\AuthenticationException;
+use Markatom\RestApp\Routing\AuthorizationException;
 use Markatom\RestApp\Routing\MethodNotAllowedException;
 use Markatom\RestApp\Routing\NoHandlerException;
 use Markatom\RestApp\Routing\NoRouteException;
 use Nette\Object;
-use Nette\Reflection\ClassType;
 use Tracy\Debugger;
-use Tracy\Helpers;
 
 /**
  * @todo Fill desc.
@@ -64,6 +63,12 @@ class ErrorHandlers extends Object
 
 		} elseif ($e instanceof MethodNotAllowedException) {
 			$response->setHttpStatus(Response::HTTP_METHOD_NOT_ALLOWED);
+
+		} elseif ($e instanceof AuthenticationException) {
+			$response->setHttpStatus(Response::HTTP_UNAUTHORIZED);
+
+		} elseif ($e instanceof AuthorizationException) {
+			$response->setHttpStatus(Response::HTTP_FORBIDDEN);
 
 		} else {
 			$response->setHttpStatus(Response::HTTP_INTERNAL_SERVER_ERROR);

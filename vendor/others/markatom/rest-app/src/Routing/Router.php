@@ -194,3 +194,9 @@ class NoRouteException extends RouterException { }
 class NoHandlerException extends RouterException { }
 
 class VersionRequiredException extends RouterException { }
+
+class AccessException extends \RuntimeException { }
+
+class AuthenticationException extends AccessException { }
+
+class AuthorizationException extends AccessException { }
