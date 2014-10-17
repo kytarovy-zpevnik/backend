@@ -49,8 +49,8 @@ class ErrorHandlers extends Object
 		$stored = Debugger::log($e, Debugger::EXCEPTION);
 
 		$response = Debugger::$productionMode
-			? new Response() // empty response
-			: Response::data([
+			? Response::blank()
+			: Response::json([
 				'message' => $e->getMessage(),
 				'code'    => $e->getCode(),
 				'file'    => $e->getFile(),

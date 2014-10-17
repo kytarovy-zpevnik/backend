@@ -167,10 +167,7 @@ class Application extends Object
             $this->processRequest($response);
 
         } else {
-            if (!$response) {
-                $response = new Response(); // empty response
-            }
-            $this->sendResponse($response);
+            $this->sendResponse($response ?: Response::blank());
         }
     }
 

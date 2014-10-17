@@ -45,7 +45,7 @@ class SongsResource extends FrontendResource {
             ];
         }, $songs);
 
-        return Response::data($songs);
+        return response::json($songs);
     }
 
 

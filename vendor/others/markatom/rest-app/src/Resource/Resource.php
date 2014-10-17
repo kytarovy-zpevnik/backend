@@ -26,13 +26,11 @@ class Resource extends Object implements IResource
     {
 		$this->request = $request;
 
-        $handler = $request->getParam('handler');
-
-        if (!method_exists($this, $handler)) {
-            throw self::invalidHandler($handler, get_class($this));
+        if (!method_exists($this, $request->getHandlerName())) {
+            throw self::invalidHandler($request->getHandlerName(), get_class($this));
         }
 
-        return FunctionMapper::invoke([$this, $handler], $request->getParams());
+        return FunctionMapper::invoke([$this, $request->getHandlerName()], $request->getParams());
     }
 
     /**

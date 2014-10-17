@@ -59,7 +59,7 @@ class SessionsResource extends Resource
 			->getResult();
 
 		if (!$result) {
-			return Response::data([
+			return response::json([
 				'error'   => 'UNKNOWN_IDENTIFIER',
 				'message' => 'No user account with given identifier as username or email address found.'
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
@@ -69,7 +69,7 @@ class SessionsResource extends Resource
 
 		try {
 			if (!$this->userService->verifyPasswordHash($user->passwordHash, $data['user']['password'])) {
-				return Response::data([
+				return response::json([
 					'error'   => 'INVALID_CREDENTIAL',
 					'message' => 'Client supplied invalid credential.'
 				])->setHttpStatus(Response::HTTP_FORBIDDEN);
@@ -85,7 +85,7 @@ class SessionsResource extends Resource
 
 		$this->em->flush();
 
-		return Response::data([
+		return response::json([
 			'token' => $session->token,
 			'user'  => UsersResource::mapEntity($session->user)
 		]);
@@ -102,7 +102,7 @@ class SessionsResource extends Resource
 		$session = $this->em->getDao(Session::class)->findOneBy(['token' => $token]);
 
 		if (!$session) {
-			return Response::data([
+			return response::json([
 				'error'   => 'INVALID_SESSION',
 				'message' => 'Unknown session or missing session token header.'
 			])->setHttpStatus(Response::HTTP_BAD_REQUEST);
@@ -111,7 +111,7 @@ class SessionsResource extends Resource
 		$this->em->remove($session);
 		$this->em->flush();
 
-		return Response::data()
+		return response::json()
 			->setHttpStatus(Response::HTTP_OK);
 	}
 

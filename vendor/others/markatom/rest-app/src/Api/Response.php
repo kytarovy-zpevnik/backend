@@ -7,6 +7,7 @@ use Nette\Application\IResponse;
 use Nette\Application\Responses\JsonResponse;
 use Nette\Application\Responses\TextResponse;
 use Nette\Object;
+use Nette\Utils\Json;
 
 /**
  * Api resource response.
@@ -15,7 +16,7 @@ use Nette\Object;
 class Response extends Object implements IResponse
 {
 
-	/** @var array */
+	/** @var string */
 	private $data;
 
 	/** @var array */
@@ -44,19 +45,71 @@ class Response extends Object implements IResponse
 	/**
 	 * @param array $data
 	 */
-	public function __construct(array $data = NULL)
+	private function __construct($data = NULL)
 	{
 		$this->data = $data;
 	}
 
 	/**
-	 * Shortcut for obtaining an instance.
 	 * @param array $data
 	 * @return Response
 	 */
-	public static function data(array $data = NULL)
+	public static function json(array $data)
 	{
-		return new self($data);
+		$response = new self(Json::encode($data));
+
+		$response->setHeader('content-type', 'application/json');
+		$response->disableCache();
+
+		return $response;
+	}
+
+	/**
+	 * @param array $data
+	 * @return Response
+	 */
+	public static function formEncoded(array $data)
+	{
+		$response = new self(http_build_query($data));
+
+		$response->setHeader('content-type', 'application/x-www-form-urlencoded');
+		$response->disableCache();
+
+		return $response;
+	}
+
+	/**
+	 * @param string $data
+	 * @param string $mimeType
+	 * @return Response
+	 */
+	public static function raw($data, $mimeType = NULL)
+	{
+		$response = new self((string) $data);
+
+		if ($mimeType) {
+			$response->setHeader('content-type', $mimeType);
+		}
+
+		$response->disableCache();
+
+		return $response;
+	}
+
+	/**
+	 * @return Response
+	 */
+	public static function blank()
+	{
+		return new self;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getData()
+	{
+		return $this->data;
 	}
 
 	/**
@@ -66,7 +119,16 @@ class Response extends Object implements IResponse
 	public function setHttpStatus($code)
 	{
 		$this->code = $code;
+
 		return $this;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getHttpStatus()
+	{
+		return $this->code;
 	}
 
 	/**
@@ -74,10 +136,34 @@ class Response extends Object implements IResponse
 	 * @param string $value
 	 * @return Response
 	 */
-	public function addHeader($name, $value)
+	public function setHeader($name, $value)
 	{
+		$name = strtolower($name);
+
 		$this->headers[$name] = $value;
+
 		return $this;
+	}
+
+	/**
+	 * @param string $name
+	 * @return string|NULL
+	 */
+	public function getHeader($name)
+	{
+		$name = strtolower($name);
+
+		return array_key_exists($name, $this->headers)
+			? $this->headers[$name]
+			: NULL;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHeaders()
+	{
+		return $this->headers;
 	}
 
 	/**
@@ -86,21 +172,31 @@ class Response extends Object implements IResponse
 	 */
 	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
 	{
+		$httpResponse->setCode($this->code ?: ($this->data === '' ? self::HTTP_NO_CONTENT : self::HTTP_OK));
+
 		$xHeaders = [];
 		foreach ($this->headers as $name => $value) {
-			if (substr($name, 0, 2) === 'X-') $xHeaders[] = $name;
+			if (substr($name, 0, 2) === 'X-') {
+				$xHeaders[] = $name;
+			}
+
 			$httpResponse->setHeader($name, $value);
 		}
 
-		if ($xHeaders) $httpResponse->setHeader('Access-Control-Expose-Headers', implode(', ', $xHeaders));
-
-		if (is_array($this->data)) {
-			$httpResponse->setCode($this->code ?: 200);
-			(new JsonResponse($this->data))->send($httpRequest, $httpResponse);
-		} else {
-			$httpResponse->setCode($this->code ?: 204);
-			(new TextResponse($this->data))->send($httpRequest, $httpResponse);
+		if ($xHeaders) {
+			$httpResponse->setHeader('access-control-expose-headers', implode(', ', $xHeaders));
 		}
+
+		echo $this->data;
+	}
+
+	/**
+	 */
+	private function disableCache()
+	{
+		$this->setHeader('cache-control', 'no-cache, no-store, must-revalidate'); // HTTP 1.1
+		$this->setHeader('pragma', 'no-cache'); // HTTP 1.0
+		$this->setHeader('expires', '0'); // proxies
 	}
 
 }

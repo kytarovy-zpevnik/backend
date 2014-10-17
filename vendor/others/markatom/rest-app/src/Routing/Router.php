@@ -96,28 +96,35 @@ class Router extends ArrayList implements IRouter
             throw self::cannotCreateApiRequestException();
         }
 
-        $name = $params['api']
-            . (isset($params['version']) ? '(' . $params['version'] . ')' : '')
-            . ':' . $params['resource']
-            . ':' . $params['handler'];
+		if (!isset($params['version'])) {
+			$params['version'] = NULL;
+		}
 
-		$contentType = $httpRequest->getHeader('Content-Type');
-		$contentType = trim(explode(';', $contentType, 2)[0]);
+		$contentType = $httpRequest->getHeader('Content-Type', '');
 
-        switch ($contentType) {
-            case 'application/json':
-                $post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
-                break;
+		$mimeType = trim(substr($contentType, 0, strpos($contentType, ';')));
 
-            case 'application/x-www-form-urlencoded':
-                $post = $httpRequest->getPost();
-                break;
+		switch ($mimeType) {
+			case 'application/json':
+				$post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
+				break;
 
-            default:
-                $post = file_get_contents('php://input');
-        }
+			case 'application/x-www-form-urlencoded':
+				$post = $httpRequest->getPost();
+				break;
 
-        return new Request($name, $httpRequest->getMethod(), $httpRequest->getHeaders(), $params, $httpRequest->getQuery(), $post, $httpRequest->getFiles());
+			default: // raw
+				$post = file_get_contents('php://input');
+		}
+
+		$apiName      = $params['api'];
+		$apiVersion   = $params['version'];
+		$resourceName = $params['resource'];
+		$handlerName  = $params['handler'];
+
+		unset($params['api'], $params['version'], $params['resource'], $params['handler']);
+
+        return new Request($apiName, $apiVersion, $resourceName, $handlerName, $httpRequest->getMethod(), $httpRequest->getHeaders(), $params, $httpRequest->getQuery(), $post, $httpRequest->getFiles());
     }
 
     /**

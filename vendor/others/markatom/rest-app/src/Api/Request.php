@@ -13,6 +13,18 @@ use Nette\Object;
 class Request extends Object
 {
 
+	/** @var string */
+	private $apiName;
+
+	/** @var mixed */
+	private $apiVersion;
+
+	/** @var string */
+	private $resourceName;
+
+	/** @var string */
+	private $handlerName;
+
     /** @var string */
     private $name;
 
@@ -28,30 +40,36 @@ class Request extends Object
     /** @var array */
     private $query;
 
-    /** @var array */
+    /** @var array|string */
     private $post;
 
     /** @var \Nette\Http\FileUpload[] */
     private $files;
 
-    /**
-     * @param string $name
-     * @param string $method
-     * @param array $headers
-     * @param array $params
-     * @param array $query
-     * @param array $post
-     * @param FileUpload[] $files
-     */
-    public function __construct($name, $method, array $headers, array $params, array $query, $post, array $files)
+	/**
+	 * @param string $apiName
+	 * @param mixed $apiVersion
+	 * @param string $resourceName
+	 * @param string $handlerName
+	 * @param string $method
+	 * @param array $headers
+	 * @param array $params
+	 * @param array $query
+	 * @param array|string $post
+	 * @param FileUpload[] $files
+	 */
+    public function __construct($apiName, $apiVersion, $resourceName, $handlerName, $method, array $headers, array $params, array $query, $post, array $files)
     {
-        $this->name    = $name;
-        $this->method  = $method;
-        $this->headers = $headers;
-        $this->params  = $params;
-        $this->query   = $query;
-        $this->post    = $post;
-        $this->files   = $files;
+		$this->apiName      = $apiName;
+		$this->apiVersion   = $apiVersion;
+		$this->resourceName = $resourceName;
+		$this->handlerName  = $handlerName;
+		$this->method       = $method;
+		$this->headers      = $headers;
+		$this->params       = $params;
+		$this->query        = $query;
+		$this->post         = $post;
+		$this->files        = $files;
     }
 
     /**
@@ -59,8 +77,43 @@ class Request extends Object
      */
     public function getName()
     {
-        return $this->name;
+		return $this->apiName
+			. ($this->apiVersion === NULL ? '' : "($this->apiVersion)")
+			. ":$this->resourceName"
+			. ":$this->handlerName";
     }
+
+	/**
+	 * @return string
+	 */
+	public function getApiName()
+	{
+		return $this->apiName;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getApiVersion()
+	{
+		return $this->apiVersion;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getResourceName()
+	{
+		return $this->resourceName;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHandlerName()
+	{
+		return $this->handlerName;
+	}
 
     /**
      * @return string
@@ -72,17 +125,15 @@ class Request extends Object
 
     /**
      * @param string $name
-     * @param mixed $default
      * @return mixed
      */
-    public function getHeader($name, $default = NULL)
+    public function getHeader($name)
     {
-        if (isset($this->headers[$name])) {
-            return $this->headers[$name];
+		$name = strtolower($name);
 
-        } else {
-            return $default;
-        }
+        return array_key_exists($name, $this->headers)
+            ? $this->headers[$name]
+            : NULL;
     }
 
     /**
@@ -100,12 +151,9 @@ class Request extends Object
      */
     public function getParam($name, $default = NULL)
     {
-        if (isset($this->params[$name])) {
-            return $this->params[$name];
-
-        } else {
-            return $default;
-        }
+        return array_key_exists($name, $this->params)
+            ? $this->params[$name]
+            : $default;
     }
 
     /**
@@ -119,14 +167,14 @@ class Request extends Object
     /**
      * @param string $name
      * @param mixed $default
-     * @return array|mixed
+     * @return mixed
      */
     public function getQuery($name = NULL, $default = NULL)
     {
         if ($name === NULL) {
             return $this->query;
 
-        } elseif (isset($this->query[$name])) {
+        } elseif (array_key_exists($name, $this->query)) {
             return $this->query[$name];
 
         } else {
@@ -138,7 +186,7 @@ class Request extends Object
      * @param string $name
      * @param mixed $default
      * @throws \InvalidArgumentException
-     * @return array|mixed
+     * @return mixed
      */
     public function getPost($name = NULL, $default = NULL)
     {
@@ -146,7 +194,7 @@ class Request extends Object
             if ($name === NULL) {
                 return $this->post;
 
-            } elseif (isset($this->post[$name])) {
+            } elseif (array_key_exists($name, $this->post)) {
                 return $this->post[$name];
 
             } else {
@@ -154,7 +202,7 @@ class Request extends Object
             }
 
         } else {
-            if ($name !== NULL || $default !== NULL) {
+            if ($name !== NULL) {
                 throw new \InvalidArgumentException("Post data is not array. Cannot access them by name.");
             }
 
@@ -168,12 +216,9 @@ class Request extends Object
      */
     public function getFile($name)
     {
-        if (isset($this->files[$name])) {
-            return $this->files[$name];
-
-        } else {
-            return NULL;
-        }
+        return array_key_exists($name, $this->files)
+            ? $this->files[$name]
+			: NULL;
     }
 
     /**
@@ -182,30 +227,6 @@ class Request extends Object
     public function getFiles()
     {
         return $this->files;
-    }
-
-    /**
-     * @return string|NULL
-     */
-    public function getApiName()
-    {
-        return $this->getParam('api');
-    }
-
-    /**
-     * @return string|NULL
-     */
-    public function getApiVersion()
-    {
-        return $this->getParam('version');
-    }
-
-    /**
-     * @return string|NULL
-     */
-    public function getResourceName()
-    {
-        return $this->getParam('resource');
     }
 
 }

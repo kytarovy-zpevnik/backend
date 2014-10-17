@@ -51,19 +51,19 @@ class UsersResource extends FrontendResource
 			$user = $this->userService->create($data['username'], $data['email'], $data['password'], $role);
 
 		} catch (DuplicateUsernameException $e) {
-			return Response::data([
+			return response::json([
 				'error' => 'DUPLICATE_USERNAME',
 				'message' => 'User with given username already created.'
 			])->setHttpStatus(Response::HTTP_CONFLICT);
 
 		} catch (DuplicateEmailException $e) {
-			return Response::data([
+			return response::json([
 				'error' => 'DUPLICATE_EMAIL',
 				'message' => 'User with given email already created.'
 			])->setHttpStatus(Response::HTTP_CONFLICT);
 		}
 
-		return Response::data($this->mapEntity($user));
+		return response::json($this->mapEntity($user));
 	}
 
 	/**
@@ -77,7 +77,7 @@ class UsersResource extends FrontendResource
 
 		$data = array_map([$this, 'mapEntity'], $users);
 
-		return Response::data($data);
+		return response::json($data);
 	}
 
 	/**
@@ -98,7 +98,7 @@ class UsersResource extends FrontendResource
 
 		$data = $this->mapEntity($user);
 
-		return Response::data($data);
+		return response::json($data);
 	}
 
 	/**
