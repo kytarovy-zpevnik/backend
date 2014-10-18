@@ -111,7 +111,7 @@ class SessionsResource extends Resource
 		$this->em->remove($session);
 		$this->em->flush();
 
-		return response::json()
+		return response::blank()
 			->setHttpStatus(Response::HTTP_OK);
 	}
 
