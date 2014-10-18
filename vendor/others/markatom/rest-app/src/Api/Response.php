@@ -167,24 +167,37 @@ class Response extends Object implements IResponse
 	}
 
 	/**
-	 * @param \Nette\Http\IRequest $httpRequest
-	 * @param \Nette\Http\IResponse $httpResponse
 	 */
-	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+	private function setDefaults()
 	{
-		$httpResponse->setCode($this->code ?: ($this->data === '' ? self::HTTP_NO_CONTENT : self::HTTP_OK));
+		if (!$this->code) {
+			$this->code = $this->data === '' ? self::HTTP_NO_CONTENT : self::HTTP_OK;
+		}
 
 		$xHeaders = [];
 		foreach ($this->headers as $name => $value) {
 			if (substr($name, 0, 2) === 'X-') {
 				$xHeaders[] = $name;
 			}
-
-			$httpResponse->setHeader($name, $value);
 		}
 
 		if ($xHeaders) {
-			$httpResponse->setHeader('access-control-expose-headers', implode(', ', $xHeaders));
+			$this->headers['access-control-expose-headers'] = implode(', ', $xHeaders);
+		}
+	}
+
+	/**
+	 * @param \Nette\Http\IRequest $httpRequest
+	 * @param \Nette\Http\IResponse $httpResponse
+	 */
+	public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse)
+	{
+		$this->setDefaults();
+
+		$httpResponse->setCode($this->code);
+
+		foreach ($this->headers as $name => $value) {
+			$httpResponse->setHeader($name, $value);
 		}
 
 		echo $this->data;
