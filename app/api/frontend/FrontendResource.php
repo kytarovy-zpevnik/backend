@@ -22,6 +22,9 @@ class FrontendResource extends Resource
 	/** @var SessionService */
 	protected $sessionService;
 
+	/** @var Session */
+	private $activeSession;
+
 	/**
 	 * @param SessionService $serviceService
 	 */
@@ -36,19 +39,17 @@ class FrontendResource extends Resource
 	 */
 	protected function getActiveSession()
 	{
-		static $activeSession = NULL;
-
-		if ($activeSession !== NULL) {
-			return $activeSession;
+		if ($this->activeSession !== NULL) {
+			return $this->activeSession;
 		}
 
 		$token = $this->request->getHeader('x-session-token');
 
-		if (!$token) {
-			return $activeSession = FALSE;
-		}
-
-		return $activeSession = $this->sessionService->getActiveSession($token);
+		return $this->activeSession = (
+			$token
+				? $this->sessionService->getActiveSession($token)
+				: FALSE
+		);
 	}
 
 	/**
