@@ -46,7 +46,10 @@ class UrlParser extends Object
     {
         $regex = self::getUrlRegex($urlMask, $options);
 
-        if (preg_match("~^$regex$~", $url->getRelativeUrl(), $matches)) {
+		$relativeUrl = $url->getRelativeUrl();
+		$relativeUrl = substr($relativeUrl, 0, strpos($relativeUrl, '?'));
+
+        if (preg_match("~^$regex$~", $relativeUrl, $matches)) {
             foreach ($matches as $index => $match) {
                 if (is_string($index)) {
                     $options[$index][self::VALUE] = $match;
