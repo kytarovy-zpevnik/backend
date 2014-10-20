@@ -8,6 +8,7 @@ use App\Model\Service\SessionService;
 use App\Model\Service\UserService;
 use App\SecurityException;
 use DateTime;
+use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Resource\Resource;
@@ -16,14 +17,11 @@ use Markatom\RestApp\Resource\Resource;
  * @todo Fill desc.
  * @author Tomáš Markacz
  */
-class SessionsResource extends Resource
+class SessionsResource extends FrontendResource
 {
 
 	/** @var EntityManager */
 	private $em;
-
-	/** @var SessionService */
-	private $sessionService;
 
 	/** @var UserService */
 	private $userService;
@@ -35,8 +33,9 @@ class SessionsResource extends Resource
 	 */
 	public function __construct(EntityManager $em, SessionService $sessionService, UserService $userService)
 	{
+		parent::__construct($sessionService);
+
 		$this->em             = $em;
-		$this->sessionService = $sessionService;
 		$this->userService    = $userService;
 	}
 
@@ -86,8 +85,24 @@ class SessionsResource extends Resource
 		$this->em->flush();
 
 		return response::json([
-			'token' => $session->token,
-			'user'  => UsersResource::mapEntity($session->user)
+			'token'    => $session->token,
+			'longLife' => $session->longLife,
+			'user'     => UsersResource::mapEntity($session->user)
+		]);
+	}
+
+	/**
+	 * Gets active session.
+	 * @return Response
+	 */
+	public function readActive()
+	{
+		$session = $this->getActiveSession();
+
+		return response::json([
+			'token'    => $session->token,
+			'longLife' => $session->longLife,
+			'user'     => UsersResource::mapEntity($session->user)
 		]);
 	}
 
