@@ -64,6 +64,8 @@ class ResponseTester extends Object
 	 */
 	public function assertData($expected)
 	{
+		Assert::$counter++;
+
 		$actual = $this->response->getData();
 
 		if ($actual !== $expected) {
@@ -80,6 +82,8 @@ class ResponseTester extends Object
 	 */
 	public function assertHttpStatus($expected)
 	{
+		Assert::$counter++;
+
 		$actual = $this->response->getHttpStatus();
 
 		if ($actual !== $expected) {
@@ -97,6 +101,8 @@ class ResponseTester extends Object
 	 */
 	public function assertHeader($name, $expected = NULL)
 	{
+		Assert::$counter++;
+
 		$actual = $this->response->getHeader($name);
 
 		if ($expected === NULL && $actual === NULL) {
@@ -117,6 +123,8 @@ class ResponseTester extends Object
 	 */
 	public function assertJson(array $data)
 	{
+		Assert::$counter++;
+
 		$this->assertHeader('content-type', 'application/json');
 		$this->assertData(Json::encode($data));
 
@@ -130,6 +138,8 @@ class ResponseTester extends Object
 	 */
 	public function assertFormEncoded(array $data)
 	{
+		Assert::$counter++;
+
 		$this->assertHeader('content-type', 'application/x-www-form-urlencoded');
 		$this->assertData(http_build_query($data));
 
