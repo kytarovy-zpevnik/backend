@@ -48,7 +48,7 @@ class SessionsResource extends Resource
 	 */
 	public function create()
 	{
-		$data = $this->request->getPost();
+		$data = $this->request->getData();
 
 		/** @var User $user */
 		$result = $this->em->getDao(User::class)

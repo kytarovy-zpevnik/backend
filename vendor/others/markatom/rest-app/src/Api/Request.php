@@ -188,7 +188,7 @@ class Request extends Object
      * @throws \InvalidArgumentException
      * @return mixed
      */
-    public function getPost($name = NULL, $default = NULL)
+    public function getData($name = NULL, $default = NULL)
     {
         if (is_array($this->post)) {
             if ($name === NULL) {

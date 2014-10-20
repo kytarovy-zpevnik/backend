@@ -45,7 +45,7 @@ class UsersResource extends FrontendResource
 	 */
 	public function create()
 	{
-		$data = $this->request->getPost();
+		$data = $this->request->getData();
 
 		$role = $this->em->getDao(Role::class)->findOneBy(['slug' => 'registered']);
 
@@ -90,7 +90,7 @@ class UsersResource extends FrontendResource
 	{
         $this->assumeAdmin(); // only admin can change user
 
-        $roleSlug = $this->request->getPost('role')['slug'];
+        $roleSlug = $this->request->getData('role')['slug'];
         $role = $this->em->getDao(Role::class)->findOneBy(['slug' => $roleSlug]);
 
         $user = $this->em->getDao(User::class)->find($id);
