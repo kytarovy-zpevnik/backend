@@ -33,20 +33,10 @@ ResponseTester::test($response)
     ->assertJson([
         [
             "id"        => 1,
-            "owner_id"  => 2,
             "name"     => "Muj zpěvník na vodu",
-            "archived" => false,
-            "public" => true,
-            "created" => "2014-10-20 10:41:00",
-            "modified" => "2014-10-20 10:41:00"
         ],
         [
-            "id"        => 1,
-            "owner_id"  => 2,
+            "id"        => 2,
             "name"     => "Mé nejoblíbenější",
-            "archived" => false,
-            "public" => false,
-            "created" => "2014-10-20 10:42:01",
-            "modified" => "2014-10-20 10:42:02"
         ]
     ]);
