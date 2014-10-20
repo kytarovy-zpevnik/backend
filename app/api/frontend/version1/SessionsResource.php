@@ -12,6 +12,7 @@ use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Resource\Resource;
+use Markatom\RestApp\Routing\AuthenticationException;
 
 /**
  * @todo Fill desc.
@@ -98,6 +99,10 @@ class SessionsResource extends FrontendResource
 	public function readActive()
 	{
 		$session = $this->getActiveSession();
+
+		if (!$session) {
+			throw new AuthenticationException;
+		}
 
 		return response::json([
 			'token'    => $session->token,
