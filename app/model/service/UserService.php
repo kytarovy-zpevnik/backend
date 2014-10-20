@@ -52,7 +52,7 @@ class UserService extends Object
 
 		$user->username     = $username;
 		$user->email        = $email;
-		$user->passwordHash = $this->getPasswordHash($password, $email);
+		$user->passwordHash = $this->getPasswordHash($password);
 		$user->role         = $role;
 
 		$user = $this->inserter->persist($user); // reassign needed!
