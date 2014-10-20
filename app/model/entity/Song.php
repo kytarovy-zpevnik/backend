@@ -12,7 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $title
- * @property string $song
+ * @property string $chords
+ * @property string $lyrics
  * @property DateTime $created
  * @property DateTime $modified
  * @property string $album
@@ -28,6 +29,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @property SongComments[] $songComments
  * @property SongRating[] $songRatings
  * @property Tag[] $tags
+ * @property Songbook[] $songbooks
  *
  * Song entity.
  * @author Tomáš Jirásek
@@ -108,6 +110,12 @@ class Song extends BaseEntity
      * @ORM\ManyToOne(targetEntity="App\Model\Entity\User", inversedBy="songs")
      */
     protected $owner;
+
+    /**
+     * @var Songbook[]
+     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", inversedBy="songs")
+     */
+    protected $songbooks;
 
     /**
      * @var User[]

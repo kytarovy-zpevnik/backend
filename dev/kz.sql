@@ -1,8 +1,8 @@
--- Adminer 4.1.0 MySQL dump
+-- Adminer 3.3.3 MySQL dump
 
 SET NAMES utf8;
-SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
+SET time_zone = 'SYSTEM';
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 DROP TABLE IF EXISTS `bad_content`;
@@ -99,10 +99,10 @@ CREATE TABLE `rating` (
 DROP TABLE IF EXISTS `recommendation`;
 CREATE TABLE `recommendation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `recommend_from_id` int(11) DEFAULT NULL,
-  `recommend_to_id` int(11) DEFAULT NULL,
   `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
+  `recommend_from_id` int(11) DEFAULT NULL,
+  `recommend_to_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_433224D2CAD10515` (`recommend_from_id`),
   KEY `IDX_433224D280728146` (`recommend_to_id`),
@@ -149,15 +149,15 @@ CREATE TABLE `song` (
   `owner_id` int(11) DEFAULT NULL,
   `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `lyrics` longtext COLLATE utf8_unicode_ci NOT NULL,
-  `chords` longtext COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
   `album` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `author` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `original_author` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `year` int(11) DEFAULT NULL,
   `archived` tinyint(1) NOT NULL,
   `public` tinyint(1) NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  `chords` longtext COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_33EDEEA17E3C61F9` (`owner_id`),
   CONSTRAINT `FK_33EDEEA17E3C61F9` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
@@ -170,58 +170,6 @@ INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `chords`, `created`, `m
 (4,	NULL,	'Červená řeka',	'',	'',	NULL,	NULL,	NULL,	'Helenka',	NULL,	1950,	0,	0),
 (5,	1,	'Hymna',	'',	'',	NULL,	NULL,	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0),
 (6,	NULL,	'efqnfi',	'',	'',	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	0,	0);
-
-DROP TABLE IF EXISTS `songbook`;
-CREATE TABLE `songbook` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `owner_id` int(11) DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  `modified` datetime DEFAULT NULL,
-  `archived` tinyint(1) NOT NULL,
-  `public` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_C94ECC4C7E3C61F9` (`owner_id`),
-  CONSTRAINT `FK_C94ECC4C7E3C61F9` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
-DROP TABLE IF EXISTS `songbook_comment`;
-CREATE TABLE `songbook_comment` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `songbook_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_44E470FAE9EA4588` (`songbook_id`),
-  CONSTRAINT `FK_44E470FAE9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
-DROP TABLE IF EXISTS `songbook_rating`;
-CREATE TABLE `songbook_rating` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `songbook_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  `rating` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_28BD47C7E9EA4588` (`songbook_id`),
-  CONSTRAINT `FK_28BD47C7E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
-DROP TABLE IF EXISTS `songbook_recommendation`;
-CREATE TABLE `songbook_recommendation` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `songbook_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_721C5D60E9EA4588` (`songbook_id`),
-  CONSTRAINT `FK_721C5D60E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
 
 DROP TABLE IF EXISTS `song_comment`;
 CREATE TABLE `song_comment` (
@@ -260,16 +208,97 @@ CREATE TABLE `song_recommendation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
+DROP TABLE IF EXISTS `song_songbook`;
+CREATE TABLE `song_songbook` (
+  `song_id` int(11) NOT NULL,
+  `songbook_id` int(11) NOT NULL,
+  PRIMARY KEY (`song_id`,`songbook_id`),
+  KEY `IDX_62929A04A0BDB2F3` (`song_id`),
+  KEY `IDX_62929A04E9EA4588` (`songbook_id`),
+  CONSTRAINT `FK_62929A04E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_62929A04A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS `song_tag`;
+CREATE TABLE `song_tag` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `song_id` int(11) DEFAULT NULL,
+  `tag_id` int(11) DEFAULT NULL,
+  `created_on` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_4C49C104A0BDB2F3` (`song_id`),
+  KEY `IDX_4C49C104BAD26311` (`tag_id`),
+  CONSTRAINT `FK_4C49C104A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
+  CONSTRAINT `FK_4C49C104BAD26311` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS `songbook`;
+CREATE TABLE `songbook` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `owner_id` int(11) DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `archived` tinyint(1) NOT NULL,
+  `public` tinyint(1) NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_C94ECC4C7E3C61F9` (`owner_id`),
+  CONSTRAINT `FK_C94ECC4C7E3C61F9` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `songbook` (`id`, `owner_id`, `name`, `archived`, `public`, `created`, `modified`) VALUES
+(1,	2,	'Muj zpěvník na vodu',	false,	true,	'2014-10-20 10:41:00',	'2014-10-20 10:41:00'),
+(2,	2,	'Mé nejoblíbenější',	false,	false,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02');
+
+DROP TABLE IF EXISTS `songbook_comment`;
+CREATE TABLE `songbook_comment` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `songbook_id` int(11) DEFAULT NULL,
+  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_44E470FAE9EA4588` (`songbook_id`),
+  CONSTRAINT `FK_44E470FAE9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS `songbook_rating`;
+CREATE TABLE `songbook_rating` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `songbook_id` int(11) DEFAULT NULL,
+  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `rating` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_28BD47C7E9EA4588` (`songbook_id`),
+  CONSTRAINT `FK_28BD47C7E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS `songbook_recommendation`;
+CREATE TABLE `songbook_recommendation` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `songbook_id` int(11) DEFAULT NULL,
+  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_721C5D60E9EA4588` (`songbook_id`),
+  CONSTRAINT `FK_721C5D60E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
 DROP TABLE IF EXISTS `tag`;
 CREATE TABLE `tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `song_id` int(11) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `tag` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `public` tinyint(1) NOT NULL,
+  `song_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `IDX_389B783A0BDB2F3` (`song_id`),
   KEY `IDX_389B783A76ED395` (`user_id`),
+  KEY `IDX_389B783A0BDB2F3` (`song_id`),
   CONSTRAINT `FK_389B783A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
   CONSTRAINT `FK_389B783A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -332,4 +361,4 @@ CREATE TABLE `wish` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
--- 2014-10-17 15:09:05
+-- 2014-10-20 09:11:38
