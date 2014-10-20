@@ -39,7 +39,7 @@ function loadSqlDump($file)
 	/** @var Connection $connection */
 	$connection = $dic->getByType(Connection::class);
 
-	$connection->query('DROP DATABASE ' . $connection->getDatabase() . '; CREATE DATABASE '. $connection->getDatabase() . '; USE ' . $connection->getDatabase());
+	$connection->query('DROP DATABASE ' . $connection->getDatabase() . '; CREATE DATABASE '. $connection->getDatabase() . ' COLLATE utf8_czech_ci; USE ' . $connection->getDatabase());
 
 	$connection->query(file_get_contents($file));
 }
