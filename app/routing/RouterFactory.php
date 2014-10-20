@@ -34,6 +34,7 @@ class RouterFactory extends Object
 
         // custom routes for sessions resource
 		$api[] = new Route([Route::METHOD_POST], 'sessions', 'sessions:create');
+		$api[] = new Route([Route::METHOD_GET], 'sessions/active', 'sessions:readActive');
 		$api[] = new Route([Route::METHOD_DELETE], 'sessions/active', 'sessions:deleteActive');
 
         return $router;
