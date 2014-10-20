@@ -28,6 +28,7 @@ class RouterFactory extends Object
 		// generic create-read-update-delete routes for users resource
         $api[] = new CrudRoute('users');
         $api[] = new CrudRoute('songs');
+        $api[] = new CrudRoute('passwordreset');
 
 
         // custom routes for sessions resource

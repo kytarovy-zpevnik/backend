@@ -4,6 +4,7 @@ namespace FrontendApi\Version1;
 
 use App\DuplicateEmailException;
 use App\DuplicateUsernameException;
+use App\Model\Entity\PasswordReset;
 use App\Model\Entity\Role;
 use App\Model\Entity\User;
 use App\Model\Service\SessionService;
@@ -11,6 +12,7 @@ use App\Model\Service\UserService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
+use Nette\Utils\DateTime;
 
 /**
  * @todo	Fill desc.
@@ -86,20 +88,40 @@ class UsersResource extends FrontendResource
 	 */
 	public function update($id)
 	{
-		$this->assumeAdmin(); // only admin can change user
+        $this->assumeAdmin(); // only admin can change user
 
-		$roleSlug = $this->request->getPost('role')['slug'];
-		$role     = $this->em->getDao(Role::class)->findOneBy(['slug' => $roleSlug]);
+        $roleSlug = $this->request->getPost('role')['slug'];
+        $role = $this->em->getDao(Role::class)->findOneBy(['slug' => $roleSlug]);
 
-		$user = $this->em->getDao(User::class)->find($id);
-		$user->role = $role;
+        $user = $this->em->getDao(User::class)->find($id);
+        $user->role = $role;
 
-		$this->em->flush();
+        $this->em->flush();
 
-		$data = $this->mapEntity($user);
+        $data = $this->mapEntity($user);
 
-		return response::json($data);
+        return response::json($data);
 	}
+
+    /**
+     * Method does not update all users, is used to update user's password by reset password token
+     */
+    public function updateAll() {
+        $token = $this->request->getQuery('token');
+        $passwordReset = $this->em->getDao(PasswordReset::class)->findOneBy(['token' => $token]);
+        if($passwordReset == null || $passwordReset->createdOn < new DateTime(PasswordresetResource::TOKEN_EXPIRATION)) {
+            return Response::json([
+                "error" => "TOKEN_EXPIRATED",
+                "message" => "Token is no longer valid"
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
+        $user = $passwordReset->user;
+        $password = $this->request->getPost('password');
+        $user->passwordHash =  $this->userService->getPasswordHash($password);
+        $this->em->remove($passwordReset);
+        $this->em->flush();
+        //retun value is automatically set to 204
+    }
 
 	/**
 	 * Maps entity to api object.

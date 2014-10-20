@@ -28,6 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @property Ban[] $bans
  * @property Notification[] $notifications
  * @property Recommendation[] $myRecommendations
+ * @property PasswordReset $passwordReset
  *
  * User entity.
  * @author Tomáš Markacz, Tomáš Jirásek
@@ -139,4 +140,10 @@ class User extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Recommendation", mappedBy="recommendTo")
      */
     protected $myRecommendations;
+
+    /**
+     * @var PasswordReset
+     * @ORM\OneToOne(targetEntity="PasswordReset", mappedBy="user")
+     */
+    protected $passwordReset;
 }
