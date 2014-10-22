@@ -15,6 +15,8 @@ use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
+use Nette\Mail\Message;
+use Nette\Mail\SmtpMailer;
 use Nette\Utils\DateTime;
 
 /**
@@ -34,7 +36,7 @@ class PasswordresetResource extends FrontendResource {
     }
 
     public function create() {
-        $identifier = $this->request->getPost()["user"]["identifier"];
+        $identifier = $this->request->getData()["user"]["identifier"];
 
         $result = $this->em->getDao(User::class)
             ->createQueryBuilder('u') // I need to search by username OR email
@@ -70,11 +72,36 @@ class PasswordresetResource extends FrontendResource {
         $passwordReset->createdOn = new DateTime();
         $passwordReset->token = $this->generateToken();
 
+		$smtp = new SmtpMailer([
+			'host' => 'smtp.seznam.com',
+			'username' => 'xxx',
+			'password' => 'yyy',
+			'secure' => 'ssl'
+		]);
+
+		$message = new Message();
+		$message->setSubject('Nastavení zapomenutého hesla');
+		$message->addTo($user->email);
+		$message->setFrom('kytarovyzpevnik@email.cz');
+		$message->setBody("
+Dobrý den,
+
+přijali jsme požadavek na změnu hesla pro uživatelský účet $user->username.\n
+
+Nastavení hesla provedete na tomto odkazu:\n
+http://localhost/skola/kz/#/reset-password/step2/$passwordReset->token\n
+
+Pokud tento požadavek nebyl iniciován z Vaší strany, jednoduše tento email ignorujte.\n
+
+Tým kytarového zpěvníku
+		");
+
+		$smtp->send($message);
+
         $this->em->persist($passwordReset);
         $this->em->flush();
 
         return Response::blank();
-
     }
 
     private function generateToken()
