@@ -77,6 +77,20 @@ CREATE TABLE `notification` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
+CREATE TABLE `password_reset` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `created_on` datetime NOT NULL,
+  `token` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_B1017252A76ED395` (`user_id`),
+  CONSTRAINT `FK_B1017252A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `password_reset` (`id`, `user_id`, `created_on`, `token`) VALUES
+(5,	2,	'2014-10-22 22:05:09',	'1h9kwwlFZmHP7d3ynKE2uSqqOggNncIyzZDeC37uPgA'),
+(6,	3,	'2014-10-22 22:06:20',	'D88ib_t3snMWH0i5-7-xXLRUTuPBJALmlUJj-IamANQ');
+
 CREATE TABLE `rating` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
@@ -140,8 +154,7 @@ INSERT INTO `session` (`id`, `user_id`, `token`, `created`, `expiration`, `long_
 (14,	3,	'bn2/sRbWotJBy8LsbrmYwqB2wamk8pPEaLaAmhNq2Zs=',	'2014-10-20 15:14:45',	'2014-10-20 15:34:51',	0),
 (15,	3,	'tAuDfy/lN81JoXnU49TRrNDiQlpB22SCpEQWvEEFFuM=',	'2014-10-20 15:15:18',	'2014-10-20 15:35:21',	0),
 (18,	3,	'7dHh+qCaHuNthvMK1oix5v6ounO3YNTXROw+LWP3nAM=',	'2014-10-20 16:56:59',	'2014-10-20 17:16:59',	0),
-(20,	3,	'9k38IFoKMU/5FU3m76Q8zoTY68MwmruHaFtnfynG12U=',	'2014-10-21 10:34:39',	'2014-10-21 10:54:40',	0),
-(24,	3,	'P2lNEwr+m6IqEuQcMQ1cFsaZlvLF/8bZkvqIvBs5zgo=',	'2014-10-22 21:19:12',	'2014-10-22 21:39:23',	0);
+(20,	3,	'9k38IFoKMU/5FU3m76Q8zoTY68MwmruHaFtnfynG12U=',	'2014-10-21 10:34:39',	'2014-10-21 10:54:40',	0);
 
 CREATE TABLE `song` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -258,6 +271,17 @@ CREATE TABLE `song_recommendation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
+CREATE TABLE `song_songbook` (
+  `song_id` int(11) NOT NULL,
+  `songbook_id` int(11) NOT NULL,
+  PRIMARY KEY (`song_id`,`songbook_id`),
+  KEY `IDX_62929A04A0BDB2F3` (`song_id`),
+  KEY `IDX_62929A04E9EA4588` (`songbook_id`),
+  CONSTRAINT `FK_62929A04E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_62929A04A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
 CREATE TABLE `tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `song_id` int(11) DEFAULT NULL,
@@ -290,7 +314,7 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `role_id`, `username`, `first_name`, `last_name`, `email`, `password_hash`, `last_login`) VALUES
 (1,	1,	'mantljir',	NULL,	NULL,	'mantljir@fit.cvut.cz',	'$2y$12$rXbQZpIITI77Q8tj7tpKC.u5/6XwRGlwMgbzh8nlA8FmykFO9UdQW',	'2014-10-17 16:53:52'),
-(2,	2,	'kamil',	NULL,	NULL,	'kamil@kamil.cz',	'$2y$12$OqVULlLFLoefyw4MWnAw7.G350iH/.x3NSdvsaJlTijkmxa.AEG.m',	'2014-10-17 13:19:28'),
+(2,	2,	'kamil',	NULL,	NULL,	'kamil@kamil.cz',	'$2y$12$Cx.vKB4PDU.90gQ7VqbIeOxmXu2IsTVhf8Ig3ZYA5dFCEOswrQmVu',	'2014-10-17 13:19:28'),
 (3,	1,	'demo',	NULL,	NULL,	'demo@example.com',	'$2y$12$qVn1FbbSoL2r1tOrzIqCs.6iBsLpN7ceJEA.4mKu4V5gsoJbAPzWu',	'2014-10-22 21:19:12');
 
 CREATE TABLE `viewers_songbooks` (
@@ -326,4 +350,4 @@ CREATE TABLE `wish` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
--- 2014-10-22 19:20:27
+-- 2014-10-22 20:10:56
