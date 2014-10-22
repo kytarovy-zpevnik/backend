@@ -116,7 +116,7 @@ class UsersResource extends FrontendResource
             ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
         }
         $user = $passwordReset->user;
-        $password = $this->request->getPost('password');
+        $password = $this->request->getData('password');
         $user->passwordHash =  $this->userService->getPasswordHash($password);
         $this->em->remove($passwordReset);
         $this->em->flush();
