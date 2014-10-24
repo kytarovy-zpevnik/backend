@@ -4,9 +4,9 @@ php:
   - 5.5
 
 before_script:
-  - ./vendor/bin/parallel-lint -e php,phpt --exclude vendor .
   - composer self-update
   - composer install --no-interaction --prefer-source --dev
+  - ./vendor/bin/parallel-lint -e php,phpt --exclude vendor .
   - mkdir ./temp
 
 script: ./vendor/bin/tester ./tests
