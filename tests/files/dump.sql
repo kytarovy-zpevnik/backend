@@ -169,7 +169,7 @@ INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `album`, `author`, `ori
 (2,	2,	'supersong',	'',	'nejlepší songy',	NULL,	NULL,	2005,	0,	0,	NULL,	NULL,	'',	''),
 (3,	2,	'Highway to hell',	'',	NULL,	'AC-DC',	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	''),
 (4,	NULL,	'Červená řeka',	'',	NULL,	'Helenka',	NULL,	1950,	0,	0,	NULL,	NULL,	'',	''),
-(5,	2,	'Hymna',	'',	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0,	NULL,	NULL,	'',	''),
+(5,	2,	'Hymna',	'',	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0,	NULL,	NULL,	'',	'Lorem ipsum'),
 (6,	NULL,	'efqnfi',	'',	NULL,	NULL,	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	'');
 
 CREATE TABLE `songbook` (
