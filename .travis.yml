@@ -8,5 +8,6 @@ before_script:
   - composer install --no-interaction --prefer-source --dev
   - ./vendor/bin/parallel-lint -e php,phpt --exclude vendor .
   - mkdir ./temp
+  - mysql -e 'create database kz_test;'
 
-script: ./vendor/bin/tester ./tests
+script: ./vendor/bin/tester -j 1 ./tests
