@@ -10,10 +10,11 @@ use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Routing\AuthorizationException;
+use Nette\Utils\DateTime;
 
 /**
  * @todo	Fill desc.
- * @author	Jiří Mantlík
+ * @author	Jiří Mantlík, Pavel Peroutka
  */
 class SongbooksResource extends FrontendResource {
     /** @var EntityManager */
@@ -27,6 +28,28 @@ class SongbooksResource extends FrontendResource {
     }
 
 
+    public function create()
+    {
+        $data = $this->request->getData();
+
+        /** @var Songbook */
+        $songbook = new Songbook();
+
+        $songbook->name = $data['name'];
+        $songbook->created = new DateTime();
+        $songbook->modified = new DateTime();
+        $songbook->archived = false;
+        $songbook->public = false;
+        $songbook->owner = $this->getActiveSession()->user;
+
+        $this->em->persist($songbook);
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $songbook->id
+        ]);
+    }
+
     /**
      * Reads detailed information about songbook.
      * @param int $id
@@ -34,6 +57,7 @@ class SongbooksResource extends FrontendResource {
      */
     public function read($id)
     {
+        /** @var Songbook */
         $songbook = $this->em->getDao(Songbook::class)->find($id);
 
         if (!$songbook) {
@@ -88,4 +112,18 @@ class SongbooksResource extends FrontendResource {
 
         return response::json($songbooks);
     }
+
+    public function update($id)
+    {
+        $data = $this->request->getData();
+
+        /** @var Songbook */
+        $songbook = $this->em->getDao(Songbook::class)->find($id);
+
+        $songbook->name = $data['name'];
+        $songbook->modified = new DateTime();
+
+        $this->em->flush();
+    }
+
 } 
