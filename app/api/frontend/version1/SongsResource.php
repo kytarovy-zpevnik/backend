@@ -3,6 +3,7 @@
 namespace FrontendApi\Version1;
 
 use App\Model\Entity\Song;
+use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
@@ -145,7 +146,16 @@ class SongsResource extends FrontendResource {
     {
         $this->assumeLoggedIn(); // only logged can list his songs
 
-        $songs = $this->em->getDao(Song::class)->findBy(['owner'=>$this->getActiveSession()->user]);
+		if ($search = $this->request->getQuery('search')) {
+			$songs = $this->em->getDao(Song::class)
+				->fetch(new SongSearchQuery($search))
+				->getIterator()
+				->getArrayCopy();
+
+		} else {
+			$songs = $this->em->getDao(Song::class)
+				->findBy(['owner'=>$this->getActiveSession()->user]);
+		}
 
         $songs = array_map(function (Song $song){
             return [
