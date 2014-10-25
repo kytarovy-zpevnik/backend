@@ -48,7 +48,6 @@ class SongsResource extends FrontendResource {
 		$song->year           = $data['year'];
 		$song->lyrics         = $data['lyrics'];
 		$song->chords         = $data['chords'];
-        $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = FALSE;
 
@@ -92,7 +91,6 @@ class SongsResource extends FrontendResource {
 		$song->year           = $data['year'];
 		$song->lyrics         = $data['lyrics'];
 		$song->chords         = $data['chords'];
-        $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = FALSE;
 
@@ -132,8 +130,7 @@ class SongsResource extends FrontendResource {
 			'originalAuthor' => $song->originalAuthor,
 			'year'           => $song->year,
 			'lyrics'         => $song->lyrics,
-			'chords'         => $song->chords,
-            'note'           => $song->note
+			'chords'         => $song->chords
 		]);
 	}
 
@@ -154,8 +151,7 @@ class SongsResource extends FrontendResource {
                 'album'           => $song->album,
                 'author'          => $song->author,
                 'originalAuthor'  => $song->originalAuthor,
-                'year'            => $song->year,
-                'note'            => $song->note
+                'year'            => $song->year
             ];
         }, $songs);
 

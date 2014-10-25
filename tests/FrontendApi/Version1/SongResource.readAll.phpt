@@ -37,8 +37,7 @@ ResponseTester::test($response)
             "album"     => "nejlepší songy",
             "author" => NULL,
             "originalAuthor" => NULL,
-            "year" => 2005,
-			"note" => ""
+            "year" => 2005
         ],
         [
             "id"        => 3,
@@ -46,8 +45,7 @@ ResponseTester::test($response)
             "album"     => NULL,
             "author" => "AC-DC",
             "originalAuthor" => NULL,
-            "year" => NULL,
-			"note" => ""
+            "year" => NULL
         ],
         [
             "id"        => 5,
@@ -55,7 +53,6 @@ ResponseTester::test($response)
             "album"     => "České songy",
             "author" => "Miloš Zeman",
             "originalAuthor" => "Josef Kajetán Tyl",
-            "year" => 2014,
-			"note" => "Lorem ipsum"
+            "year" => 2014
         ]
     ]);

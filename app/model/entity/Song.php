@@ -22,7 +22,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @property int $year
  * @property bool $archived
  * @property bool $public
- * @property string $note
  * @property User $owner
  * @property User[] $viewers
  * @property User[] $editors
@@ -105,12 +104,6 @@ class Song extends BaseEntity
      * @ORM\Column(type="boolean")
      */
     protected $public;
-
-    /**
-     * @var string
-     * @ORM\Column(type="string")
-     */
-    protected $note;
 
     /**
      * @var User
