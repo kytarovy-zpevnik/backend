@@ -3,6 +3,7 @@
 namespace FrontendApi\Version1;
 
 use App\Model\Entity\Song;
+use App\Model\Entity\Songbook;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -43,6 +44,17 @@ class SongsResource extends FrontendResource {
 		$data = $this->request->getData();
 
 		$song = new Song;
+
+		$ids = array_map(function ($songbook) {
+			return $songbook['id'];
+		}, $data['songbooks']);
+
+		$songbooks = $this->em->getDao(Songbook::class)->findBy(['id' => $ids]);
+
+		foreach ($songbooks as $songbook) {
+			$song->addSongbook($songbook);
+		}
+
 
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
@@ -88,6 +100,18 @@ class SongsResource extends FrontendResource {
 				throw new AuthorizationException;
 			}
 		}
+
+		$ids = array_map(function ($songbook) {
+			return $songbook['id'];
+		}, $data['songbooks']);
+
+		$songbooks = $this->em->getDao(Songbook::class)->findBy(['id' => $ids]);
+
+		$song->clearSongbooks();
+		foreach ($songbooks as $songbook) {
+			$song->addSongbook($songbook);
+		}
+
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
 		$song->author         = $data['author'];
@@ -127,6 +151,13 @@ class SongsResource extends FrontendResource {
 			}
 		}
 
+		$songbooks = array_map(function (Songbook $songbook) {
+			return [
+				'id'   => $songbook->id,
+				'name' => $songbook->name
+			];
+		}, $song->songbooks);
+
 		return Response::json([
 			'id'             => $song->id,
 			'title'          => $song->title,
@@ -136,7 +167,8 @@ class SongsResource extends FrontendResource {
 			'year'           => $song->year,
 			'lyrics'         => $song->lyrics,
 			'chords'         => $song->chords,
-            'note'           => $song->note
+            'note'           => $song->note,
+			'songbooks'      => $songbooks
 		]);
 	}
 
