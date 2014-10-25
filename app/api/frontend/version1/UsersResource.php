@@ -15,7 +15,8 @@ use Markatom\RestApp\Api\Response;
 use Nette\Utils\DateTime;
 
 /**
- * @todo	Fill desc.
+ * Resource for User CRUD operations.
+ *
  * @author	Tomáš Markacz
  */
 class UsersResource extends FrontendResource
@@ -41,7 +42,8 @@ class UsersResource extends FrontendResource
 	}
 
 	/**
-	 * @return Response
+     * Creates user.
+	 * @return Response Response with User object.
 	 */
 	public function create()
 	{
@@ -69,7 +71,8 @@ class UsersResource extends FrontendResource
 	}
 
 	/**
-	 * @return Response
+     * Read all users.
+	 * @return Response Response with array of User objects.
 	 */
 	public function readAll()
 	{
@@ -83,8 +86,9 @@ class UsersResource extends FrontendResource
 	}
 
 	/**
+     * Update user by id.
 	 * @param int $id
-	 * @return Response
+	 * @return Response Response with User object.
 	 */
 	public function update($id)
 	{
@@ -104,7 +108,7 @@ class UsersResource extends FrontendResource
 	}
 
     /**
-     * Method does not update all users, is used to update user's password by reset password token
+     * Method does not update all users, is used to update user's password by reset password token.
      */
     public function updateAll() {
         $token = $this->request->getQuery('token');

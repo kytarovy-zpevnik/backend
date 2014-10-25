@@ -15,7 +15,8 @@ use Markatom\RestApp\Resource\Resource;
 use Markatom\RestApp\Routing\AuthenticationException;
 
 /**
- * @todo Fill desc.
+ * Resource for managing user web sessions.
+ *
  * @author Tomáš Markacz
  */
 class SessionsResource extends FrontendResource

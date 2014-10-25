@@ -11,7 +11,8 @@ use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Routing\AuthorizationException;
 
 /**
- * Song resource class.
+ * Resource for Song CRUD operations.
+ *
  * @author	Jiří Mantlík
  * @author  Tomáš Markacz
  */
@@ -31,9 +32,10 @@ class SongsResource extends FrontendResource {
         $this->em = $em;
     }
 
-	/**
-	 * Creates new song.
-	 */
+    /**
+     * Creates new song.
+     * @return Response
+     */
 	public function create()
 	{
 		$this->assumeLoggedIn();

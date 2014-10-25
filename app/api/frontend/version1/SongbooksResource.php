@@ -14,8 +14,9 @@ use Markatom\RestApp\Routing\AuthorizationException;
 use Nette\Utils\DateTime;
 
 /**
- * @todo	Fill desc.
- * @author	Jiří Mantlík, Pavel Peroutka
+ * Resource for Songbook CRUD operations.
+ * @author	Jiří Mantlík
+ * @author  Pavel Peroutka
  */
 class SongbooksResource extends FrontendResource {
     /** @var EntityManager */
@@ -122,6 +123,10 @@ class SongbooksResource extends FrontendResource {
         return response::json($songbooks);
     }
 
+    /**
+     * Updates Songbook by id.
+     * @param $id
+     */
     public function update($id)
     {
         $data = $this->request->getData();

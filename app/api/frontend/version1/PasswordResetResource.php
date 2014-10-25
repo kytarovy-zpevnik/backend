@@ -20,14 +20,20 @@ use Nette\Mail\SmtpMailer;
 use Nette\Utils\DateTime;
 
 /**
- * @author	peroupav
+ * Resource for resetting user password.
+ * @author	Pavel Peroutka
  */
 class PasswordresetResource extends FrontendResource {
 
     /** @var EntityManager */
     private $em;
+    /** @var string */
     const TOKEN_EXPIRATION = "-1day";
 
+    /**
+     * @param SessionService $sessionService
+     * @param EntityManager $em
+     */
     public function __construct(SessionService $sessionService, EntityManager $em)
     {
         parent::__construct($sessionService);
@@ -35,6 +41,13 @@ class PasswordresetResource extends FrontendResource {
         $this->em = $em;
     }
 
+    /**
+     * Creates entry for reset password request and sends email with generated URL to reset password.
+     * If reset password was already requested and is not expired, response is negative.
+     * @return Response
+     * @throws \Exception
+     * @throws \Nette\Mail\SmtpException
+     */
     public function create() {
         $identifier = $this->request->getData()["user"]["identifier"];
 
@@ -104,6 +117,10 @@ Tým kytarového zpěvníku
         return Response::blank();
     }
 
+    /**
+     * Generates token and replace special characters, so it can be used in URL.
+     * @return string
+     */
     private function generateToken()
     {
         return str_replace(['+','/','='],['-','_',''], base64_encode(openssl_random_pseudo_bytes(32)));
