@@ -73,10 +73,10 @@ class PasswordresetResource extends FrontendResource {
         $passwordReset->token = $this->generateToken();
 
 		$smtp = new SmtpMailer([
-			'host' => 'smtp.seznam.com',
-			'username' => 'xxx',
-			'password' => 'yyy',
-			'secure' => 'ssl'
+			'host'     => 'smtp.google.com',
+			'username' => 'kontakt.kytarovy.zpevnik',
+			'password' => 'zdenekrybola',
+			'secure'   => 'ssl'
 		]);
 
 		$message = new Message();

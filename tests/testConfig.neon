@@ -1,7 +1,9 @@
 services:
-    cacheStorage: Nette\Caching\Storages\MemoryStorage
+	cacheStorage: Nette\Caching\Storages\MemoryStorage
 
 doctrine:
-    dbname: kz_test
-    metadata:
-    		App\Model\Entity: %appDir%/../app/model/entity
+	user: root
+	password:
+	dbname: kz_test
+	metadata:
+		App\Model\Entity: %appDir%/../app/model/entity
