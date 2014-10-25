@@ -156,7 +156,7 @@ class SongsResource extends FrontendResource {
 
 		} else {
 			$songs = $this->em->getDao(Song::class)
-				->findBy(['owner'=>$this->getActiveSession()->user]);
+				->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
 		}
 
         $songs = array_map(function (Song $song){

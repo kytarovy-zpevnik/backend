@@ -35,7 +35,8 @@ class SongbookSearchQuery extends QueryObject
 			->select('s')
 			->from(Songbook::class, 's')
 			->orWhere('s.name LIKE :query')
-			->setParameter('query', "%$this->search%");
+			->setParameter('query', "%$this->search%")
+			->orderBy('s.name');
 	}
 
 }

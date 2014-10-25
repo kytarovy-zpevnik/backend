@@ -31,6 +31,24 @@ $response = handleRequest($request);
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
+		[
+			"id"        => 3,
+			"title"  => "Highway to hell",
+			"album"     => NULL,
+			"author" => "AC-DC",
+			"originalAuthor" => NULL,
+			"year" => NULL,
+			"note" => ""
+		],
+		[
+			"id"        => 5,
+			"title"  => "Hymna",
+			"album"     => "České songy",
+			"author" => "Miloš Zeman",
+			"originalAuthor" => "Josef Kajetán Tyl",
+			"year" => 2014,
+			"note" => "Lorem ipsum"
+		],
         [
             "id"        => 2,
             "title"  => "supersong",
@@ -39,23 +57,5 @@ ResponseTester::test($response)
             "originalAuthor" => NULL,
             "year" => 2005,
 			"note" => ""
-        ],
-        [
-            "id"        => 3,
-            "title"  => "Highway to hell",
-            "album"     => NULL,
-            "author" => "AC-DC",
-            "originalAuthor" => NULL,
-            "year" => NULL,
-			"note" => ""
-        ],
-        [
-            "id"        => 5,
-            "title"  => "Hymna",
-            "album"     => "České songy",
-            "author" => "Miloš Zeman",
-            "originalAuthor" => "Josef Kajetán Tyl",
-            "year" => 2014,
-			"note" => "Lorem ipsum"
         ]
     ]);

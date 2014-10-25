@@ -32,11 +32,11 @@ ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
         [
-            "id"        => 1,
-            "name"     => "Muj zpěvník na vodu",
-        ],
-        [
             "id"        => 2,
             "name"     => "Mé nejoblíbenější",
-        ]
+        ],
+		[
+			"id"        => 1,
+			"name"     => "Muj zpěvník na vodu",
+		]
     ]);

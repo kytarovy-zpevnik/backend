@@ -110,7 +110,8 @@ class SongbooksResource extends FrontendResource {
 				->getArrayCopy();
 
 		} else {
-			$songbooks = $this->em->getDao(Songbook::class)->findBy(['owner'=>$this->getActiveSession()->user]);
+			$songbooks = $this->em->getDao(Songbook::class)
+				->findBy(['owner'=>$this->getActiveSession()->user], ['name' => 'ASC']);
 		}
 
         $songbooks = array_map(function (Songbook $songbook){

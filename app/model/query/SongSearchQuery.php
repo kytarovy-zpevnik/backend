@@ -39,7 +39,8 @@ class SongSearchQuery extends QueryObject
 			->orWhere('s.author LIKE :query')
 			->orWhere('s.originalAuthor LIKE :query')
 			->orWhere('s.year LIKE :query')
-			->setParameter('query', "%$this->search%");
+			->setParameter('query', "%$this->search%")
+			->orderBy('s.title');
 	}
 
 }
