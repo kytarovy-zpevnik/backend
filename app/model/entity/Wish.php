@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $wish
+ * @property bool $meet
  * @property DateTime $created
  * @property User $user
  *
@@ -29,6 +30,12 @@ class Wish extends BaseEntity
      * @ORM\Column(type="string")
      */
     protected $wish;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    protected $meet;
 
     /**
      * @var DateTime
