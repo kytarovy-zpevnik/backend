@@ -157,7 +157,8 @@ INSERT INTO `session` (`id`, `user_id`, `token`, `created`, `expiration`, `long_
 (9,	1,	'V9mkM4vSS95WCgXSykp40LG5kx+Gw1T41oFzkJrv18U=',	'2014-10-27 11:22:21',	'2014-10-27 11:42:21',	0),
 (10,	1,	'P4sV4DWaHWXuZcEH4YkL2mnz9qDE7o2snQ7Edsznnj8=',	'2014-10-27 11:25:44',	'2014-10-27 11:45:44',	0),
 (11,	2,	'ukv++HLoBFp6Ftc/1IIljkRWrxg2PFxBGyxzsriIA8A=',	'2014-10-27 12:32:28',	'2014-10-27 12:52:28',	0),
-(12,	1,	'4sC1ChxfFRrDmZtJSgiARTX4zxJvcX2ocHdxxUr8tjQ=',	'2014-10-27 12:32:28',	'2014-10-27 12:52:28',	0);
+(12,	1,	'4sC1ChxfFRrDmZtJSgiARTX4zxJvcX2ocHdxxUr8tjQ=',	'2014-10-27 12:32:28',	'2014-10-27 12:52:28',	0),
+(13,	1,	'zI3EIwCMQTNomxNFV/qo1DEw9IV+c3WnhFAQIf8eFXM=',	'2014-10-31 17:23:42',	'2014-10-31 17:43:42',	0);
 
 DROP TABLE IF EXISTS `song`;
 CREATE TABLE `song` (
@@ -265,14 +266,15 @@ CREATE TABLE `songbook` (
   `public` tinyint(1) NOT NULL,
   `created` datetime DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
+  `note` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_C94ECC4C7E3C61F9` (`owner_id`),
   CONSTRAINT `FK_C94ECC4C7E3C61F9` FOREIGN KEY (`owner_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO `songbook` (`id`, `owner_id`, `name`, `archived`, `public`, `created`, `modified`) VALUES
-(1,	2,	'Muj zpěvník na vodu',	0,	1,	'2014-10-20 10:41:00',	'2014-10-20 10:41:00'),
-(2,	2,	'Mé nejoblíbenější',	0,	0,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02');
+INSERT INTO `songbook` (`id`, `owner_id`, `name`, `archived`, `public`, `created`, `modified`, `note`) VALUES
+(1,	2,	'Muj zpěvník na vodu',	0,	1,	'2014-10-20 10:41:00',	'2014-10-20 10:41:00',	"Tohle je nářez"),
+(2,	2,	'Mé nejoblíbenější',	0,	0,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02',	"pohoda");
 
 DROP TABLE IF EXISTS `songbook_comment`;
 CREATE TABLE `songbook_comment` (
@@ -390,4 +392,4 @@ INSERT INTO `wish` (`id`, `user_id`, `name`, `created`, `meet`, `note`, `modifie
 (1,	1,	'Chci Evu a Vaška',	'2014-10-18 10:43:00',	0,	'co nejdriv',	'2014-10-18 10:43:00'),
 (2,	1,	'Chci Rudu z Ostravy',	'2014-10-18 10:45:00',	1,	'jeste driv',	'2014-10-18 10:45:00');
 
--- 2014-10-31 16:57:03
+-- 2014-10-31 19:58:21

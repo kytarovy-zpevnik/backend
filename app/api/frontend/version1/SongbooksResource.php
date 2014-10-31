@@ -43,6 +43,7 @@ class SongbooksResource extends FrontendResource {
         $songbook->archived = false;
         $songbook->public = false;
         $songbook->owner = $this->getActiveSession()->user;
+        $songbook->note = $data['note'];
 
         $this->em->persist($songbook);
         $this->em->flush();
@@ -89,9 +90,10 @@ class SongbooksResource extends FrontendResource {
         }, $songbook->songs);
 
         return Response::json([
-            'id'             => $songbook->id,
-            'name'          => $songbook->name,
-            'songs'      => $songs
+            'id'    => $songbook->id,
+            'name'  => $songbook->name,
+            'note'  => $songbook->note,
+            'songs' => $songs
         ]);
     }
 
@@ -116,8 +118,9 @@ class SongbooksResource extends FrontendResource {
 
         $songbooks = array_map(function (Songbook $songbook){
             return [
-                'id'              => $songbook->id,
-                'name'           => $songbook->name
+                'id'    => $songbook->id,
+                'name'  => $songbook->name,
+                'note'  => $songbook->note
             ];
         }, $songbooks);
 
@@ -136,6 +139,7 @@ class SongbooksResource extends FrontendResource {
         $songbook = $this->em->getDao(Songbook::class)->find($id);
 
         $songbook->name = $data['name'];
+        $songbook->note = $data['note'];
         $songbook->modified = new DateTime();
 
         $this->em->flush();

@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @property DateTime $modified
  * @property bool $archived
  * @property string $public
+ * @property string $note
  * @property User $owner
  * @property User[] $viewers
  * @property User[] $editors
@@ -61,6 +62,12 @@ class Songbook extends BaseEntity
      * @ORM\Column(type="boolean")
      */
     protected $public;
+
+    /**
+     * @var string
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $note;
 
     /**
      * @var User
