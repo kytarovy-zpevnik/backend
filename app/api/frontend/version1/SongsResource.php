@@ -10,6 +10,7 @@ use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Routing\AuthorizationException;
+use Nette\Utils\DateTime;
 
 /**
  * Resource for Song CRUD operations.
@@ -66,6 +67,8 @@ class SongsResource extends FrontendResource {
         $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = FALSE;
+        $song->created        = new DateTime();
+        $song->modified       = $song->created;
 
 		$this->em->persist($song);
 		$this->em->flush();
@@ -122,6 +125,7 @@ class SongsResource extends FrontendResource {
         $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = FALSE;
+        $song->modified       = new DateTime();
 
 		$this->em->flush();
 	}
