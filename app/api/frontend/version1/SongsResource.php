@@ -154,7 +154,8 @@ class SongsResource extends FrontendResource {
 		$songbooks = array_map(function (Songbook $songbook) {
 			return [
 				'id'   => $songbook->id,
-				'name' => $songbook->name
+				'name' => $songbook->name,
+                'note' => $songbook->note
 			];
 		}, $song->songbooks);
 
