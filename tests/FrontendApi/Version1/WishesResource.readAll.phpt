@@ -33,14 +33,18 @@ ResponseTester::test($response)
     ->assertJson([
         [
             "id"      => 1,
-            "wish"    => "Chci Evu a Vaška",
+            "name"    => "Chci Evu a Vaška",
+            "note"    => "co nejdriv",
             "meet"    => FALSE,
-            "created" => "2014-10-18 10:43:00"
+            "created" => "2014-10-18 10:43:00",
+            "modified" => "2014-10-18 10:43:00"
         ],
         [
             "id"      => 2,
-            "wish"    => "Chci Rudu z Ostravy",
+            "name"    => "Chci Rudu z Ostravy",
+            "note"    => "jeste driv",
             "meet"    => TRUE,
-            "created" => "2014-10-18 10:45:00"
+            "created" => "2014-10-18 10:45:00",
+            "modified" => "2014-10-18 10:45:00"
         ]
     ]);

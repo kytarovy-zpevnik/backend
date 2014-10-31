@@ -44,9 +44,11 @@ class WishesResource extends FrontendResource
 
         $wish = new Wish;
 
-        $wish->wish = $data['wish'];
+        $wish->name = $data['name'];
+        $wish->note = $data['note'];
         $wish->user = $this->getActiveSession()->user;
         $wish->created = new DateTime();
+        $wish->modified = new DateTime();
         $wish->meet = FALSE;
 
         $this->em->persist($wish);
@@ -72,9 +74,11 @@ class WishesResource extends FrontendResource
         $wishes = array_map(function (Wish $wish) {
             return [
                 'id' => $wish->id,
-                'wish' => $wish->wish,
+                'name' => $wish->name,
+                'note' => $wish->note,
                 'meet' => $wish->meet,
                 'created' => self::formatDateTime($wish->created),
+                'modified' => self::formatDateTime($wish->modified),
             ];
         }, $wishes);
 
@@ -106,9 +110,11 @@ class WishesResource extends FrontendResource
 
         return Response::json([
             'id' => $wish->id,
-            'wish' => $wish->wish,
+            'name' => $wish->name,
+            'note' => $wish->note,
             'meet' => $wish->meet,
             'created' => self::formatDateTime($wish->created),
+            'modified' => self::formatDateTime($wish->modified),
         ]);
     }
 
@@ -136,8 +142,10 @@ class WishesResource extends FrontendResource
             throw new AuthorizationException;
         }
 
-        $wish->wish = $data['wish'];
+        $wish->name = $data['name'];
+        $wish->note = $data['note'];
         $wish->meet = $data['meet'];
+        $wish->modified = new DateTime();
 
         $this->em->flush();
 

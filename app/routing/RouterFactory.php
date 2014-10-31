@@ -29,6 +29,7 @@ class RouterFactory extends Object
         $api[] = new CrudRoute('users');
         $api[] = new CrudRoute('songs');
         $api[] = new CrudRoute('songbooks');
+        $api[] = new CrudRoute('wishes');
         $api[] = new CrudRoute('passwordreset');
 
 

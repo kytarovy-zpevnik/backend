@@ -29,7 +29,8 @@ Assert::exception(function () use ($request) {
 
 //Test created wish.
 $data = [
-    "wish" => "Chci Evu a Vaška"
+    "name" => "Chci Evu a Vaška",
+    "note" => "moc se těším"
 ];
 
 $sessionToken = logUserIn($em->getDao(User::class)->find(1));

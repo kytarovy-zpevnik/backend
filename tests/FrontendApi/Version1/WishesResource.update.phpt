@@ -3,6 +3,7 @@
 require __DIR__ . '/../../bootstrap.php';
 
 use App\Model\Entity\User;
+use App\Model\Entity\Wish;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Routing\AuthenticationException;
 use Markatom\RestApp\Routing\AuthorizationException;
@@ -15,8 +16,9 @@ loadSqlDump(__DIR__ . '/../../files/dump.sql');
 $em = $dic->getByType(EntityManager::class);
 
 $data = [
-    "wish" => "Chci Evu a Vaška",
+    "name" => "Chci Evu a Vaška",
     "meet" => TRUE,
+    "note" => "Uz to mam"
 ];
 
 
@@ -85,11 +87,15 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'read', RequestBuilde
 
 $response = handleRequest($request);
 
+$wish = $em->getDao(Wish::class)->find(1);
+
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
         "id"      => 1,
-        "wish"    => "Chci Evu a Vaška",
+        "name"    => "Chci Evu a Vaška",
+        "note" => "Uz to mam",
         "meet"    => TRUE,
-        "created" => "2014-10-18 10:43:00"
+        "created" => "2014-10-18 10:43:00",
+        "modified" => $wish->modified->format('Y-m-d H:i:s')
     ]);

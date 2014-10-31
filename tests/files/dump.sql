@@ -155,7 +155,9 @@ INSERT INTO `session` (`id`, `user_id`, `token`, `created`, `expiration`, `long_
 (7,	1,	'PrANXvoNd3YYHQ0hKf3K+TMdTxmSiJjOqXsZnYvIqUE=',	'2014-10-17 16:53:04',	'2014-10-17 17:13:08',	0),
 (8,	1,	'p6YbrYLglqIMoEROIwyB9lylIbpVB7amdxQwuLW7GWk=',	'2014-10-17 16:53:52',	'2014-10-17 17:13:55',	0),
 (9,	1,	'V9mkM4vSS95WCgXSykp40LG5kx+Gw1T41oFzkJrv18U=',	'2014-10-27 11:22:21',	'2014-10-27 11:42:21',	0),
-(10,	1,	'P4sV4DWaHWXuZcEH4YkL2mnz9qDE7o2snQ7Edsznnj8=',	'2014-10-27 11:25:44',	'2014-10-27 11:45:44',	0);
+(10,	1,	'P4sV4DWaHWXuZcEH4YkL2mnz9qDE7o2snQ7Edsznnj8=',	'2014-10-27 11:25:44',	'2014-10-27 11:45:44',	0),
+(11,	2,	'ukv++HLoBFp6Ftc/1IIljkRWrxg2PFxBGyxzsriIA8A=',	'2014-10-27 12:32:28',	'2014-10-27 12:52:28',	0),
+(12,	1,	'4sC1ChxfFRrDmZtJSgiARTX4zxJvcX2ocHdxxUr8tjQ=',	'2014-10-27 12:32:28',	'2014-10-27 12:52:28',	0);
 
 DROP TABLE IF EXISTS `song`;
 CREATE TABLE `song` (
@@ -230,8 +232,8 @@ CREATE TABLE `song_songbook` (
   PRIMARY KEY (`song_id`,`songbook_id`),
   KEY `IDX_62929A04A0BDB2F3` (`song_id`),
   KEY `IDX_62929A04E9EA4588` (`songbook_id`),
-  CONSTRAINT `FK_62929A04E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `FK_62929A04A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`) ON DELETE CASCADE
+  CONSTRAINT `FK_62929A04A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_62929A04E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `song_songbook` (`song_id`, `songbook_id`) VALUES
@@ -374,16 +376,18 @@ DROP TABLE IF EXISTS `wish`;
 CREATE TABLE `wish` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
-  `wish` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `meet` tinyint(1) NOT NULL,
+  `note` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_D7D174C9A76ED395` (`user_id`),
   CONSTRAINT `FK_D7D174C9A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO `wish` (`id`, `user_id`, `wish`, `created`, `meet`) VALUES
-(1,	1,	'Chci Evu a Vaška',	'2014-10-18 10:43:00',	FALSE),
-(2,	1,	'Chci Rudu z Ostravy',	'2014-10-18 10:45:00',	TRUE);
+INSERT INTO `wish` (`id`, `user_id`, `name`, `created`, `meet`, `note`, `modified`) VALUES
+(1,	1,	'Chci Evu a Vaška',	'2014-10-18 10:43:00',	0,	'co nejdriv',	'2014-10-18 10:43:00'),
+(2,	1,	'Chci Rudu z Ostravy',	'2014-10-18 10:45:00',	1,	'jeste driv',	'2014-10-18 10:45:00');
 
--- 2014-10-27 11:31:25
+-- 2014-10-31 16:57:03
