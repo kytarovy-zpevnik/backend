@@ -67,7 +67,7 @@ ResponseTester::test($response)
     ->assertJson([
         "id"      => 1,
         "name"    => "Chci Evu a Vaška",
-        "note"    => "co nejdriv",
+        "note"    => "Co nejdriv",
         "meet"    => FALSE,
         "created" => "2014-10-18 10:43:00",
         "modified" => "2014-10-18 10:43:00"

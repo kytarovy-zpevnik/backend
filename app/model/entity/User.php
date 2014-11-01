@@ -146,4 +146,10 @@ class User extends BaseEntity
      * @ORM\OneToOne(targetEntity="PasswordReset", mappedBy="user")
      */
     protected $passwordReset;
+
+    /**
+     * @var Tag[]
+     * @ORM\OneToMany(targetEntity="Tag", mappedBy="user")
+     */
+    protected $tags;
 }

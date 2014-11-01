@@ -99,3 +99,5 @@ ResponseTester::test($response)
         "created" => "2014-10-18 10:43:00",
         "modified" => $wish->modified->format('Y-m-d H:i:s')
     ]);
+
+loadSqlDump(__DIR__ . '/../../files/dump.sql');

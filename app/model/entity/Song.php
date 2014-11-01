@@ -158,8 +158,8 @@ class Song extends BaseEntity
     protected $songRatings;
 
     /**
-     * @var Tag[]
-     * @ORM\OneToMany(targetEntity="App\Model\Entity\Tag", mappedBy="song")
+     * @var SongTag[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongTag", mappedBy="song")
      */
     protected $tags;
 

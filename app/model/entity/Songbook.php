@@ -106,4 +106,10 @@ class Songbook extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookRating", mappedBy="songbook")
      */
     protected $songbookRatings;
+
+    /**
+     * @var SongbookTag[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookTag", mappedBy="songbook")
+     */
+    protected $tags;
 }

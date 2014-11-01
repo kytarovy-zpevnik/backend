@@ -12,16 +12,14 @@ use Doctrine\ORM\Mapping as ORM;
  * @property-read int $id
  * @property string $tag
  * @property bool $public
- * @property Song $song
  * @property User $user
  *
  * Tag entity.
  * @author Tomáš Jirásek
  */
 
-class Tag extends BaseEntity
+abstract class Tag extends BaseEntity
 {
-
     use Identifier;
 
     /**
@@ -37,14 +35,8 @@ class Tag extends BaseEntity
     protected $public;
 
     /**
-     * @var Song
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song", inversedBy="tags")
-     */
-    protected $song;
-
-    /**
      * @var User
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\User")
+     * @ORM\ManyToOne(targetEntity="App\Model\Entity\User", inversedBy="tags")
      */
     protected $user;
 }
