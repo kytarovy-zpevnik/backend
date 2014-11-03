@@ -29,13 +29,13 @@ class Notification extends BaseEntity
 
     /**
      * @var DateTime
-     * @ORM\Column(type="datetime", nullable=true)
+     * @ORM\Column(type="datetime")
      */
     protected $created;
 
     /**
      * @var bool
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(name="`read`", type="boolean")
      */
     protected $read;
 
@@ -53,14 +53,12 @@ class Notification extends BaseEntity
 
 	/**
 	 * @var Song
-	 * @ORM\Column(nullable=true)
 	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song")
 	 */
 	protected $song;
 
 	/**
 	 * @var Songbook
-	 * @ORM\Column(nullable=true)
 	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook")
 	 */
 	protected $songbook;
