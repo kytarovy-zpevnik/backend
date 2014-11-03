@@ -82,3 +82,5 @@ ResponseTester::test($response)
                 "slug" => "registered"
             ]
     ]);
+
+loadSqlDump(__DIR__ . '/../../files/dump.sql');

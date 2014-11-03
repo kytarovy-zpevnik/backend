@@ -47,3 +47,5 @@ ResponseTester::test($response)
     ->assertJson([
         "id" => 3,
     ]);
+
+loadSqlDump(__DIR__ . '/../../files/dump.sql');

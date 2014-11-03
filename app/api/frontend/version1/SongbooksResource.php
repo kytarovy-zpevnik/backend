@@ -5,6 +5,7 @@ namespace FrontendApi\Version1;
 
 use App\Model\Entity\Song;
 use App\Model\Entity\Songbook;
+use App\Model\Entity\SongbookRating;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -143,6 +144,201 @@ class SongbooksResource extends FrontendResource {
         $songbook->modified = new DateTime();
 
         $this->em->flush();
+    }
+
+    /**
+     * Creates songbook rating by songbook id.
+     * @return Response Response with SongbookRating object.
+     */
+    public function createRating($songbookId)
+    {
+        $this->assumeLoggedIn();
+
+        $songbook = $this->em->getDao(Songbook::class)->find($songbookId);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        //or songbook is shared
+        if (($this->getActiveSession()->user !== $songbook->owner) && (!$songbook->public)){
+            throw new AuthorizationException;
+        }
+
+        $data = $this->request->getData();
+
+        $rating = new SongbookRating;
+
+        $rating->user = $this->getActiveSession()->user;
+        $rating->songbook = $songbook;
+        $rating->created = new DateTime();
+        $rating->modified = $rating->created;
+        $rating->comment = $data['comment'];
+        $rating->rating = $data['rating'];
+
+        $this->em->persist($rating);
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $rating->id
+        ]);
+    }
+
+
+    /**
+     * Reads all songbook's ratings.
+     * @param int $songbookId
+     * @return Response
+     */
+    public function readAllRating($songbookId)
+    {
+        /** @var SongbookRating $rating */
+        $songbook = $this->em->getDao(Songbook::class)->find($songbookId);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if(!$songbook->public) {
+
+            $this->assumeLoggedIn();
+
+            //or songbook is shared
+            if ($this->getActiveSession()->user !== $songbook->owner){
+                throw new AuthorizationException;
+            }
+        }
+
+        $ratings = $this->em->getDao(SongbookRating::class)
+            ->findBy(['songbook'=> $songbook]);
+
+        $ratings = array_map(function (SongbookRating $rating){
+            return [
+                'id'       => $rating->id,
+                'comment'  => $rating->comment,
+                'rating'   => $rating->rating,
+                'created'  => self::formatDateTime($rating->created),
+                'modified' => self::formatDateTime($rating->modified),
+                'user' => [
+                    'username' => $rating->user->username
+                ]
+            ];
+        }, $ratings);
+
+        return response::json($ratings);
+    }
+
+
+    /**
+     * Reads detailed information about rating.
+     * @param int $id
+     * @return Response
+     */
+    public function readRating($id)
+    {
+        /** @var SongbookRating $rating */
+        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+
+        if (!$rating) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK_RATING',
+                'message' => 'Songbook rating with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if(!$rating->songbook->public) {
+
+            $this->assumeLoggedIn();
+
+            //or songbook is shared
+            if ($this->getActiveSession()->user !== $rating->songbook->owner){
+                throw new AuthorizationException;
+            }
+        }
+
+        return Response::json([
+            'id'       => $rating->id,
+            'comment'  => $rating->comment,
+            'rating'   => $rating->rating,
+            'created'  => self::formatDateTime($rating->created),
+            'modified' => self::formatDateTime($rating->modified),
+            'user' => [
+                'username' => $rating->user->username
+            ]
+        ]);
+    }
+
+
+    /**
+     * Updates existing songbook rating.
+     * @param int $id
+     * @return Response Response with SongbookRating object.
+     */
+    public function updateRating($id)
+    {
+        $data = $this->request->getData();
+
+        /** @var SongbookRating $rating */
+        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+
+        if (!$rating) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK_RATING',
+                'message' => 'Songbook rating with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        if ($this->getActiveSession()->user !== $rating->user){
+            throw new AuthorizationException;
+        }
+
+        $rating->comment = $data['comment'];
+        $rating->rating = $data['rating'];
+        $rating->modified = new DateTime();
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $rating->id
+        ]);
+    }
+
+    /**
+     * Delete songbook rating.
+     * @param int $id
+     * @return Response
+     */
+    public function deleteRating($id)
+    {
+        /** @var SongbookRating $rating */
+        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+
+        if (!$rating) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK_RATING',
+                'message' => 'Songbook rating with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        if ($this->getActiveSession()->user !== $rating->user) {
+            throw new AuthorizationException;
+        }
+
+        $this->em->remove($rating);
+
+        $this->em->flush();
+
+        return Response::blank();
     }
 
 } 

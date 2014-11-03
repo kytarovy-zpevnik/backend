@@ -28,7 +28,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @property User[] $viewers
  * @property User[] $editors
  * @property BadContent[] $badContents
- * @property SongComments[] $songComments
  * @property SongRating[] $songRatings
  * @property Tag[] $tags
  * @property Songbook[] $songbooks
@@ -144,12 +143,6 @@ class Song extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\BadContent", mappedBy="song")
      */
     protected $badContents;
-
-    /**
-     * @var SongComment[]
-     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongComment", mappedBy="song")
-     */
-    protected $songComments;
 
     /**
      * @var SongRating[]

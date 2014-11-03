@@ -55,3 +55,5 @@ ResponseTester::test($response)
             "slug" => "admin"
         ]
     ]);
+
+loadSqlDump(__DIR__ . '/../../files/dump.sql');

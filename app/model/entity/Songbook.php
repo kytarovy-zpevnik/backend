@@ -20,7 +20,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @property User $owner
  * @property User[] $viewers
  * @property User[] $editors
- * @property SongbookComment[] $songbookComments
  * @property SongbookRating[] $songbookRatings
  * @property Song[] $songs
  *
@@ -88,12 +87,6 @@ class Songbook extends BaseEntity
      * @ORM\JoinTable(name="editors_songbooks")
      */
     protected $editors;
-
-    /**
-     * @var SongbookComment[]
-     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookComment", mappedBy="songbook")
-     */
-    protected $songbookComments;
 
     /**
      * @var Song[]

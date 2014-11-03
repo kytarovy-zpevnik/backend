@@ -63,3 +63,5 @@ ResponseTester::test($response)
         'error' => 'UNKNOWN_WISH',
         'message' => 'Wish with given id not found.'
     ]);
+
+loadSqlDump(__DIR__ . '/../../files/dump.sql');

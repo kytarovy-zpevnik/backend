@@ -8,11 +8,12 @@ use Kdyby\Doctrine\Entities\BaseEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
+ * @ORM\MappedSuperclass
  *
  * @property-read int $id
  * @property string $comment
  * @property DateTime $created
+ * * @property DateTime $modified
  * @property int $rating
  * @property User $user
  *
@@ -36,6 +37,12 @@ class Rating extends BaseEntity
      * @ORM\Column(type="datetime", nullable=true)
      */
     protected $created;
+
+    /**
+     * @var DateTime
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $modified;
 
     /**
      * @var int

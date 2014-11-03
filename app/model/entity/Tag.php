@@ -7,7 +7,7 @@ use Kdyby\Doctrine\Entities\BaseEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
+ * @ORM\MappedSuperclass
  *
  * @property-read int $id
  * @property string $tag

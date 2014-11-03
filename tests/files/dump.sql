@@ -31,17 +31,6 @@ CREATE TABLE `ban` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
-CREATE TABLE `comment` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_9474526CA76ED395` (`user_id`),
-  CONSTRAINT `FK_9474526CA76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
 CREATE TABLE `editors_songbooks` (
   `songbook_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -104,6 +93,7 @@ CREATE TABLE `rating` (
   `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `rating` int(11) NOT NULL,
+  `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_D8892622A76ED395` (`user_id`),
   CONSTRAINT `FK_D8892622A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
@@ -191,6 +181,25 @@ INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `album`, `author`, `ori
   (5,	2,	'Hymna',	'',	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0,	NULL,	NULL,	'',	'Lorem ipsum'),
   (6,	NULL,	'efqnfi',	'',	NULL,	NULL,	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	'');
 
+CREATE TABLE `song_rating` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `song_id` int(11) DEFAULT NULL,
+  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `rating` int(11) NOT NULL,
+  `modified` datetime DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_DEF237A8A0BDB2F3` (`song_id`),
+  KEY `IDX_DEF237A8A76ED395` (`user_id`),
+  CONSTRAINT `FK_DEF237A8A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `FK_DEF237A8A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `song_rating` (`id`, `song_id`, `comment`, `created`, `rating`, `modified`, `user_id`) VALUES
+  (1,	2,	'Můj první komentář',	'2014-11-03 11:45:07',	5,	'2014-11-03 11:45:07',	2),
+  (2,	2,	'Můj druhý komentář',	'2014-11-03 11:45:07',	4,	'2014-11-03 11:45:07',	3);
+
 CREATE TABLE `songbook` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `owner_id` int(11) DEFAULT NULL,
@@ -226,10 +235,18 @@ CREATE TABLE `songbook_rating` (
   `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `rating` int(11) NOT NULL,
+  `modified` datetime DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_28BD47C7E9EA4588` (`songbook_id`),
+  KEY `IDX_28BD47C7A76ED395` (`user_id`),
+  CONSTRAINT `FK_28BD47C7A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   CONSTRAINT `FK_28BD47C7E9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `songbook_rating` (`id`, `songbook_id`, `comment`, `created`, `rating`, `modified`, `user_id`) VALUES
+  (1,	2, 'Můj první komentář', '2014-11-03 11:45:07', 5, '2014-11-03 11:45:07',	2),
+  (2,	2, 'Můj druhý komentář', '2014-11-03 11:45:07', 4, '2014-11-03 11:45:07',	3);
 
 
 CREATE TABLE `songbook_recommendation` (
@@ -262,18 +279,6 @@ CREATE TABLE `song_comment` (
   PRIMARY KEY (`id`),
   KEY `IDX_991F4343A0BDB2F3` (`song_id`),
   CONSTRAINT `FK_991F4343A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-
-CREATE TABLE `song_rating` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `song_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `created` datetime DEFAULT NULL,
-  `rating` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `IDX_DEF237A8A0BDB2F3` (`song_id`),
-  CONSTRAINT `FK_DEF237A8A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
