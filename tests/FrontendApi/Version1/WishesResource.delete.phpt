@@ -47,7 +47,7 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'delete', RequestBuil
 $response = handleRequest($request);
 
 ResponseTester::test($response)
-    ->assertHttpStatus(ResponseTester::HTTP_OK);
+    ->assertHttpStatus(ResponseTester::HTTP_NO_CONTENT);
 
 //delete wish again
 $request = RequestBuilder::target('frontend', 1, 'wishes', 'delete', RequestBuilder::METHOD_POST) // specify target

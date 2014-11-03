@@ -7,6 +7,7 @@ use App\Model\Service\SessionService;
 use Kdyby\Doctrine\Connection;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Request;
+use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Resource\ResourceFactory;
 
 if (!class_exists('Tester\Assert')) {
@@ -71,6 +72,7 @@ function handleRequest(Request $request)
 	$resource = $resourceFactory->create($request->getApiName(), $request->getResourceName(), $request->getApiVersion());
 
 	$response = $resource->handle($request);
+	$response = $response ?: Response::blank();
 
 	$method = new ReflectionMethod($response, 'setDefaults');
 	$method->setAccessible(TRUE);
