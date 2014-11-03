@@ -3,7 +3,7 @@ services:
 
 doctrine:
 	user: root
-	password: viliem21
+	password:
 	dbname: kz_test
 	metadata:
 		App\Model\Entity: %appDir%/../app/model/entity
