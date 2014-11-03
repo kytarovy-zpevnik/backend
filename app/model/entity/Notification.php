@@ -13,9 +13,10 @@ use Doctrine\ORM\Mapping as ORM;
  * @property-read int $id
  * @property DateTime $created
  * @property bool $read
- * @property int $type
+ * @property string $text
  * @property User $user
  * @property Song $song
+ * @property Songbook $songbook
  *
  * Notification entity.
  * @author Tomáš Jirásek
@@ -38,11 +39,11 @@ class Notification extends BaseEntity
      */
     protected $read;
 
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     */
-    protected $type;
+	/**
+	 * @var string
+	 * @ORM\Column(type="text")
+	 */
+	protected $text;
 
     /**
      * @var User
@@ -50,10 +51,26 @@ class Notification extends BaseEntity
      */
     protected $user;
 
-    /**
-     * @var Song
-     * @ORM\Column(nullable=true)
-     * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song")
-     */
-    protected $song;
+	/**
+	 * @var Song
+	 * @ORM\Column(nullable=true)
+	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song")
+	 */
+	protected $song;
+
+	/**
+	 * @var Songbook
+	 * @ORM\Column(nullable=true)
+	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook")
+	 */
+	protected $songbook;
+
+	/**
+	 */
+	public function __construct()
+	{
+		$this->created = new DateTime;
+		$this->read    = FALSE;
+	}
+
 }

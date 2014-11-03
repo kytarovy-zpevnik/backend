@@ -39,6 +39,7 @@ services:
 
 	- App\Model\Service\UserService(%security.hashingCost%, ...)
 	- App\Model\Service\SessionService
+	- App\Model\Service\NotificationService
 
 	#################### commands ####################
 
