@@ -43,7 +43,7 @@ class Response extends Object implements IResponse
     const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 	/**
-	 * @param array $data
+	 * @param string $data
 	 */
 	private function __construct($data = NULL)
 	{
@@ -101,7 +101,7 @@ class Response extends Object implements IResponse
 	 */
 	public static function blank()
 	{
-		return new self;
+		return new self('');
 	}
 
 	/**
