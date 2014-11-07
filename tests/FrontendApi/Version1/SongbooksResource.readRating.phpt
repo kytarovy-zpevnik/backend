@@ -69,8 +69,5 @@ ResponseTester::test($response)
         "comment"  => "Můj první komentář",
         "rating"   => 5,
         "created"  => "2014-11-03 11:45:07",
-        "modified" => "2014-11-03 11:45:07",
-        "user" => [
-            "username" => "Franta"
-        ]
+        "modified" => "2014-11-03 11:45:07"
     ]);

@@ -291,10 +291,7 @@ class SongsResource extends FrontendResource {
                 'comment'  => $rating->comment,
                 'rating'   => $rating->rating,
                 'created'  => self::formatDateTime($rating->created),
-                'modified' => self::formatDateTime($rating->modified),
-                'user' => [
-                    'username' => $rating->user->username
-                ]
+                'modified' => self::formatDateTime($rating->modified)
             ];
         }, $ratings);
 
@@ -334,10 +331,7 @@ class SongsResource extends FrontendResource {
             'comment'  => $rating->comment,
             'rating'   => $rating->rating,
             'created'  => self::formatDateTime($rating->created),
-            'modified' => self::formatDateTime($rating->modified),
-            'user' => [
-                'username' => $rating->user->username
-            ]
+            'modified' => self::formatDateTime($rating->modified)
         ]);
     }
 
