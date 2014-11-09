@@ -31,7 +31,7 @@ class RouterFactory extends Object
         $api[] = new CrudRoute('songbooks');
         $api[] = new CrudRoute('wishes');
         $api[] = new CrudRoute('passwordreset');
-
+		$api[] = new CrudRoute('notifications');
 
         // custom routes for sessions resource
 		$api[] = new Route([Route::METHOD_POST], 'sessions', 'sessions:create');
