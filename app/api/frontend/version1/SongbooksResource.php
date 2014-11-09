@@ -209,18 +209,27 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        $user = null;
+
         if(!$songbook->public) {
 
             $this->assumeLoggedIn();
 
+            $user = $this->getActiveSession()->user;
             //or songbook is shared
-            if ($this->getActiveSession()->user !== $songbook->owner){
+            if ($user !== $songbook->owner){
                 throw new AuthorizationException;
             }
         }
 
-        $ratings = $this->em->getDao(SongbookRating::class)
-            ->findBy(['songbook'=> $songbook]);
+        if ($this->request->getQuery('checkRated', FALSE)) {
+            $ratings = $this->em->getDao(SongbookRating::class)->findBy(['user' => $user, 'songbook' => $songbook]);
+        }
+        else {
+            $ratings = $this->em->getDao(SongbookRating::class)
+                ->findBy(['songbook'=> $songbook]);
+        }
+
 
         $ratings = array_map(function (SongbookRating $rating){
             return [
@@ -306,45 +315,6 @@ class SongbooksResource extends FrontendResource {
 
         return Response::json([
             'id' => $rating->id
-        ]);
-    }
-
-    /**
-     * Method doesn't updates existing songbook rating, but finds if user rate this songbook.
-     * @param int $id
-     * @return Response Response with SongRating object.
-     */
-    public function updateAllRating($id)
-    {
-        /** @var Songbook $songbook */
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
-
-        if (!$songbook) {
-            return Response::json([
-                'error' => 'UNKNOWN_SONGBOOK',
-                'message' => 'Songbook with given id not found.'
-            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
-        }
-
-        $this->assumeLoggedIn();
-
-        $user = $this->getActiveSession()->user;
-        if (($user !== $songbook->owner) && (!$songbook->public)){
-            throw new AuthorizationException;
-        }
-
-        /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->findBy(['user' => $user, 'songbook' => $songbook]);
-
-        if ($rating) {
-            $ratingId = $rating[0]->id;
-        }
-        else {
-            $ratingId = 0;
-        }
-
-        return Response::json([
-            'id' => $ratingId
         ]);
     }
 

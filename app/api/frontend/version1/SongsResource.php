@@ -273,18 +273,27 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        $user = null;
+
         if(!$song->public) {
 
             $this->assumeLoggedIn();
 
+            $user = $this->getActiveSession()->user;
+
             //or song is shared
-            if ($this->getActiveSession()->user !== $song->owner){
+            if ($user !== $song->owner){
                 throw new AuthorizationException;
             }
         }
 
-        $ratings = $this->em->getDao(SongRating::class)
-            ->findBy(['song'=> $song]);
+        if ($this->request->getQuery('checkRated', FALSE)) {
+            $ratings = $this->em->getDao(SongRating::class)->findBy(['user' => $user, 'song' => $song]);
+        }
+        else {
+            $ratings = $this->em->getDao(SongRating::class)
+                ->findBy(['song' => $song]);
+        }
 
         $ratings = array_map(function (SongRating $rating){
             return [
@@ -370,45 +379,6 @@ class SongsResource extends FrontendResource {
 
         return Response::json([
             'id' => $rating->id
-        ]);
-    }
-
-    /**
-     * Method doesn't updates existing song rating, but finds if user rate this song.
-     * @param int $id
-     * @return Response Response with SongRating object.
-     */
-    public function updateAllRating($id)
-    {
-        /** @var Song $song */
-        $song = $this->em->getDao(Song::class)->find($id);
-
-        if (!$song) {
-            return Response::json([
-                'error' => 'UNKNOWN_SONG',
-                'message' => 'Song with given id not found.'
-            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
-        }
-
-        $this->assumeLoggedIn();
-
-        $user = $this->getActiveSession()->user;
-        if (($user !== $song->owner) && (!$song->public)){
-            throw new AuthorizationException;
-        }
-
-        /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->findBy(['user' => $user, 'song' => $song]);
-
-        if ($rating) {
-            $ratingId = $rating[0]->id;
-        }
-        else {
-            $ratingId = 0;
-        }
-
-        return Response::json([
-            'id' => $ratingId
         ]);
     }
 
