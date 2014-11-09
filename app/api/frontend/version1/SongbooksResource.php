@@ -151,13 +151,14 @@ class SongbooksResource extends FrontendResource {
 
     /**
      * Creates songbook rating by songbook id.
+     * @param $id
      * @return Response Response with SongbookRating object.
      */
-    public function createRating($songbookId)
+    public function createRating($id)
     {
         $this->assumeLoggedIn();
 
-        $songbook = $this->em->getDao(Songbook::class)->find($songbookId);
+        $songbook = $this->em->getDao(Songbook::class)->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -191,15 +192,15 @@ class SongbooksResource extends FrontendResource {
     }
 
 
-    /**
+    /**songbook
      * Reads all songbook's ratings.
-     * @param int $songbookId
+     * @param int $id
      * @return Response
      */
-    public function readAllRating($songbookId)
+    public function readAllRating($id)
     {
         /** @var SongbookRating $rating */
-        $songbook = $this->em->getDao(Songbook::class)->find($songbookId);
+        $songbook = $this->em->getDao(Songbook::class)->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -237,13 +238,13 @@ class SongbooksResource extends FrontendResource {
 
     /**
      * Reads detailed information about rating.
-     * @param int $id
+     * @param int $ratingId
      * @return Response
      */
-    public function readRating($id)
+    public function readRating($ratingId)
     {
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+        $rating = $this->em->getDao(SongbookRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([
@@ -274,15 +275,15 @@ class SongbooksResource extends FrontendResource {
 
     /**
      * Updates existing songbook rating.
-     * @param int $id
+     * @param int $ratingId
      * @return Response Response with SongbookRating object.
      */
-    public function updateRating($id)
+    public function updateRating($ratingId)
     {
         $data = $this->request->getData();
 
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+        $rating = $this->em->getDao(SongbookRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([
@@ -309,14 +310,53 @@ class SongbooksResource extends FrontendResource {
     }
 
     /**
-     * Delete songbook rating.
+     * Method doesn't updates existing songbook rating, but finds if user rate this songbook.
      * @param int $id
+     * @return Response Response with SongRating object.
+     */
+    public function updateAllRating($id)
+    {
+        /** @var Songbook $songbook */
+        $songbook = $this->em->getDao(Songbook::class)->find($id);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+        if (($user !== $songbook->owner) && (!$songbook->public)){
+            throw new AuthorizationException;
+        }
+
+        /** @var SongbookRating $rating */
+        $rating = $this->em->getDao(SongbookRating::class)->findBy(['user' => $user, 'songbook' => $songbook]);
+
+        if ($rating) {
+            $ratingId = $rating[0]->id;
+        }
+        else {
+            $ratingId = 0;
+        }
+
+        return Response::json([
+            'id' => $ratingId
+        ]);
+    }
+
+    /**
+     * Delete songbook rating.
+     * @param int $ratingId
      * @return Response
      */
-    public function deleteRating($id)
+    public function deleteRating($ratingId)
     {
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($id);
+        $rating = $this->em->getDao(SongbookRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([

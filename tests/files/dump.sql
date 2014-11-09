@@ -174,7 +174,7 @@ CREATE TABLE `song` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `album`, `author`, `original_author`, `year`, `archived`, `public`, `created`, `modified`, `chords`, `note`) VALUES
-  (1,	NULL,	'Foobar',	'',	'to ta helpa',	'karel gott',	NULL,	1850,	0,	0,	NULL,	NULL,	'',	''),
+  (1,	NULL,	'Foobar',	'',	'to ta helpa',	'karel gott',	NULL,	1850,	0,	1,	NULL,	NULL,	'',	''),
   (2,	2,	'supersong',	'',	'nejlepší songy',	NULL,	NULL,	2005,	0,	0,	NULL,	NULL,	'',	''),
   (3,	2,	'Highway to hell',	'',	NULL,	'AC-DC',	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	''),
   (4,	NULL,	'Červená řeka',	'',	NULL,	'Helenka',	NULL,	1950,	0,	0,	NULL,	NULL,	'',	''),
@@ -198,7 +198,8 @@ CREATE TABLE `song_rating` (
 
 INSERT INTO `song_rating` (`id`, `song_id`, `comment`, `created`, `rating`, `modified`, `user_id`) VALUES
   (1,	2,	'Můj první komentář',	'2014-11-03 11:45:07',	5,	'2014-11-03 11:45:07',	2),
-  (2,	2,	'Můj druhý komentář',	'2014-11-03 11:45:07',	4,	'2014-11-03 11:45:07',	3);
+  (2,	2,	'Můj druhý komentář',	'2014-11-03 11:45:07',	4,	'2014-11-03 11:45:07',	3),
+  (3,	1,	'Můj další komentář',	'2014-11-03 11:45:07',	5,	'2014-11-03 11:45:07',	2);
 
 CREATE TABLE `songbook` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -246,7 +247,8 @@ CREATE TABLE `songbook_rating` (
 
 INSERT INTO `songbook_rating` (`id`, `songbook_id`, `comment`, `created`, `rating`, `modified`, `user_id`) VALUES
   (1,	2, 'Můj první komentář', '2014-11-03 11:45:07', 5, '2014-11-03 11:45:07',	2),
-  (2,	2, 'Můj druhý komentář', '2014-11-03 11:45:07', 4, '2014-11-03 11:45:07',	3);
+  (2,	2, 'Můj druhý komentář', '2014-11-03 11:45:07', 4, '2014-11-03 11:45:07',	3),
+  (3,	1, 'Můj další komentář', '2014-11-03 11:45:07', 5, '2014-11-03 11:45:07',	2);
 
 
 CREATE TABLE `songbook_recommendation` (

@@ -17,7 +17,7 @@ $em = $dic->getByType(EntityManager::class);
 //Test unlogged user.
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteRating', RequestBuilder::METHOD_DELETE) // specify target
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -29,7 +29,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteRating', RequestBuilder::METHOD_DELETE) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -42,7 +42,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(3));
 //Rating doesn't exist
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteRating', RequestBuilder::METHOD_DELETE) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 5)
+    ->setParam("ratingId", 5)
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -57,7 +57,7 @@ ResponseTester::test($response)
 //Test delete rating.
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteRating', RequestBuilder::METHOD_DELETE) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -68,7 +68,7 @@ ResponseTester::test($response)
 //delete again rating
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteRating', RequestBuilder::METHOD_DELETE) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 $response = handleRequest($request);

@@ -22,7 +22,7 @@ $data = [
 //Test unlogged user.
 
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'createRating', RequestBuilder::METHOD_POST) // specify target
-    ->setParam("songbookId", 1)
+    ->setParam("id", 1)
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -37,7 +37,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("songbookId", 2)
+    ->setParam("id", 2)
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -51,7 +51,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken) // set session token
-    ->setParam("songbookId", 4)
+    ->setParam("id", 4)
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -69,7 +69,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("songbookId", 2)
+    ->setParam("id", 2)
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -78,7 +78,7 @@ $response = handleRequest($request);
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
-        "id" => 3,
+        "id" => 4,
     ]);
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');

@@ -16,7 +16,7 @@ $em = $dic->getByType(EntityManager::class);
 
 //unlogged user
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', RequestBuilder::METHOD_GET) // specify target
-    ->setParam("songId", 2)
+    ->setParam("id", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -29,7 +29,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', RequestBuilder::METHOD_GET) // specify target
     ->setHeader('X-Session-Token', $sessionToken) // set session token
-    ->setParam("songId", 2)
+    ->setParam("id", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -43,7 +43,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', RequestBuilder::METHOD_GET) // specify target
 ->setHeader('X-Session-Token', $sessionToken) // set session token
-->setParam("songId", 10)
+->setParam("id", 10)
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -60,7 +60,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', RequestBuilder::METHOD_GET) // specify target
 ->setHeader('X-Session-Token', $sessionToken) // set session token
-->setParam("songId", 2)
+->setParam("id", 2)
     ->create(); // create request
 
 $response = handleRequest($request);

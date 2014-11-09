@@ -17,7 +17,7 @@ $em = $dic->getByType(EntityManager::class);
 //Test unlogged user.
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -29,7 +29,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("ratingId", 2)
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -41,7 +41,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 //Rating doesn't exist
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
 ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 5)
+    ->setParam("ratingId", 5)
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -56,7 +56,7 @@ ResponseTester::test($response)
 //Test read rating.
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 1)
+    ->setParam("ratingId", 1)
     ->create(); // create request
 
 $response = handleRequest($request);

@@ -216,13 +216,14 @@ class SongsResource extends FrontendResource {
 
     /**
      * Creates song rating by song id.
+     * @param int $id
      * @return Response Response with SongRating object.
      */
-    public function createRating($songId)
+    public function createRating($id)
     {
         $this->assumeLoggedIn();
 
-        $song = $this->em->getDao(Song::class)->find($songId);
+        $song = $this->em->getDao(Song::class)->find($id);
 
         if (!$song) {
             return Response::json([
@@ -257,13 +258,13 @@ class SongsResource extends FrontendResource {
 
     /**
      * Reads all song's ratings.
-     * @param int $songId
+     * @param int $id
      * @return Response
      */
-    public function readAllRating($songId)
+    public function readAllRating($id)
     {
         /** @var SongRating $rating */
-        $song = $this->em->getDao(Song::class)->find($songId);
+        $song = $this->em->getDao(Song::class)->find($id);
 
         if (!$song) {
             return Response::json([
@@ -301,13 +302,13 @@ class SongsResource extends FrontendResource {
 
     /**
      * Reads detailed information about rating.
-     * @param int $id
+     * @param int $ratingId
      * @return Response
      */
-    public function readRating($id)
+    public function readRating($ratingId)
     {
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->find($id);
+        $rating = $this->em->getDao(SongRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([
@@ -338,15 +339,15 @@ class SongsResource extends FrontendResource {
 
     /**
      * Updates existing song rating.
-     * @param int $id
+     * @param int $ratingId
      * @return Response Response with SongRating object.
      */
-    public function updateRating($id)
+    public function updateRating($ratingId)
     {
         $data = $this->request->getData();
 
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->find($id);
+        $rating = $this->em->getDao(SongRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([
@@ -373,14 +374,53 @@ class SongsResource extends FrontendResource {
     }
 
     /**
-     * Delete song rating.
+     * Method doesn't updates existing song rating, but finds if user rate this song.
      * @param int $id
+     * @return Response Response with SongRating object.
+     */
+    public function updateAllRating($id)
+    {
+        /** @var Song $song */
+        $song = $this->em->getDao(Song::class)->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+        if (($user !== $song->owner) && (!$song->public)){
+            throw new AuthorizationException;
+        }
+
+        /** @var SongRating $rating */
+        $rating = $this->em->getDao(SongRating::class)->findBy(['user' => $user, 'song' => $song]);
+
+        if ($rating) {
+            $ratingId = $rating[0]->id;
+        }
+        else {
+            $ratingId = 0;
+        }
+
+        return Response::json([
+            'id' => $ratingId
+        ]);
+    }
+
+    /**
+     * Delete song rating.
+     * @param int $ratingId
      * @return Response
      */
-    public function deleteRating($id)
+    public function deleteRating($ratingId)
     {
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->find($id);
+        $rating = $this->em->getDao(SongRating::class)->find($ratingId);
 
         if (!$rating) {
             return Response::json([
