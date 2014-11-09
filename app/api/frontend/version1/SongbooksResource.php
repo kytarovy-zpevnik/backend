@@ -42,7 +42,7 @@ class SongbooksResource extends FrontendResource {
         $songbook->created = new DateTime();
         $songbook->modified = new DateTime();
         $songbook->archived = false;
-        $songbook->public = false;
+        $songbook->public = $data['public'];
         $songbook->owner = $this->getActiveSession()->user;
         $songbook->note = $data['note'];
 
@@ -81,20 +81,22 @@ class SongbooksResource extends FrontendResource {
 
         $songs = array_map(function (Song $song){
             return [
-                'id'              => $song->id,
-                'title'           => $song->title,
-                'album'           => $song->album,
-                'author'          => $song->author,
-                'originalAuthor'  => $song->originalAuthor,
-                'year'            => $song->year
+                'id'             => $song->id,
+                'title'          => $song->title,
+                'album'          => $song->album,
+                'author'         => $song->author,
+                'originalAuthor' => $song->originalAuthor,
+                'year'           => $song->year,
+                'public'         => $song->public
             ];
         }, $songbook->songs);
 
         return Response::json([
-            'id'    => $songbook->id,
-            'name'  => $songbook->name,
-            'note'  => $songbook->note,
-            'songs' => $songs
+            'id'     => $songbook->id,
+            'name'   => $songbook->name,
+            'note'   => $songbook->note,
+            'songs'  => $songs,
+            'public' => $songbook->public
         ]);
     }
 
@@ -141,6 +143,7 @@ class SongbooksResource extends FrontendResource {
 
         $songbook->name = $data['name'];
         $songbook->note = $data['note'];
+        $songbook->public = $data['public'];
         $songbook->modified = new DateTime();
 
         $this->em->flush();
