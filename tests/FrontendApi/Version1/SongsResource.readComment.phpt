@@ -67,5 +67,6 @@ ResponseTester::test($response)
         "id"       => 1,
         "comment"  => "Je to super",
         "created"  => "2014-11-10 15:44:08",
-        "modified" => "2014-11-10 15:44:08"
+        "modified" => "2014-11-10 15:44:08",
+        'username' => "Franta"
     ]);

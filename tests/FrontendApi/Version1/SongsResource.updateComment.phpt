@@ -91,7 +91,8 @@ ResponseTester::test($response)
         "id"       => 1,
         "comment"  => "Můj upravený komentář",
         "created"  => "2014-11-10 15:44:08",
-        "modified" => $comment->modified->format('Y-m-d H:i:s')
+        "modified" => $comment->modified->format('Y-m-d H:i:s'),
+        "username" => "Franta"
     ]);
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
