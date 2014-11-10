@@ -5,6 +5,7 @@ namespace FrontendApi\Version1;
 use App\Model\Entity\Song;
 use App\Model\Entity\SongRating;
 use App\Model\Entity\Songbook;
+use App\Model\Entity\SongComment;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -410,6 +411,170 @@ class SongsResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Creates song comment by song id.
+     * @param int $id
+     * @return Response Response with SongComment object.
+     */
+    public function createComment($id) {
+
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::class)->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        //or song is shared
+        if (($this->getActiveSession()->user !== $song->owner) && (!$song->public)){
+            throw new AuthorizationException;
+        }
+
+        $data = $this->request->getData();
+
+        $comment = new SongComment;
+
+        $comment->user = $this->getActiveSession()->user;
+        $comment->song = $song;
+        $comment->created = new DateTime();
+        $comment->modified = $comment->created;
+        $comment->comment = $data['comment'];
+
+        $this->em->persist($comment);
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $comment->id
+        ]);
+    }
+
+
+    /**
+     * Reads all song's comment.
+     * @param int $id
+     * @return Response Response with SongComment[] object
+     */
+    public function readAllComment($id)
+    {
+        $song = $this->em->getDao(Song::class)->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $user = null;
+
+        if(!$song->public) {
+
+            $this->assumeLoggedIn();
+
+            $user = $this->getActiveSession()->user;
+
+            //or song is shared
+            if ($user !== $song->owner){
+                throw new AuthorizationException;
+            }
+        }
+
+        if ($this->request->getQuery('usersComment', TRUE)) {
+            $comments = $this->em->getDao(SongComment::class)->findBy(['user' => $user, 'song' => $song]);
+        }
+        else {
+            $comments = $this->em->getDao(SongComment::class)
+                ->findBy(['song' => $song]);
+        }
+
+
+        $comments = array_map(function (SongComment $comment){
+            return [
+                'id'       => $comment->id,
+                'comment'  => $comment->comment,
+                'created'  => self::formatDateTime($comment->created),
+                'modified' => self::formatDateTime($comment->modified)
+            ];
+        }, $comments);
+
+        return response::json($comments);
+    }
+
+    /**
+     * Reads detailed information about comment.
+     * @param int $id
+     * @param int $relationId
+     * @return Response Response with SongComment object
+     */
+    public function readComment($id, $relationId)
+    {
+        /** @var SongComment $comment */
+        $comment = $this->em->getDao(SongComment::class)->find($relationId);
+
+        if (!$comment) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG_COMMENT',
+                'message' => 'Song comment with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if(!$comment->song->public) {
+
+            $this->assumeLoggedIn();
+
+            //or song is shared
+            if ($this->getActiveSession()->user !== $comment->song->owner){
+                throw new AuthorizationException;
+            }
+        }
+
+        return Response::json([
+            'id'       => $comment->id,
+            'comment'  => $comment->comment,
+            'created'  => self::formatDateTime($comment->created),
+            'modified' => self::formatDateTime($comment->modified)
+        ]);
+    }
+
+    /**
+     * Updates existing song comment.
+     * @param int $relationId
+     * @return Response Response with SongComment object.
+     */
+    public function updateComment($id, $relationId)
+    {
+        $data = $this->request->getData();
+
+        /** @var SongComment $comment */
+        $comment = $this->em->getDao(SongComment::class)->find($relationId);
+
+        if (!$comment) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG_COMMENT',
+                'message' => 'Song comment with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        if ($this->getActiveSession()->user !== $comment->user){
+            throw new AuthorizationException;
+        }
+
+        $comment->comment = $data['comment'];
+        $comment->modified = new DateTime();
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $comment->id
+        ]);
     }
 
 }

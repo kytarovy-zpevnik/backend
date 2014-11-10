@@ -14,14 +14,13 @@ use Doctrine\ORM\Mapping as ORM;
  * @property string $comment
  * @property DateTime $created
  * @property DateTime $modified
- * @property int $rating
  * @property User $user
  *
- * Rating entity.
+ * Comment entity.
  * @author Tomáš Jirásek
  */
 
-class Rating extends BaseEntity
+class Comment extends BaseEntity
 {
 
     use Identifier;
@@ -43,12 +42,6 @@ class Rating extends BaseEntity
      * @ORM\Column(type="datetime", nullable=true)
      */
     protected $modified;
-
-    /**
-     * @var int
-     * @ORM\Column(type="integer")
-     */
-    protected $rating;
 
     /**
      * @var User
