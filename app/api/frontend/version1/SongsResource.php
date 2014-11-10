@@ -314,7 +314,7 @@ class SongsResource extends FrontendResource {
      * @param int $ratingId
      * @return Response
      */
-    public function readRating($ratingId)
+    public function readRating($id, $ratingId)
     {
         /** @var SongRating $rating */
         $rating = $this->em->getDao(SongRating::class)->find($ratingId);
@@ -351,7 +351,7 @@ class SongsResource extends FrontendResource {
      * @param int $ratingId
      * @return Response Response with SongRating object.
      */
-    public function updateRating($ratingId)
+    public function updateRating($id, $ratingId)
     {
         $data = $this->request->getData();
 

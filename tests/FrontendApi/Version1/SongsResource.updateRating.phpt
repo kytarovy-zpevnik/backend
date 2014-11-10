@@ -3,7 +3,7 @@
 require __DIR__ . '/../../bootstrap.php';
 
 use App\Model\Entity\User;
-use App\Model\Entity\SongbookRating;
+use App\Model\Entity\SongRating;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Routing\AuthenticationException;
 use Markatom\RestApp\Routing\AuthorizationException;
@@ -22,7 +22,7 @@ $data = [
 
 
 //Test unlogged user.
-$request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
+$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
     ->setParams(["id" => 1, "ratingId" => 1])
     ->setJsonPost($data)
     ->create(); // create request
@@ -34,8 +34,8 @@ Assert::exception(function () use ($request) {
 //Test unauthorized user
 $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
-$request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-    ->setHeader('X-Session-Token', $sessionToken)
+$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
+->setHeader('X-Session-Token', $sessionToken)
     ->setJsonPost($data)
     ->setParams(["id" => 1, "ratingId" => 1])
     ->create(); // create request
@@ -47,7 +47,7 @@ Assert::exception(function () use ($request) {
 $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 //Rating doesn't exist
-$request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
+$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
     ->setJsonPost($data)
     ->setParams(["id" => 1, "ratingId" => 5])
@@ -58,12 +58,12 @@ $response = handleRequest($request);
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_NOT_FOUND)
     ->assertJson([
-        'error' => 'UNKNOWN_SONGBOOK_RATING',
-        'message' => 'Songbook rating with given id not found.'
+        'error' => 'UNKNOWN_SONG_RATING',
+        'message' => 'Song rating with given id not found.'
     ]);
 
 //Test update rating.
-$request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
+$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
     ->setParams(["id" => 1, "ratingId" => 1])
     ->setJsonPost($data)
@@ -77,14 +77,14 @@ ResponseTester::test($response)
         "id"      => 1
     ]);
 //read updated information
-$request = RequestBuilder::target('frontend', 1, 'songbooks', 'readRating', RequestBuilder::METHOD_GET) // specify target
-    ->setHeader('X-Session-Token', $sessionToken)
+$request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
+->setHeader('X-Session-Token', $sessionToken)
     ->setParams(["id" => 1, "ratingId" => 1])
     ->create(); // create request
 
 $response = handleRequest($request);
 
-$rating = $em->getDao(SongbookRating::class)->find(1);
+$rating = $em->getDao(SongRating::class)->find(1);
 
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)

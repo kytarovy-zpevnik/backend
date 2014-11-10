@@ -3,7 +3,6 @@
 require __DIR__ . '/../../bootstrap.php';
 
 use App\Model\Entity\User;
-use App\Model\Entity\SongRating;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Routing\AuthenticationException;
 use Markatom\RestApp\Routing\AuthorizationException;
@@ -15,16 +14,10 @@ loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
 $em = $dic->getByType(EntityManager::class);
 
-$data = [
-    "comment" => "Můj upravený komentář",
-    "rating" => 3,
-];
-
-
 //Test unlogged user.
-$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-    ->setParam("ratingId", 1)
-    ->setJsonPost($data)
+
+$request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
+    ->setParams(["id" => 1, "ratingId" => 2])
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -34,10 +27,9 @@ Assert::exception(function () use ($request) {
 //Test unauthorized user
 $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
-$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-->setHeader('X-Session-Token', $sessionToken)
-    ->setJsonPost($data)
-    ->setParam("ratingId", 1)
+$request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
+    ->setHeader('X-Session-Token', $sessionToken)
+    ->setParams(["id" => 1, "ratingId" => 2])
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -47,10 +39,9 @@ Assert::exception(function () use ($request) {
 $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 //Rating doesn't exist
-$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-    ->setHeader('X-Session-Token', $sessionToken)
-    ->setJsonPost($data)
-    ->setParam("ratingId", 5)
+$request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
+->setHeader('X-Session-Token', $sessionToken)
+    ->setParams(["id" => 1, "ratingId" => 5])
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -62,38 +53,20 @@ ResponseTester::test($response)
         'message' => 'Song rating with given id not found.'
     ]);
 
-//Test update rating.
-$request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-    ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("ratingId", 1)
-    ->setJsonPost($data)
-    ->create(); // create request
-
-$response = handleRequest($request);
-
-ResponseTester::test($response)
-    ->assertHttpStatus(ResponseTester::HTTP_OK)
-    ->assertJson([
-        "id"      => 1
-    ]);
-//read updated information
+//Test read rating.
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
-->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("ratingId", 1)
+    ->setHeader('X-Session-Token', $sessionToken)
+    ->setParams(["id" => 1, "ratingId" => 1])
     ->create(); // create request
 
 $response = handleRequest($request);
-
-$rating = $em->getDao(SongRating::class)->find(1);
 
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
         "id"       => 1,
-        "comment"  => "Můj upravený komentář",
-        "rating"   => 3,
+        "comment"  => "Můj první komentář",
+        "rating"   => 5,
         "created"  => "2014-11-03 11:45:07",
-        "modified" => $rating->modified->format('Y-m-d H:i:s')
+        "modified" => "2014-11-03 11:45:07"
     ]);
-
-loadSqlDump(__DIR__ . '/../../files/dump.sql');
