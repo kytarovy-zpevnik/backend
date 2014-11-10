@@ -181,7 +181,7 @@ INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `chords`, `created`, `m
 (3,	3,	'Highway to hell',	'',	'{}',	NULL,	NULL,	NULL,	'AC-DC',	NULL,	NULL,	0,	0),
 (4,	3,	'Červená řeka',	'',	'{}',	NULL,	NULL,	NULL,	'Helenka',	NULL,	1950,	0,	0),
 (5,	3,	'Hymna',	'',	'{}',	NULL,	NULL,	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0),
-(14,	3,	'Testovací písnička',	'Ref: Lorem ipsum foo\r\nDolor sit\r\n\r\nAmet Lorem\r\nIspum dolor\r\n\r\nFoo: Sit amet\r\nLorem ipsum dolor sit amet',	'{\"3\":\"Emi\",\"24\":\"Foo\",\"49\":\"C\",\"0\":\"C\",\"13\":\"D\",\"34\":\"Em\",\"53\":\"G\",\"65\":\"D\",\"75\":\"G\",\"15\":\"A\",\"33\":\"C\"}',	NULL,	NULL,	'Super album',	'Frajer',	'Nováková',	NULL,	0,	0);
+(14,	3,	'Testovací písnička',	'((Ref)) Lorem ipsum foo\r\nDolor sit\r\n\r\nAmet Lorem\r\nIspum dolor\r\n\r\n((Foo)) Sit amet\r\nLorem ipsum dolor sit amet',	'{\"3\":\"Emi\",\"24\":\"Foo\",\"49\":\"C\",\"0\":\"C\",\"13\":\"D\",\"34\":\"Em\",\"53\":\"G\",\"65\":\"D\",\"75\":\"G\",\"15\":\"A\",\"33\":\"C\"}',	NULL,	NULL,	'Super album',	'Frajer',	'Nováková',	NULL,	0,	0);
 
 CREATE TABLE `songbook` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
