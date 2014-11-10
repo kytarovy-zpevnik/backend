@@ -309,9 +309,10 @@ CREATE TABLE `songbook_comment` (
   CONSTRAINT `FK_44E470FAA76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   CONSTRAINT `FK_44E470FAE9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-INSERT INTO `songbook_comment` (`id`, `song_id`, `comment`, `created`, `user_id`, `modified`) VALUES
-(1,	2,	'Je to super',	'2014-11-10 15:44:08',	2,	'2014-11-10 15:44:08'),
-(2,	2,	'Je to pořád super',	'2014-11-10 15:44:24',	2,	'2014-11-10 15:44:24');
+
+INSERT INTO `songbook_comment` (`id`, `songbook_id`, `comment`, `created`, `user_id`, `modified`) VALUES
+  (1,	2,	'Je to super',	'2014-11-10 15:44:08',	2,	'2014-11-10 15:44:08'),
+  (2,	2,	'Je to pořád super',	'2014-11-10 15:44:24',	2,	'2014-11-10 15:44:24');
 
 DROP TABLE IF EXISTS `songbook_rating`;
 CREATE TABLE `songbook_rating` (
@@ -437,4 +438,4 @@ INSERT INTO `wish` (`id`, `user_id`, `name`, `created`, `meet`, `note`, `modifie
   (1,	1,	'Chci Evu a Vaška',	'2014-10-18 10:43:00',	0,	'Co nejdriv',	'2014-10-18 10:43:00'),
   (2,	1,	'Chci Rudu z Ostravy',	'2014-10-18 10:45:00',	1,	'jeste driv',	'2014-10-18 10:45:00');
 
--- 2014-11-10 15:44:49
+-- 2014-11-10 17:23:49

@@ -485,7 +485,7 @@ class SongsResource extends FrontendResource {
             }
         }
 
-        if ($this->request->getQuery('usersComment', TRUE)) {
+        if ($this->request->getQuery('usersComment', FALSE)) {
             $comments = $this->em->getDao(SongComment::class)->findBy(['user' => $user, 'song' => $song]);
         }
         else {
