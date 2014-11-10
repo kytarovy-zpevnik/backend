@@ -23,7 +23,7 @@ $data = [
 
 //Test unlogged user.
 $request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
-    ->setParams(["id" => 1, "ratingId" => 1])
+    ->setParams(["id" => 1, "relationId" => 1])
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -37,7 +37,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 $request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
 ->setHeader('X-Session-Token', $sessionToken)
     ->setJsonPost($data)
-    ->setParams(["id" => 1, "ratingId" => 1])
+    ->setParams(["id" => 1, "relationId" => 1])
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
@@ -50,7 +50,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 $request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
     ->setJsonPost($data)
-    ->setParams(["id" => 1, "ratingId" => 5])
+    ->setParams(["id" => 1, "relationId" => 5])
     ->create(); // create request
 
 $response = handleRequest($request);
@@ -65,7 +65,7 @@ ResponseTester::test($response)
 //Test update rating.
 $request = RequestBuilder::target('frontend', 1, 'songs', 'updateRating', RequestBuilder::METHOD_PUT) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParams(["id" => 1, "ratingId" => 1])
+    ->setParams(["id" => 1, "relationId" => 1])
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -79,7 +79,7 @@ ResponseTester::test($response)
 //read updated information
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readRating', RequestBuilder::METHOD_GET) // specify target
 ->setHeader('X-Session-Token', $sessionToken)
-    ->setParams(["id" => 1, "ratingId" => 1])
+    ->setParams(["id" => 1, "relationId" => 1])
     ->create(); // create request
 
 $response = handleRequest($request);

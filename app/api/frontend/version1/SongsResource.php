@@ -311,13 +311,13 @@ class SongsResource extends FrontendResource {
 
     /**
      * Reads detailed information about rating.
-     * @param int $ratingId
+     * @param int $relationId
      * @return Response
      */
-    public function readRating($id, $ratingId)
+    public function readRating($id, $relationId)
     {
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->find($ratingId);
+        $rating = $this->em->getDao(SongRating::class)->find($relationId);
 
         if (!$rating) {
             return Response::json([
@@ -348,15 +348,15 @@ class SongsResource extends FrontendResource {
 
     /**
      * Updates existing song rating.
-     * @param int $ratingId
+     * @param int $relationId
      * @return Response Response with SongRating object.
      */
-    public function updateRating($id, $ratingId)
+    public function updateRating($id, $relationId)
     {
         $data = $this->request->getData();
 
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::class)->find($ratingId);
+        $rating = $this->em->getDao(SongRating::class)->find($relationId);
 
         if (!$rating) {
             return Response::json([
