@@ -273,15 +273,10 @@ class SongsResource extends FrontendResource {
                 'message' => 'Song with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
-
-        $user = null;
+        $this->assumeLoggedIn();
+        $user = $this->getActiveSession()->user;
 
         if(!$song->public) {
-
-            $this->assumeLoggedIn();
-
-            $user = $this->getActiveSession()->user;
-
             //or song is shared
             if ($user !== $song->owner){
                 throw new AuthorizationException;
