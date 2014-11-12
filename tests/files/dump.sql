@@ -70,9 +70,9 @@ CREATE TABLE `notification` (
   KEY `IDX_BF5476CAA76ED395` (`user_id`),
   KEY `IDX_BF5476CAA0BDB2F3` (`song_id`),
   KEY `IDX_BF5476CAE9EA4588` (`songbook_id`),
-  CONSTRAINT `FK_BF5476CAE9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`),
   CONSTRAINT `FK_BF5476CAA0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
-  CONSTRAINT `FK_BF5476CAA76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+  CONSTRAINT `FK_BF5476CAA76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `FK_BF5476CAE9EA4588` FOREIGN KEY (`songbook_id`) REFERENCES `songbook` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `notification` (`id`, `user_id`, `created`, `read`, `text`, `song_id`, `songbook_id`) VALUES
@@ -196,15 +196,15 @@ DROP TABLE IF EXISTS `song_comment`;
 CREATE TABLE `song_comment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `song_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` longtext COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_991F4343A0BDB2F3` (`song_id`),
   KEY `IDX_991F4343A76ED395` (`user_id`),
-  CONSTRAINT `FK_991F4343A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `FK_991F4343A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
+  CONSTRAINT `FK_991F4343A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
+  CONSTRAINT `FK_991F4343A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `song_comment` (`id`, `song_id`, `comment`, `created`, `user_id`, `modified`) VALUES
@@ -223,8 +223,8 @@ CREATE TABLE `song_rating` (
   PRIMARY KEY (`id`),
   KEY `IDX_DEF237A8A0BDB2F3` (`song_id`),
   KEY `IDX_DEF237A8A76ED395` (`user_id`),
-  CONSTRAINT `FK_DEF237A8A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `FK_DEF237A8A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
+  CONSTRAINT `FK_DEF237A8A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
+  CONSTRAINT `FK_DEF237A8A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 INSERT INTO `song_rating` (`id`, `song_id`, `comment`, `created`, `rating`, `modified`, `user_id`) VALUES
@@ -271,8 +271,8 @@ CREATE TABLE `song_tag` (
   PRIMARY KEY (`id`),
   KEY `IDX_4C49C104A0BDB2F3` (`song_id`),
   KEY `IDX_4C49C104A76ED395` (`user_id`),
-  CONSTRAINT `FK_4C49C104A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  CONSTRAINT `FK_4C49C104A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`)
+  CONSTRAINT `FK_4C49C104A0BDB2F3` FOREIGN KEY (`song_id`) REFERENCES `song` (`id`),
+  CONSTRAINT `FK_4C49C104A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
@@ -299,7 +299,7 @@ DROP TABLE IF EXISTS `songbook_comment`;
 CREATE TABLE `songbook_comment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `songbook_id` int(11) DEFAULT NULL,
-  `comment` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `comment` longtext COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
@@ -426,16 +426,16 @@ CREATE TABLE `wish` (
   `user_id` int(11) DEFAULT NULL,
   `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `created` datetime DEFAULT NULL,
-  `meet` tinyint(1) NOT NULL,
   `note` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
   `modified` datetime DEFAULT NULL,
+  `interpret` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `IDX_D7D174C9A76ED395` (`user_id`),
   CONSTRAINT `FK_D7D174C9A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO `wish` (`id`, `user_id`, `name`, `created`, `meet`, `note`, `modified`) VALUES
-  (1,	1,	'Chci Evu a Vaška',	'2014-10-18 10:43:00',	0,	'Co nejdriv',	'2014-10-18 10:43:00'),
-  (2,	1,	'Chci Rudu z Ostravy',	'2014-10-18 10:45:00',	1,	'jeste driv',	'2014-10-18 10:45:00');
+INSERT INTO `wish` (`id`, `user_id`, `name`, `created`, `note`, `modified`, `interpret`) VALUES
+  (1,	1,	'Bílá orchidej',	'2014-10-18 10:43:00',	'Co nejdriv',	'2014-10-18 10:43:00',	'Eva a Vašek'),
+  (2,	1,	'Milionář',	'2014-10-18 10:45:00',	'jeste driv',	'2014-10-18 10:45:00',	'Jaromír Nohavica');
 
--- 2014-11-10 17:23:49
+-- 2014-11-12 22:46:54

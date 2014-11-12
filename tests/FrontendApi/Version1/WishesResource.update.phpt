@@ -16,9 +16,9 @@ loadSqlDump(__DIR__ . '/../../files/dump.sql');
 $em = $dic->getByType(EntityManager::class);
 
 $data = [
-    "name" => "Chci Evu a Vaška",
-    "meet" => TRUE,
-    "note" => "Uz to mam"
+    "name" => "Dole v dole",
+    "interpret" => "Kabát",
+    "note" => "hustý"
 ];
 
 
@@ -93,9 +93,9 @@ ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
         "id"      => 1,
-        "name"    => "Chci Evu a Vaška",
-        "note" => "Uz to mam",
-        "meet"    => TRUE,
+        "name"    => "Dole v dole",
+        "interpret" => "Kabát",
+        "note" => "hustý",
         "created" => "2014-10-18 10:43:00",
         "modified" => $wish->modified->format('Y-m-d H:i:s')
     ]);

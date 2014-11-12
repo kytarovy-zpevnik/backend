@@ -66,9 +66,9 @@ ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)
     ->assertJson([
         "id"      => 1,
-        "name"    => "Chci Evu a Vaška",
+        "name"    => "Bílá orchidej",
+        "interpret" => "Eva a Vašek",
         "note"    => "Co nejdriv",
-        "meet"    => FALSE,
         "created" => "2014-10-18 10:43:00",
         "modified" => "2014-10-18 10:43:00"
     ]);

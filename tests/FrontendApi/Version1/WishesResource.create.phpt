@@ -15,7 +15,9 @@ $em = $dic->getByType(EntityManager::class);
 
 //Test unlogged user.
 $data = [
-    "wish" => "Chci Evu a Vaška"
+    "name" => "Evy a Vaška hip hopová taška",
+    "interpret" => "Eva a Vašek",
+    "note" => "Dochází mi nápady"
 ];
 
 $request = RequestBuilder::target('frontend', 1, 'wishes', 'create', RequestBuilder::METHOD_POST) // specify target
@@ -29,8 +31,9 @@ Assert::exception(function () use ($request) {
 
 //Test created wish.
 $data = [
-    "name" => "Chci Evu a Vaška",
-    "note" => "moc se těším"
+    "name" => "Evy a Vaška hip hopová taška",
+    "interpret" => "Eva a Vašek",
+    "note" => "Dochází mi nápady"
 ];
 
 $sessionToken = logUserIn($em->getDao(User::class)->find(1));

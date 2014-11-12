@@ -12,10 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $name
- * * @property string $note
- * @property bool $meet
+ * @property string $interpret
+ * @property string $note
  * @property DateTime $created
- * * @property DateTime $modified
+ * @property DateTime $modified
  * @property User $user
  *
  * Wish entity.
@@ -35,15 +35,15 @@ class Wish extends BaseEntity
 
     /**
      * @var string
+     * @ORM\Column(type="string")
+     */
+    protected $interpret;
+
+    /**
+     * @var string
      * @ORM\Column(type="string", nullable=true)
      */
     protected $note;
-
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $meet;
 
     /**
      * @var DateTime

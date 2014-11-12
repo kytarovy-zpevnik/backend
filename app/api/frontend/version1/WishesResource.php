@@ -46,10 +46,10 @@ class WishesResource extends FrontendResource
 
         $wish->name = $data['name'];
         $wish->note = $data['note'];
+        $wish->interpret = $data['interpret'];
         $wish->user = $this->getActiveSession()->user;
         $wish->created = new DateTime();
-        $wish->modified = new DateTime();
-        $wish->meet = FALSE;
+        $wish->modified = $wish->created;
 
         $this->em->persist($wish);
         $this->em->flush();
@@ -75,8 +75,8 @@ class WishesResource extends FrontendResource
             return [
                 'id' => $wish->id,
                 'name' => $wish->name,
+                'interpret' => $wish->interpret,
                 'note' => $wish->note,
-                'meet' => $wish->meet,
                 'created' => self::formatDateTime($wish->created),
                 'modified' => self::formatDateTime($wish->modified),
             ];
@@ -111,8 +111,8 @@ class WishesResource extends FrontendResource
         return Response::json([
             'id' => $wish->id,
             'name' => $wish->name,
+            'interpret' => $wish->interpret,
             'note' => $wish->note,
-            'meet' => $wish->meet,
             'created' => self::formatDateTime($wish->created),
             'modified' => self::formatDateTime($wish->modified),
         ]);
@@ -121,6 +121,7 @@ class WishesResource extends FrontendResource
     /**
      * Updates existing wish.
      * @param int $id
+     * @return Response
      */
     public function update($id)
     {
@@ -144,7 +145,7 @@ class WishesResource extends FrontendResource
 
         $wish->name = $data['name'];
         $wish->note = $data['note'];
-        $wish->meet = $data['meet'];
+        $wish->interpret = $data['interpret'];
         $wish->modified = new DateTime();
 
         $this->em->flush();
