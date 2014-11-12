@@ -322,9 +322,8 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        $this->assumeLoggedIn();
         if(!$rating->song->public) {
-
-            $this->assumeLoggedIn();
 
             //or song is shared
             if ($this->getActiveSession()->user !== $rating->song->owner){
@@ -466,14 +465,10 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        $user = null;
+        $this->assumeLoggedIn();
+        $user = $this->getActiveSession()->user;
 
         if(!$song->public) {
-
-            $this->assumeLoggedIn();
-
-            $user = $this->getActiveSession()->user;
-
             //or song is shared
             if ($user !== $song->owner){
                 throw new AuthorizationException;
@@ -520,10 +515,8 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        $this->assumeLoggedIn();
         if(!$comment->song->public) {
-
-            $this->assumeLoggedIn();
-
             //or song is shared
             if ($this->getActiveSession()->user !== $comment->song->owner){
                 throw new AuthorizationException;

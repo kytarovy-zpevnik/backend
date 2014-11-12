@@ -212,11 +212,10 @@ class SongbooksResource extends FrontendResource {
 
         $user = null;
 
+        $this->assumeLoggedIn();
+        $user = $this->getActiveSession()->user;
+
         if(!$songbook->public) {
-
-            $this->assumeLoggedIn();
-
-            $user = $this->getActiveSession()->user;
             //or songbook is shared
             if ($user !== $songbook->owner){
                 throw new AuthorizationException;
@@ -263,9 +262,9 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if(!$rating->songbook->public) {
+        $this->assumeLoggedIn();
 
-            $this->assumeLoggedIn();
+        if(!$rating->songbook->public) {
 
             //or songbook is shared
             if ($this->getActiveSession()->user !== $rating->songbook->owner){
@@ -406,14 +405,10 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        $user = null;
+        $this->assumeLoggedIn();
+        $user = $this->getActiveSession()->user;
 
         if(!$songbook->public) {
-
-            $this->assumeLoggedIn();
-
-            $user = $this->getActiveSession()->user;
-
             //or songbook is shared
             if ($user !== $songbook->owner){
                 throw new AuthorizationException;
@@ -459,11 +454,9 @@ class SongbooksResource extends FrontendResource {
                 'message' => 'Songbook comment with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
+        $this->assumeLoggedIn();
 
         if(!$comment->songbook->public) {
-
-            $this->assumeLoggedIn();
-
             //or songbook is shared
             if ($this->getActiveSession()->user !== $comment->songbook->owner){
                 throw new AuthorizationException;
