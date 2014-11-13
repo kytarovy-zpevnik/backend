@@ -172,7 +172,7 @@ class SongbooksResource extends FrontendResource {
         }
 
         //or songbook is shared
-        if (($this->getActiveSession()->user !== $songbook->owner) && (!$songbook->public)){
+        if (($this->getActiveSession()->user == $songbook->owner) || (!$songbook->public)){
             throw new AuthorizationException;
         }
 

@@ -22,7 +22,7 @@ $data = [
 //Test unlogged user.
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
-    ->setParam("id", 2)
+    ->setParam("id", 7)
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -31,13 +31,13 @@ Assert::exception(function () use ($request) {
 }, AuthenticationException::class);
 
 
-//Test unauthorized user and private song.
+//Test user's and private song.
 
 $sessionToken = logUserIn($em->getDao(User::class)->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("id", 7)
     ->setJsonPost($data)
     ->create(); // create request
 
@@ -45,7 +45,7 @@ Assert::exception(function () use ($request) {
     handleRequest($request);
 }, AuthorizationException::class);
 
-//songbook doesn't exist
+//song doesn't exist
 
 $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
@@ -69,7 +69,7 @@ $sessionToken = logUserIn($em->getDao(User::class)->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
-    ->setParam("id", 2)
+    ->setParam("id", 7)
     ->setJsonPost($data)
     ->create(); // create request
 

@@ -255,7 +255,7 @@ class SongsResource extends FrontendResource {
         }
 
         //or song is shared
-        if (($this->getActiveSession()->user !== $song->owner) && (!$song->public)){
+        if (($this->getActiveSession()->user == $song->owner) || (!$song->public)){
             throw new AuthorizationException;
         }
 

@@ -190,7 +190,8 @@ INSERT INTO `song` (`id`, `owner_id`, `title`, `lyrics`, `album`, `author`, `ori
   (3,	2,	'Highway to hell',	'',	NULL,	'AC-DC',	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	''),
   (4,	NULL,	'Červená řeka',	'',	NULL,	'Helenka',	NULL,	1950,	0,	0,	NULL,	NULL,	'',	''),
   (5,	2,	'Hymna',	'',	'České songy',	'Miloš Zeman',	'Josef Kajetán Tyl',	2014,	0,	0,	NULL,	NULL,	'',	'Lorem ipsum'),
-  (6,	NULL,	'efqnfi',	'',	NULL,	NULL,	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	'');
+  (6,	NULL,	'efqnfi',	'',	NULL,	NULL,	NULL,	NULL,	0,	0,	NULL,	NULL,	'',	''),
+  (7,	1,	'supersong',	'',	'nejlepší songy',	NULL,	NULL,	2005,	0,	1,	NULL,	NULL,	'',	'');
 
 DROP TABLE IF EXISTS `song_comment`;
 CREATE TABLE `song_comment` (
@@ -293,7 +294,8 @@ CREATE TABLE `songbook` (
 
 INSERT INTO `songbook` (`id`, `owner_id`, `name`, `archived`, `public`, `created`, `modified`, `note`) VALUES
   (1,	2,	'Muj zpěvník na vodu',	0,	1,	'2014-10-20 10:41:00',	'2014-10-20 10:41:00',	'Tohle je nářez'),
-  (2,	2,	'Mé nejoblíbenější',	0,	0,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02',	'pohoda');
+  (2,	2,	'Mé nejoblíbenější',	0,	0,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02',	'pohoda'),
+  (3,	1,	'Mé nejoblíbenější',	0,	1,	'2014-10-20 10:42:01',	'2014-10-20 10:42:02',	'pohoda');
 
 DROP TABLE IF EXISTS `songbook_comment`;
 CREATE TABLE `songbook_comment` (
