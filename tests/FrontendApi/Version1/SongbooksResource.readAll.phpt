@@ -34,11 +34,13 @@ ResponseTester::test($response)
         [
             "id"    => 2,
             "name"  => "Mé nejoblíbenější",
-            "note"  => "pohoda"
+            "note"  => "pohoda",
+            "username" => "Franta"
         ],
         [
             "id"    => 1,
             "name"  => "Muj zpěvník na vodu",
-            "note"  => "Tohle je nářez"
+            "note"  => "Tohle je nářez",
+            "username" => "Franta"
         ]
     ]);

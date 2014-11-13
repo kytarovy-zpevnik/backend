@@ -88,7 +88,8 @@ class SongbooksResource extends FrontendResource {
                 'author'         => $song->author,
                 'originalAuthor' => $song->originalAuthor,
                 'year'           => $song->year,
-                'public'         => $song->public
+                'public'         => $song->public,
+                'username'       => $song->owner->username
             ];
         }, $songbook->songs);
 
@@ -97,7 +98,8 @@ class SongbooksResource extends FrontendResource {
             'name'   => $songbook->name,
             'note'   => $songbook->note,
             'songs'  => $songs,
-            'public' => $songbook->public
+            'public' => $songbook->public,
+            'username' => $songbook->owner->username
         ]);
     }
 
@@ -124,7 +126,8 @@ class SongbooksResource extends FrontendResource {
             return [
                 'id'    => $songbook->id,
                 'name'  => $songbook->name,
-                'note'  => $songbook->note
+                'note'  => $songbook->note,
+                'username' => $songbook->owner->username
             ];
         }, $songbooks);
 

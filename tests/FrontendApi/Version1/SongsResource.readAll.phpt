@@ -39,7 +39,8 @@ ResponseTester::test($response)
 			"originalAuthor" => NULL,
 			"year" => NULL,
 			"note" => "",
-            "public" => false
+            "public" => false,
+            "username" => "Franta"
 		],
 		[
 			"id"        => 5,
@@ -49,7 +50,8 @@ ResponseTester::test($response)
 			"originalAuthor" => "Josef Kajetán Tyl",
 			"year" => 2014,
 			"note" => "Lorem ipsum",
-            "public" => false
+            "public" => false,
+            "username" => "Franta"
 		],
         [
             "id"        => 2,
@@ -59,6 +61,7 @@ ResponseTester::test($response)
             "originalAuthor" => NULL,
             "year" => 2005,
 			"note" => "",
-            "public" => false
+            "public" => false,
+            "username" => "Franta"
         ]
     ]);

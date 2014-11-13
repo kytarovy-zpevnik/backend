@@ -195,7 +195,8 @@ class SongsResource extends FrontendResource {
 			'chords'         => $song->chords,
             'note'           => $song->note,
             'public'         => $song->public,
-			'songbooks'      => $songbooks
+			'songbooks'      => $songbooks,
+            'username'          => $song->owner->username
 		]);
 	}
 
@@ -227,7 +228,8 @@ class SongsResource extends FrontendResource {
                 'originalAuthor'  => $song->originalAuthor,
                 'year'            => $song->year,
                 'note'            => $song->note,
-                'public'          => $song->public
+                'public'          => $song->public,
+                'username'          => $song->owner->username
             ];
         }, $songs);
 
