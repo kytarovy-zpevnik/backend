@@ -6,6 +6,8 @@ use App\Model\Entity\Song;
 use App\Model\Entity\SongRating;
 use App\Model\Entity\Songbook;
 use App\Model\Entity\SongComment;
+use App\Model\Entity\Wish;
+use App\Model\Entity\Notification;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -58,7 +60,6 @@ class SongsResource extends FrontendResource {
 			$song->addSongbook($songbook);
 		}
 
-
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
 		$song->author         = $data['author'];
@@ -73,6 +74,24 @@ class SongsResource extends FrontendResource {
         $song->modified       = $song->created;
 
 		$this->em->persist($song);
+
+
+        if ($song->public) {
+            /** @var Wish[] $wishes */
+            $wishes = $this->em->getDao(Wish::class)->findBy(['name' => $song->title, 'interpret' => $song->author]);
+            foreach ($wishes as $wish) {
+                if ($wish->user != $song->owner) {
+                    $notification = new Notification();
+                    $notification->user = $wish->user;
+                    $notification->created = new DateTime();
+                    $notification->read = false;
+                    $notification->song = $song;
+                    $notification->text = "Píseň, která by se Vám mohla líbit.";
+                    $this->em->persist($notification);
+                }
+            }
+        }
+
 		$this->em->flush();
 
 		return Response::json([
