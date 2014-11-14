@@ -113,7 +113,7 @@ class SongbooksResource extends FrontendResource {
 
 		if ($search = $this->request->getQuery('search')) {
 			$songbooks = $this->em->getDao(Songbook::class)
-				->fetch(new SongbookSearchQuery($search))
+				->fetch(new SongbookSearchQuery($this->getActiveSession()->user, $search))
 				->getIterator()
 				->getArrayCopy();
 

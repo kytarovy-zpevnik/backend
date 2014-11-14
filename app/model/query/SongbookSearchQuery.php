@@ -3,6 +3,7 @@
 namespace App\Model\Query;
 
 use App\Model\Entity\Songbook;
+use App\Model\Entity\User;
 use Kdyby\Doctrine\QueryBuilder;
 use Kdyby\Doctrine\QueryObject;
 use Kdyby\Persistence\Queryable;
@@ -14,15 +15,20 @@ use Kdyby\Persistence\Queryable;
 class SongbookSearchQuery extends QueryObject
 {
 
+	/** @var User */
+	private $user;
+
 	/** @var string */
 	private $search;
 
 	/**
+	 * @param User $user
 	 * @param string $search
 	 */
-	public function __construct($search)
+	public function __construct(User $user, $search)
 	{
-	    $this->search = $search;
+		$this->user   = $user;
+		$this->search = $search;
 	}
 
 	/**
@@ -34,7 +40,9 @@ class SongbookSearchQuery extends QueryObject
 		return $repository->createQueryBuilder()
 			->select('s')
 			->from(Songbook::class, 's')
-			->orWhere('s.name LIKE :query')
+			->andWhere('s.owner = :owner')
+			->andWhere('s.name LIKE :query')
+			->setParameter('owner', $this->user)
 			->setParameter('query', "%$this->search%")
 			->orderBy('s.name');
 	}
