@@ -166,6 +166,7 @@ class Song extends BaseEntity
 	public function __construct()
 	{
 	    $this->songbooks = new ArrayCollection();
+        $this->tags = new ArrayCollection();
 	}
 
 	/**
@@ -176,4 +177,11 @@ class Song extends BaseEntity
 		$this->songbooks->clear();
 	}
 
+    /**
+     * Removes all tags.
+     */
+    public function clearTags()
+    {
+        $this->tags->clear();
+    }
 }

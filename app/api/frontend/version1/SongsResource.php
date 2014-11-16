@@ -8,6 +8,7 @@ use App\Model\Entity\Songbook;
 use App\Model\Entity\SongComment;
 use App\Model\Entity\Wish;
 use App\Model\Entity\Notification;
+use App\Model\Entity\SongTag;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -48,7 +49,7 @@ class SongsResource extends FrontendResource {
 
 		$data = $this->request->getData();
 
-		$song = new Song;
+		$song = new Song();
 
 		$ids = array_map(function ($songbook) {
 			return $songbook['id'];
@@ -59,6 +60,18 @@ class SongsResource extends FrontendResource {
 		foreach ($songbooks as $songbook) {
 			$song->addSongbook($songbook);
 		}
+
+        $tags = array_map(function ($tag) {
+            return $tag['tag'];
+        }, $data['tags']);
+
+        foreach ($tags as $tag) {
+            $_tag = new SongTag();
+            $_tag->tag = $tag;
+            $_tag->song = $song;
+            $song->addTag($_tag);
+            $this->em->persist($_tag);
+        }
 
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
@@ -136,6 +149,23 @@ class SongsResource extends FrontendResource {
 			$song->addSongbook($songbook);
 		}
 
+        $tags = array_map(function ($tag) {
+            return $tag['tag'];
+        }, $data['tags']);
+
+
+        foreach ($song->tags as $tag) {
+            $this->em->remove($tag);
+        }
+        $song->clearTags();
+        foreach ($tags as $tag) {
+            $_tag = new SongTag();
+            $_tag->tag = $tag;
+            $_tag->song = $song;
+            $song->addTag($_tag);
+            $this->em->persist($_tag);
+        }
+
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
 		$song->author         = $data['author'];
@@ -184,19 +214,26 @@ class SongsResource extends FrontendResource {
 			];
 		}, $song->songbooks);
 
+        $tags = array_map(function (SongTag $tag) {
+            return [
+                'tag' => $tag->tag
+            ];
+        }, $song->tags);
+
 		return Response::json([
-			'id'             => $song->id,
-			'title'          => $song->title,
-			'album'          => $song->album,
-			'author'         => $song->author,
-			'originalAuthor' => $song->originalAuthor,
-			'year'           => $song->year,
-			'lyrics'         => $song->lyrics,
-			'chords'         => $song->chords,
+            'id'             => $song->id,
+            'title'          => $song->title,
+            'album'          => $song->album,
+            'author'         => $song->author,
+            'originalAuthor' => $song->originalAuthor,
+            'year'           => $song->year,
+            'lyrics'         => $song->lyrics,
+            'chords'         => $song->chords,
             'note'           => $song->note,
             'public'         => $song->public,
 			'songbooks'      => $songbooks,
-            'username'          => $song->owner->username
+            'username'       => $song->owner->username,
+            'tags'           => $tags
 		]);
 	}
 
