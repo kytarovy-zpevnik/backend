@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use DateTime;
 use Kdyby\Doctrine\Entities\Attributes\Identifier;
 use Kdyby\Doctrine\Entities\BaseEntity;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -112,4 +113,17 @@ class Songbook extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookTag", mappedBy="songbook")
      */
     protected $tags;
+
+    public function __construct()
+    {
+        $this->tags = new ArrayCollection();
+    }
+
+    /**
+     * Removes all tags.
+     */
+    public function clearTags()
+    {
+        $this->tags->clear();
+    }
 }

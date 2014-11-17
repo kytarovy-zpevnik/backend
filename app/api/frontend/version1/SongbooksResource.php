@@ -7,6 +7,7 @@ use App\Model\Entity\Song;
 use App\Model\Entity\Songbook;
 use App\Model\Entity\SongbookRating;
 use App\Model\Entity\SongbookComment;
+use App\Model\Entity\SongbookTag;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -38,6 +39,18 @@ class SongbooksResource extends FrontendResource {
 
         /** @var Songbook */
         $songbook = new Songbook();
+
+        $tags = array_map(function ($tag) {
+            return $tag['tag'];
+        }, $data['tags']);
+
+        foreach ($tags as $tag) {
+            $_tag = new SongbookTag();
+            $_tag->tag = $tag;
+            $_tag->songbook = $songbook;
+            $songbook->addTag($_tag);
+            $this->em->persist($_tag);
+        }
 
         $songbook->name = $data['name'];
         $songbook->created = new DateTime();
@@ -80,6 +93,12 @@ class SongbooksResource extends FrontendResource {
             }
         }
 
+        $tags = array_map(function (SongbookTag $tag) {
+            return [
+                'tag' => $tag->tag
+            ];
+        }, $songbook->tags);
+
         $songs = array_map(function (Song $song){
             return [
                 'id'             => $song->id,
@@ -94,12 +113,13 @@ class SongbooksResource extends FrontendResource {
         }, $songbook->songs);
 
         return Response::json([
-            'id'     => $songbook->id,
-            'name'   => $songbook->name,
-            'note'   => $songbook->note,
-            'songs'  => $songs,
-            'public' => $songbook->public,
-            'username' => $songbook->owner->username
+            'id'       => $songbook->id,
+            'name'     => $songbook->name,
+            'note'     => $songbook->note,
+            'songs'    => $songs,
+            'public'   => $songbook->public,
+            'username' => $songbook->owner->username,
+            'tags'     => $tags
         ]);
     }
 
@@ -144,6 +164,22 @@ class SongbooksResource extends FrontendResource {
 
         /** @var Songbook */
         $songbook = $this->em->getDao(Songbook::class)->find($id);
+
+        $tags = array_map(function ($tag) {
+            return $tag['tag'];
+        }, $data['tags']);
+
+        foreach ($songbook->tags as $tag) {
+            $this->em->remove($tag);
+        }
+        $songbook->clearTags();
+        foreach ($tags as $tag) {
+            $_tag = new SongbookTag();
+            $_tag->tag = $tag;
+            $_tag->songbook = $songbook;
+            $songbook->addTag($_tag);
+            $this->em->persist($_tag);
+        }
 
         $songbook->name = $data['name'];
         $songbook->note = $data['note'];
