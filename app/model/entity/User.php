@@ -88,34 +88,22 @@ class User extends BaseEntity
     protected $songs;
 
     /**
-     * @var Song[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Song", mappedBy="viewers")
+     * @var SongSharing[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongSharing", mappedBy="user")
      */
-    protected $sharedNotEditableSongs;
+    protected $sharedSongs;
 
     /**
-     * @var Song[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Song", mappedBy="editors")
-     */
-    protected $sharedEditableSongs;
-
-    /**
-     * @var Songbook[]$sharedNotEditableSongs
+     * @var Songbook[]
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="owner")
      */
     protected $songbooks;
 
     /**
-     * @var Songbook[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="viewers")
+     * @var SongbookSharing[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookSharing", mappedBy="user")
      */
-    protected $sharedNotEditableSongbooks;
-
-    /**
-     * @var Songbook[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="editors")
-     */
-    protected $sharedEditableSongbooks;
+    protected $sharedSongbooks;
 
     /**
      * @var Wish[]

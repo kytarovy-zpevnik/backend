@@ -77,18 +77,10 @@ class Songbook extends BaseEntity
     protected $owner;
 
     /**
-     * @var User[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\User", inversedBy="sharedNotEditableSongbooks")
-     * @ORM\JoinTable(name="viewers_songbooks")
+     * @var SongbookSharing[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookSharing", mappedBy="songbook")
      */
-    protected $viewers;
-
-    /**
-     * @var User[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\User", inversedBy="sharedEditableSongbooks")
-     * @ORM\JoinTable(name="editors_songbooks")
-     */
-    protected $editors;
+    protected $songbookShares;
 
     /**
      * @var Song[]
