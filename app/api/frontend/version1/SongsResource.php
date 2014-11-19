@@ -11,6 +11,7 @@ use App\Model\Entity\Notification;
 use App\Model\Entity\SongTag;
 use App\Model\Query\SongAdvSearchQuery;
 use App\Model\Query\SongSearchQuery;
+use App\Model\Query\SongPublicSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
@@ -252,7 +253,14 @@ class SongsResource extends FrontendResource {
 				->getIterator()
 				->getArrayCopy();
 
-		} else if (count($this->request->getQuery()) > 0) {
+		}
+        else if ($search = $this->request->getQuery('searchPublic')) {
+            $songs = $this->em->getDao(Song::class)
+                ->fetch(new SongPublicSearchQuery($search))
+                ->getIterator()
+                ->getArrayCopy();
+        }
+        else if (count($this->request->getQuery()) > 0) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
             $author = $this->request->getQuery('author');
