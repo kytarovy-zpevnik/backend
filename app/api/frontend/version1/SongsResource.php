@@ -9,6 +9,7 @@ use App\Model\Entity\SongComment;
 use App\Model\Entity\Wish;
 use App\Model\Entity\Notification;
 use App\Model\Entity\SongTag;
+use App\Model\Query\SongAdvSearchQuery;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -251,7 +252,17 @@ class SongsResource extends FrontendResource {
 				->getIterator()
 				->getArrayCopy();
 
-		} else {
+		} else if (count($this->request->getQuery()) > 0) {
+            $title  = $this->request->getQuery('title');
+            $album  = $this->request->getQuery('album');
+            $author = $this->request->getQuery('author');
+            $tag    = $this->request->getQuery('tag');
+            $songs  = $this->em->getDao(Song::class)
+                ->fetch(new SongAdvSearchQuery($this->getActiveSession()->user, $title, $album, $author, $tag))
+                ->getIterator()
+                ->getArrayCopy();
+
+        } else {
 			$songs = $this->em->getDao(Song::class)
 				->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
 		}
