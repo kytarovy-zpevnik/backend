@@ -666,7 +666,7 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         $user = $this->getActiveSession()->user;
-        if (($user !== $comment->user) && ($user->role !== 'admin')){
+        if (($user !== $comment->user) && ($user->role->slug !== 'admin')){
             throw new AuthorizationException;
         }
 
