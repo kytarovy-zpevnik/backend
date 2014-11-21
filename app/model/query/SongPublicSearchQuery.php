@@ -37,6 +37,7 @@ class SongPublicSearchQuery extends QueryObject
             ->orWhere('s.title LIKE :query')
             ->orWhere('s.author LIKE :query')
             ->orWhere('s.originalAuthor LIKE :query')
+            ->andWhere('s.public = 1')
 			->setParameter('query', "%$this->search%")
 			->orderBy('s.title');
 	}
