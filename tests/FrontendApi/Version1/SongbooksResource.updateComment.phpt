@@ -22,7 +22,7 @@ $data = [
 
 //Test unlogged user.
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateComment', RequestBuilder::METHOD_PUT) // specify target
-->setParams(["id" => 1, "relationId" => 1])
+    ->setParams(["id" => 1, "relationId" => 1])
     ->setJsonPost($data)
     ->create(); // create request
 

@@ -644,4 +644,37 @@ class SongsResource extends FrontendResource {
         ]);
     }
 
+    /**
+     * Deletes existing song comment.
+     * @param int $relationId
+     * @return Response blank.
+     */
+    public function deleteComment($id, $relationId)
+    {
+        $data = $this->request->getData();
+
+        /** @var SongComment $comment */
+        $comment = $this->em->getDao(SongComment::class)->find($relationId);
+
+        if (!$comment) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG_COMMENT',
+                'message' => 'Song comment with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+        if (($user !== $comment->user) && ($user->role !== 'admin')){
+            throw new AuthorizationException;
+        }
+
+        $this->em->remove($comment);
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
 }

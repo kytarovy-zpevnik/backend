@@ -546,4 +546,37 @@ class SongbooksResource extends FrontendResource {
         ]);
     }
 
+    /**
+     * Deletes existing songbook comment.
+     * @param int $relationId
+     * @return Response blank.
+     */
+    public function deleteComment($id, $relationId)
+    {
+        $data = $this->request->getData();
+
+        /** @var SongbookComment $comment */
+        $comment = $this->em->getDao(SongbookComment::class)->find($relationId);
+
+        if (!$comment) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK_COMMENT',
+                'message' => 'Songbook comment with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+        if (($user !== $comment->user) && ($user->role !== 'admin')){
+            throw new AuthorizationException;
+        }
+
+        $this->em->remove($comment);
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
 } 
