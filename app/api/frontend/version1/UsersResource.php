@@ -71,11 +71,29 @@ class UsersResource extends FrontendResource
 	}
 
 	/**
-     * Read all users.
-	 * @return Response Response with array of User objects.
+     * If username is set, read user by username. Else read all users.
+	 * @return Response Response with User object or with array of User objects.
 	 */
 	public function readAll()
 	{
+        $this->assumeLoggedIn();
+
+        $userName = $this->request->getQuery('username');
+
+        if($userName){
+            $user = $this->em->getDao(User::class)->findOneBy(['username' => $userName]);
+
+            if (!$user) {
+                return response::json([
+                    'error'   => 'UNKNOWN_IDENTIFIER',
+                    'message' => 'No user account with given username found.'
+                ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+            }
+
+            return Response::json($this->mapEntity($user));
+        }
+
+
 		$this->assumeAdmin(); // only admin can list all users
 
 		$users = $this->em->getDao(User::class)->findAll();
@@ -146,5 +164,4 @@ class UsersResource extends FrontendResource
 			]
 		];
 	}
-
 }

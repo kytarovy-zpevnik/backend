@@ -6,6 +6,8 @@ use App\Model\Entity\Song;
 use App\Model\Entity\SongRating;
 use App\Model\Entity\Songbook;
 use App\Model\Entity\SongComment;
+use App\Model\Entity\SongSharing;
+use App\Model\Entity\User;
 use App\Model\Entity\Wish;
 use App\Model\Entity\Notification;
 use App\Model\Entity\SongTag;
@@ -675,6 +677,65 @@ class SongsResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Creates song sharing by song id.
+     * @param int $id
+     * @return Response Response with SongSharing object.
+     */
+    public function createSharing($id)
+    {
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::class)->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $data = $this->request->getData();
+
+        $user = $this->em->getDao(User::class)->find($data['user']);
+
+        if (!$user) {
+            return Response::json([
+                'error' => 'UNKNOWN_USER',
+                'message' => 'User with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::class)->findBy(['user' => $user])){
+            return Response::json([
+                'error' => 'DUPLICATE_SHARING',
+                'message' => 'Song already shared with this user.'
+            ])->setHttpStatus(Response::HTTP_CONFLICT);
+        }
+
+        $sharing = new SongSharing();
+
+        $sharing->song = $song;
+        $sharing->user = $user;
+        $sharing->editable = $data['editable'];
+
+        $this->em->persist($sharing);
+
+        $notification = new Notification();
+        $notification->user = $user;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->song = $song;
+        $notification->text = "Uživatel s vámi sdílel píseň.";
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $sharing->id
+        ]);
     }
 
 }
