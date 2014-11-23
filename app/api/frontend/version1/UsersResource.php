@@ -6,6 +6,8 @@ use App\DuplicateEmailException;
 use App\DuplicateUsernameException;
 use App\Model\Entity\PasswordReset;
 use App\Model\Entity\Role;
+use App\Model\Entity\SongbookSharing;
+use App\Model\Entity\SongSharing;
 use App\Model\Entity\User;
 use App\Model\Service\SessionService;
 use App\Model\Service\UserService;
@@ -164,4 +166,54 @@ class UsersResource extends FrontendResource
 			]
 		];
 	}
+
+    /**
+     * Reads all songbooks or songs shared with user.
+     * @param int $id
+     * @return Response Response with Songbook[] or Song[] object
+     */
+    public function readAllSharing($id)
+    {
+
+        $this->assumeLoggedIn();
+        $user = $this->em->getDao(User::class)->find($id);
+
+        $subject = $this->request->getQuery('subject');
+
+        if($subject == 'songbook'){
+            $sharings = $this->em->getDao(SongbookSharing::class)->findBy(['user' => $user]);
+
+            $songbooks = array_map(function (SongbookSharing $sharing){
+                return [
+                    'id'    => $sharing->songbook->id,
+                    'name'  => $sharing->songbook->name,
+                    'note'  => $sharing->songbook->note,
+                    'public' => $sharing->songbook->public,
+                    'username' => $sharing->songbook->owner->username
+                ];
+            }, $sharings);
+
+            return response::json($songbooks);
+        }
+        else{
+            $sharings = $this->em->getDao(SongSharing::class)->findBy(['user' => $user]);
+
+            $songs = array_map(function (SongSharing $sharing){
+                return [
+                    'id'              => $sharing->song->id,
+                    'title'           => $sharing->song->title,
+                    'album'           => $sharing->song->album,
+                    'author'          => $sharing->song->author,
+                    'originalAuthor'  => $sharing->song->originalAuthor,
+                    'year'            => $sharing->song->year,
+                    'note'            => $sharing->song->note,
+                    'public'          => $sharing->song->public,
+                    'username'          => $sharing->song->owner->username
+                ];
+            }, $sharings);
+
+            return response::json($songs);
+        }
+
+    }
 }
