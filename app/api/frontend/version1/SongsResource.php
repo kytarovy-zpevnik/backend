@@ -282,6 +282,11 @@ class SongsResource extends FrontendResource {
 		}
 
         $songs = array_map(function (Song $song){
+
+            $tags = array_map(function(SongTag $tag){
+                return ['tag' => $tag->tag];
+            }, $song->tags);
+
             return [
                 'id'              => $song->id,
                 'title'           => $song->title,
@@ -291,7 +296,8 @@ class SongsResource extends FrontendResource {
                 'year'            => $song->year,
                 'note'            => $song->note,
                 'public'          => $song->public,
-                'username'          => $song->owner->username
+                'username'        => $song->owner->username,
+                'tags'            => $tags
             ];
         }, $songs);
 
