@@ -3,11 +3,14 @@
 namespace FrontendApi\Version1;
 
 
+use App\Model\Entity\Notification;
 use App\Model\Entity\Song;
 use App\Model\Entity\Songbook;
 use App\Model\Entity\SongbookRating;
 use App\Model\Entity\SongbookComment;
+use App\Model\Entity\SongbookSharing;
 use App\Model\Entity\SongbookTag;
+use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
@@ -88,7 +91,8 @@ class SongbooksResource extends FrontendResource {
         if(!$songbook->public){
             $this->assumeLoggedIn();
 
-            if($this->getActiveSession()->user !== $songbook->owner){
+            if($this->getActiveSession()->user !== $songbook->owner
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'songbook' => $songbook])){
                 throw new AuthorizationException;
             }
         }
@@ -577,6 +581,65 @@ class SongbooksResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Creates songbook sharing by songbook id.
+     * @param int $id
+     * @return Response Response with SongbookSharing object.
+     */
+    public function createSharing($id)
+    {
+        $this->assumeLoggedIn();
+
+        $songbook = $this->em->getDao(Songbook::class)->find($id);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $data = $this->request->getData();
+
+        $user = $this->em->getDao(User::class)->find($data['user']);
+
+        if (!$user) {
+            return Response::json([
+                'error' => 'UNKNOWN_USER',
+                'message' => 'User with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongbookSharing::class)->findBy(['user' => $user, 'songbook' => $songbook])){
+            return Response::json([
+                'error' => 'DUPLICATE_SHARING',
+                'message' => 'Songbook already shared with this user.'
+            ])->setHttpStatus(Response::HTTP_CONFLICT);
+        }
+
+        $sharing = new SongbookSharing();
+
+        $sharing->songbook = $songbook;
+        $sharing->user = $user;
+        $sharing->editable = $data['editable'];
+
+        $this->em->persist($sharing);
+
+        $notification = new Notification();
+        $notification->user = $user;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->songbook = $songbook;
+        $notification->text = "Uživatel s vámi sdílel zpěvník.";
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $sharing->id
+        ]);
     }
 
 } 

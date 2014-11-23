@@ -205,7 +205,8 @@ class SongsResource extends FrontendResource {
 		if (!$song->public) {
 			$this->assumeLoggedIn();
 
-			if ($this->getActiveSession()->user !== $song->owner) {
+			if ($this->getActiveSession()->user !== $song->owner
+                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
 				throw new AuthorizationException;
 			}
 		}
@@ -708,7 +709,7 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::class)->findBy(['user' => $user])){
+        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::class)->findBy(['user' => $user, 'song' => $song])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
                 'message' => 'Song already shared with this user.'
