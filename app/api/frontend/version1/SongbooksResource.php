@@ -211,8 +211,9 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        //or songbook is shared
-        if (($this->getActiveSession()->user == $songbook->owner) || (!$songbook->public)){
+
+        if (($this->getActiveSession()->user == $songbook->owner) || (!$songbook->public
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'songbook' => $songbook]))){
             throw new AuthorizationException;
         }
 
@@ -259,8 +260,9 @@ class SongbooksResource extends FrontendResource {
         $user = $this->getActiveSession()->user;
 
         if(!$songbook->public) {
-            //or songbook is shared
-            if ($user !== $songbook->owner){
+
+            if ($user !== $songbook->owner
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $user, 'songbook' => $songbook])){
                 throw new AuthorizationException;
             }
         }
@@ -309,8 +311,9 @@ class SongbooksResource extends FrontendResource {
 
         if(!$rating->songbook->public) {
 
-            //or songbook is shared
-            if ($this->getActiveSession()->user !== $rating->songbook->owner){
+
+            if ($this->getActiveSession()->user !== $rating->songbook->owner
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'songbook' => $rating->songbook])){
                 throw new AuthorizationException;
             }
         }
@@ -409,8 +412,9 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        //or songbook is shared
-        if (($this->getActiveSession()->user !== $songbook->owner) && (!$songbook->public)){
+
+        if (($this->getActiveSession()->user !== $songbook->owner) && (!$songbook->public)
+            && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'songbook' => $songbook])){
             throw new AuthorizationException;
         }
 
@@ -452,8 +456,9 @@ class SongbooksResource extends FrontendResource {
         $user = $this->getActiveSession()->user;
 
         if(!$songbook->public) {
-            //or songbook is shared
-            if ($user !== $songbook->owner){
+
+            if ($user !== $songbook->owner
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $user, 'songbook' => $songbook])){
                 throw new AuthorizationException;
             }
         }
@@ -500,8 +505,9 @@ class SongbooksResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         if(!$comment->songbook->public) {
-            //or songbook is shared
-            if ($this->getActiveSession()->user !== $comment->songbook->owner){
+
+            if ($this->getActiveSession()->user !== $comment->songbook->owner
+                && !$this->em->getDao(SongbookSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'songbook' => $comment->songbook])){
                 throw new AuthorizationException;
             }
         }
@@ -612,6 +618,10 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        if ($this->getActiveSession()->user !== $songbook->owner){
+            throw new AuthorizationException;
+        }
+
         if ($this->getActiveSession()->user == $user || $this->em->getDao(SongbookSharing::class)->findBy(['user' => $user, 'songbook' => $songbook])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
@@ -641,5 +651,7 @@ class SongbooksResource extends FrontendResource {
             'id' => $sharing->id
         ]);
     }
+
+
 
 } 
