@@ -263,6 +263,9 @@ class SongsResource extends FrontendResource {
                 ->getIterator()
                 ->getArrayCopy();
         }
+        else if ($this->request->getQuery('searchAllPublic', FALSE)) {
+            $songs = $this->em->getDao(Song::class)->findBy(["public" => 1]);
+        }
         else if (count($this->request->getQuery()) > 0) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
