@@ -92,6 +92,18 @@ class SongsResource extends FrontendResource {
 
 		$this->em->persist($song);
 
+        if ($songFromId = $this->request->getQuery('takenFrom')) {
+            /** @var Song $songFrom */
+            $songFrom = $this->em->getDao(Song::class)->find($songFromId);
+            $userFrom = $this->em->getDao(User::class)->findOneBy(['username' => $songFrom->owner->username]);
+            $takenSongNotification = new Notification();
+            $takenSongNotification->user = $userFrom;
+            $takenSongNotification->created = new DateTime();
+            $takenSongNotification->read = false;
+            $takenSongNotification->song = $songFrom;
+            $takenSongNotification->text = 'Vaše píseň "'.$songFrom->title.'" byla převzata uživatelem "'.$this->getActiveSession()->user->username.'".';
+            $this->em->persist($takenSongNotification);
+        }
 
         if ($song->public) {
             /** @var Wish[] $wishes */
