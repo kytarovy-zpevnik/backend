@@ -11,7 +11,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -20,11 +20,11 @@ $request = RequestBuilder::target('frontend', 1, 'notifications', 'readAll', Req
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(3)); // user markatom
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(3)); // user markatom
 
 $request = RequestBuilder::target('frontend', 1, 'notifications', 'readAll', RequestBuilder::METHOD_GET)// specify target
 	->setHeader('X-Session-Token', $sessionToken)// set session token
@@ -104,7 +104,7 @@ ResponseTester::test($response)
 		],
 	]);
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2)); // user franta
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2)); // user franta
 
 $request = RequestBuilder::target('frontend', 1, 'notifications', 'readAll', RequestBuilder::METHOD_GET)// specify target
 	->setHeader('X-Session-Token', $sessionToken)// set session token

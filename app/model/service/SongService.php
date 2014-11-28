@@ -81,7 +81,7 @@ class SongService extends Object
      */
     public function getAllSongs()
     {
-        return $this->em->getDao(Song::class)->findAll();
+        return $this->em->getDao(Song::getClassName())->findAll();
     }
 
     /**
@@ -89,7 +89,7 @@ class SongService extends Object
      */
     public function getAllPublicSongs()
     {
-        return $this->em->getDao(Song::class)->findBy(["public" => true]);
+        return $this->em->getDao(Song::getClassName())->findBy(["public" => true]);
     }
 
 }

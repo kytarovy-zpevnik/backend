@@ -52,7 +52,7 @@ class SessionsResource extends FrontendResource
 		$data = $this->request->getData();
 
 		/** @var User $user */
-		$result = $this->em->getDao(User::class)
+		$result = $this->em->getDao(User::getClassName())
 			->createQueryBuilder('u') // I need to search by username OR email
 			->where('u.username = :identifier OR u.email = :identifier')
 			->setParameter('identifier', $data['user']['identifier'])
@@ -120,7 +120,7 @@ class SessionsResource extends FrontendResource
 	{
 		$token = $this->request->getHeader('x-session-token');
 
-		$session = $this->em->getDao(Session::class)->findOneBy(['token' => $token]);
+		$session = $this->em->getDao(Session::getClassName())->findOneBy(['token' => $token]);
 
 		if (!$session) {
 			return response::json([

@@ -48,7 +48,7 @@ class SongSearchQuery extends QueryObject
 
 		return $repository->createQueryBuilder()
 			->select('s')
-			->from(Song::class, 's')
+			->from(Song::getClassName(), 's')
 			->andWhere('s.owner = :owner')
 			->andWhere($or)
 			->setParameter('owner', $this->user)

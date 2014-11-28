@@ -10,7 +10,7 @@ use App\Model\Service\NotificationService;
 use Tester\Assert;
 
 /** @var NotificationService $notificationService */
-$notificationService = $dic->getByType(NotificationService::class);
+$notificationService = $dic->getByType(NotificationService::getClassName());
 
 $user     = new User;
 $song     = new Song;
@@ -20,8 +20,8 @@ $songbook = new Songbook;
 
 $notification = $notificationService->notify($user, 'Lorem ipsum.');
 
-Assert::type(Notification::class, $notification);
-Assert::type(DateTime::class, $notification->created);
+Assert::type(Notification::getClassName(), $notification);
+Assert::type(DateTime::getClassName(), $notification->created);
 Assert::equal(FALSE, $notification->read);
 Assert::equal($user, $notification->user);
 Assert::equal('Lorem ipsum.', $notification->text);
@@ -32,8 +32,8 @@ Assert::equal(NULL, $notification->songbook);
 
 $notification = $notificationService->notify($user, 'Foo bar baz.', $song);
 
-Assert::type(Notification::class, $notification);
-Assert::type(DateTime::class, $notification->created);
+Assert::type(Notification::getClassName(), $notification);
+Assert::type(DateTime::getClassName(), $notification->created);
 Assert::equal(FALSE, $notification->read);
 Assert::equal($user, $notification->user);
 Assert::equal('Foo bar baz.', $notification->text);
@@ -44,8 +44,8 @@ Assert::equal(NULL, $notification->songbook);
 
 $notification = $notificationService->notify($user, 'Dolor sit amet.', $songbook);
 
-Assert::type(Notification::class, $notification);
-Assert::type(DateTime::class, $notification->created);
+Assert::type(Notification::getClassName(), $notification);
+Assert::type(DateTime::getClassName(), $notification->created);
 Assert::equal(FALSE, $notification->read);
 Assert::equal($user, $notification->user);
 Assert::equal('Dolor sit amet.', $notification->text);
@@ -56,4 +56,4 @@ Assert::equal($songbook, $notification->songbook);
 
 Assert::exception(function () use ($notificationService, $user) {
 	$notificationService->notify($user, 'This will fail.', $user);
-}, InvalidArgumentException::class, 'Invalid subject given. Song or Songbook entity expected.');
+}, InvalidArgumentException::getClassName(), 'Invalid subject given. Song or Songbook entity expected.');

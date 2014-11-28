@@ -79,7 +79,7 @@ class SongbooksResource extends FrontendResource {
     public function read($id)
     {
         /** @var Songbook */
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -136,13 +136,13 @@ class SongbooksResource extends FrontendResource {
         $this->assumeLoggedIn(); // only logged can list his songs
 
 		if ($search = $this->request->getQuery('search')) {
-			$songbooks = $this->em->getDao(Songbook::class)
+			$songbooks = $this->em->getDao(Songbook::getClassName())
 				->fetch(new SongbookSearchQuery($this->getActiveSession()->user, $search))
 				->getIterator()
 				->getArrayCopy();
 
 		} else {
-			$songbooks = $this->em->getDao(Songbook::class)
+			$songbooks = $this->em->getDao(Songbook::getClassName())
 				->findBy(['owner'=>$this->getActiveSession()->user], ['name' => 'ASC']);
 		}
 
@@ -167,7 +167,7 @@ class SongbooksResource extends FrontendResource {
         $data = $this->request->getData();
 
         /** @var Songbook */
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         $tags = array_map(function ($tag) {
             return $tag['tag'];
@@ -202,7 +202,7 @@ class SongbooksResource extends FrontendResource {
     {
         $this->assumeLoggedIn();
 
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -245,7 +245,7 @@ class SongbooksResource extends FrontendResource {
     public function readAllRating($id)
     {
         /** @var SongbookRating $rating */
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -268,10 +268,10 @@ class SongbooksResource extends FrontendResource {
         }
 
         if ($this->request->getQuery('checkRated', FALSE)) {
-            $ratings = $this->em->getDao(SongbookRating::class)->findBy(['user' => $user, 'songbook' => $songbook]);
+            $ratings = $this->em->getDao(SongbookRating::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]);
         }
         else {
-            $ratings = $this->em->getDao(SongbookRating::class)
+            $ratings = $this->em->getDao(SongbookRating::getClassName())
                 ->findBy(['songbook'=> $songbook]);
         }
 
@@ -298,7 +298,7 @@ class SongbooksResource extends FrontendResource {
     public function readRating($id, $relationId)
     {
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($relationId);
+        $rating = $this->em->getDao(SongbookRating::getClassName())->find($relationId);
 
         if (!$rating) {
             return Response::json([
@@ -338,7 +338,7 @@ class SongbooksResource extends FrontendResource {
         $data = $this->request->getData();
 
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($relationId);
+        $rating = $this->em->getDao(SongbookRating::getClassName())->find($relationId);
 
         if (!$rating) {
             return Response::json([
@@ -372,7 +372,7 @@ class SongbooksResource extends FrontendResource {
     public function deleteRating($ratingId)
     {
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::class)->find($ratingId);
+        $rating = $this->em->getDao(SongbookRating::getClassName())->find($ratingId);
 
         if (!$rating) {
             return Response::json([
@@ -403,7 +403,7 @@ class SongbooksResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -443,7 +443,7 @@ class SongbooksResource extends FrontendResource {
      */
     public function readAllComment($id)
     {
-        $songbook = $this->em->getDao(Songbook::class)->find($id);
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
         if (!$songbook) {
             return Response::json([
@@ -464,10 +464,10 @@ class SongbooksResource extends FrontendResource {
         }
 
         if ($this->request->getQuery('usersComment', FALSE)) {
-            $comments = $this->em->getDao(SongbookComment::class)->findBy(['user' => $user, 'songbook' => $songbook]);
+            $comments = $this->em->getDao(SongbookComment::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]);
         }
         else {
-            $comments = $this->em->getDao(SongbookComment::class)
+            $comments = $this->em->getDao(SongbookComment::getClassName())
                 ->findBy(['songbook' => $songbook]);
         }
 
@@ -494,7 +494,7 @@ class SongbooksResource extends FrontendResource {
     public function readComment($id, $relationId)
     {
         /** @var SongbookComment $comment */
-        $comment = $this->em->getDao(SongbookComment::class)->find($relationId);
+        $comment = $this->em->getDao(SongbookComment::getClassName())->find($relationId);
 
         if (!$comment) {
             return Response::json([
@@ -531,7 +531,7 @@ class SongbooksResource extends FrontendResource {
         $data = $this->request->getData();
 
         /** @var SongbookComment $comment */
-        $comment = $this->em->getDao(SongbookComment::class)->find($relationId);
+        $comment = $this->em->getDao(SongbookComment::getClassName())->find($relationId);
 
         if (!$comment) {
             return Response::json([

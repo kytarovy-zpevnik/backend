@@ -11,6 +11,7 @@ use Kdyby\Doctrine\DuplicateEntryException;
 use Kdyby\Doctrine\EntityManager;
 use Kdyby\Doctrine\Tools\NonLockingUniqueInserter;
 use Nette\Object;
+use Nette\Security\Passwords;
 
 /**
  * User service.
@@ -58,11 +59,11 @@ class UserService extends Object
 		$user = $this->inserter->persist($user); // reassign needed!
 
 		if (!$user) {
-			if ($this->em->getDao(User::class)->findOneBy(['username' => $username])) {
+			if ($this->em->getDao(User::getClassName())->findOneBy(['username' => $username])) {
 				throw self::duplicateUsername();
 			}
 
-			if($this->em->getDao(User::class)->findOneBy(['email' => $email])) {
+			if($this->em->getDao(User::getClassName())->findOneBy(['email' => $email])) {
 				throw self::duplicateEmail();
 			}
 		}
@@ -75,7 +76,7 @@ class UserService extends Object
 	 */
 	public function getPasswordHash($password)
 	{
-		return password_hash($password, PASSWORD_DEFAULT, ['cost' => $this->hashingCost]);
+		return Passwords::hash($password, ['cost' => $this->hashingCost]);
 	}
 
 	/**
@@ -85,11 +86,11 @@ class UserService extends Object
 	 */
 	public function verifyPasswordHash($passwordHash, $password)
 	{
-		if (!password_verify($password, $passwordHash)) {
+		if (!Passwords::verify($password, $passwordHash)) {
 			return FALSE;
 		}
 
-		if (password_needs_rehash($passwordHash, PASSWORD_DEFAULT, ['cost' => $this->hashingCost])) {
+		if (Passwords::needsRehash($passwordHash, ['cost' => $this->hashingCost])) {
 			throw self::passwordNeedsRehash();
 		}
 

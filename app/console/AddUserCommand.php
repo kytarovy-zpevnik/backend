@@ -57,7 +57,7 @@ class AddUserCommand extends Command
 	{
 		$args = $input->getArguments();
 
-		$role = $this->em->getDao(Role::class)
+		$role = $this->em->getDao(Role::getClassName())
 			->findOneBy(['slug' => $args['role']]);
 
 		if (!$role) {

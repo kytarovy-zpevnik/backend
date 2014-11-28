@@ -11,16 +11,16 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 $request = RequestBuilder::target('frontend', 1, 'wishes', 'readAll', RequestBuilder::METHOD_GET) // specify target
     ->create(); // create request
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(1));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'wishes', 'readAll', RequestBuilder::METHOD_GET) // specify target
     ->setHeader('X-Session-Token', $sessionToken) // set session token

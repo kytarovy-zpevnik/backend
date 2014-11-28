@@ -51,7 +51,7 @@ class PasswordresetResource extends FrontendResource {
     public function create() {
         $identifier = $this->request->getData()["user"]["identifier"];
 
-        $result = $this->em->getDao(User::class)
+        $result = $this->em->getDao(User::getClassName())
             ->createQueryBuilder('u') // I need to search by username OR email
             ->where('u.username = :identifier OR u.email = :identifier')
             ->setParameter('identifier', $identifier)

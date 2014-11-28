@@ -58,7 +58,7 @@ class SessionService extends Object
 	public function getActiveSession($token)
 	{
 		/** @var Session $session */
-		$session = $this->em->getDao(Session::class)->findOneBy(['token' => $token]);
+		$session = $this->em->getDao(Session::getClassName())->findOneBy(['token' => $token]);
 
 		if (!$session) {
 			return FALSE;

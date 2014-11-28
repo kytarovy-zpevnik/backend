@@ -13,7 +13,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 $data = [
     "comment" => "Můj upravený komentář",
@@ -28,10 +28,10 @@ $request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateComment', R
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 //Test unauthorized user
-$sessionToken = logUserIn($em->getDao(User::class)->find(1));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateComment', RequestBuilder::METHOD_PUT) // specify target
 ->setHeader('X-Session-Token', $sessionToken)
@@ -41,9 +41,9 @@ $request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateComment', R
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::class);
+}, AuthorizationException::getClassName());
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 //Rating doesn't exist
 $request = RequestBuilder::target('frontend', 1, 'songbooks', 'updateComment', RequestBuilder::METHOD_PUT) // specify target
@@ -83,7 +83,7 @@ $request = RequestBuilder::target('frontend', 1, 'songbooks', 'readComment', Req
 
 $response = handleRequest($request);
 
-$comment = $em->getDao(SongbookComment::class)->find(1);
+$comment = $em->getDao(SongbookComment::getClassName())->find(1);
 
 ResponseTester::test($response)
     ->assertHttpStatus(ResponseTester::HTTP_OK)

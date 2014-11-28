@@ -47,13 +47,13 @@ class NotificationsResource extends FrontendResource
 		$user = $this->getActiveSession()->user;
 
 		if ($this->request->getQuery('unread', FALSE)) {
-			$notifications = $this->em->getDao(Notification::class)->findBy([
+			$notifications = $this->em->getDao(Notification::getClassName())->findBy([
 				'user' => $user,
 				'read' => FALSE
 			], ['created' => 'ASC']);
 
 		} else {
-			$notifications = $this->em->getDao(Notification::class)->findBy(['user' => $user], ['created' => 'ASC']);
+			$notifications = $this->em->getDao(Notification::getClassName())->findBy(['user' => $user], ['created' => 'ASC']);
 		}
 
 		$data = array_map(function (Notification $notification) {
@@ -108,7 +108,7 @@ class NotificationsResource extends FrontendResource
 		}
 
 		/** @var Notification[] $notifications */
-		$notifications = $this->em->getDao(Notification::class)->findBy([
+		$notifications = $this->em->getDao(Notification::getClassName())->findBy([
 			'user' => $user,
 			'read' => FALSE
 		]);

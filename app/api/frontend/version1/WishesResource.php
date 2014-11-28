@@ -68,7 +68,7 @@ class WishesResource extends FrontendResource
         $this->assumeLoggedIn(); // only logged can list his wishes
 
 
-        $wishes = $this->em->getDao(Wish::class)
+        $wishes = $this->em->getDao(Wish::getClassName())
             ->findBy(['user' => $this->getActiveSession()->user]);
 
         $wishes = array_map(function (Wish $wish) {
@@ -93,7 +93,7 @@ class WishesResource extends FrontendResource
     public function read($id)
     {
         /** @var Wish $wish */
-        $wish = $this->em->getDao(Wish::class)->find($id);
+        $wish = $this->em->getDao(Wish::getClassName())->find($id);
 
         if (!$wish) {
             return Response::json([
@@ -128,7 +128,7 @@ class WishesResource extends FrontendResource
         $data = $this->request->getData();
 
         /** @var Wish $wish */
-        $wish = $this->em->getDao(Wish::class)->find($id);
+        $wish = $this->em->getDao(Wish::getClassName())->find($id);
 
         if (!$wish) {
             return Response::json([
@@ -163,7 +163,7 @@ class WishesResource extends FrontendResource
     public function delete($id)
     {
         /** @var Wish $wish */
-        $wish = $this->em->getDao(Wish::class)->find($id);
+        $wish = $this->em->getDao(Wish::getClassName())->find($id);
 
         if (!$wish) {
             return Response::json([

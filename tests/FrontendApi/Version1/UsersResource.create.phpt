@@ -10,9 +10,9 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
-$user = $em->getDao(User::class)->find(1);
+$user = $em->getDao(User::getClassName())->find(1);
 
 //Test duplicate username
 $data = [

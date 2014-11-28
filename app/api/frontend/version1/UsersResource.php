@@ -51,7 +51,7 @@ class UsersResource extends FrontendResource
 	{
 		$data = $this->request->getData();
 
-		$role = $this->em->getDao(Role::class)->findOneBy(['slug' => 'registered']);
+		$role = $this->em->getDao(Role::getClassName())->findOneBy(['slug' => 'registered']);
 
 		try {
 			$user = $this->userService->create($data['username'], $data['email'], $data['password'], $role);
@@ -98,7 +98,7 @@ class UsersResource extends FrontendResource
 
 		$this->assumeAdmin(); // only admin can list all users
 
-		$users = $this->em->getDao(User::class)->findAll();
+		$users = $this->em->getDao(User::getClassName())->findAll();
 
 		$data = array_map([$this, 'mapEntity'], $users);
 
@@ -115,9 +115,9 @@ class UsersResource extends FrontendResource
         $this->assumeAdmin(); // only admin can change user
 
         $roleSlug = $this->request->getData('role')['slug'];
-        $role = $this->em->getDao(Role::class)->findOneBy(['slug' => $roleSlug]);
+        $role = $this->em->getDao(Role::getClassName())->findOneBy(['slug' => $roleSlug]);
 
-        $user = $this->em->getDao(User::class)->find($id);
+        $user = $this->em->getDao(User::getClassName())->find($id);
         $user->role = $role;
 
         $this->em->flush();
@@ -132,7 +132,7 @@ class UsersResource extends FrontendResource
      */
     public function updateAll() {
         $token = $this->request->getQuery('token');
-        $passwordReset = $this->em->getDao(PasswordReset::class)->findOneBy(['token' => $token]);
+        $passwordReset = $this->em->getDao(PasswordReset::getClassName())->findOneBy(['token' => $token]);
         if($passwordReset == null || $passwordReset->createdOn < new DateTime(PasswordresetResource::TOKEN_EXPIRATION)) {
             return Response::json([
                 "error" => "TOKEN_EXPIRATED",

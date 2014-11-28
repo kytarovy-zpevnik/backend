@@ -56,7 +56,7 @@ class SongAdvSearchQuery extends QueryObject
 	{
         $query = $repository->createQueryBuilder()
 			->select('s')
-			->from(Song::class, 's')
+			->from(Song::getClassName(), 's')
 			->andWhere('s.owner = :owner')
 			->setParameter('owner', $this->user);
         if ($this->title != null)

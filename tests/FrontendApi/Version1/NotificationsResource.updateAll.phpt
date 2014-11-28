@@ -13,7 +13,7 @@ use Tester\Assert;
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
 /** @var EntityManager $em */
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 $data = ['read' => TRUE];
 
@@ -25,11 +25,11 @@ $request = RequestBuilder::target('frontend', 1, 'notifications', 'updateAll', R
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-$user = $em->getDao(User::class)->find(3);
+$user = $em->getDao(User::getClassName())->find(3);
 
 $sessionToken = logUserIn($user); // user markatom
 
@@ -38,7 +38,7 @@ $request = RequestBuilder::target('frontend', 1, 'notifications', 'updateAll', R
 	->setJsonPost($data)
 	->create(); // create request, not logged in
 
-$notifications = $em->getDao(Notification::class)->findBy([
+$notifications = $em->getDao(Notification::getClassName())->findBy([
 	'user' => $user,
 	'read' => FALSE
 ]);
@@ -50,7 +50,7 @@ $response = handleRequest($request);
 ResponseTester::test($response)
 	->assertHttpStatus(ResponseTester::HTTP_NO_CONTENT);
 
-$notifications = $em->getDao(Notification::class)->findBy([
+$notifications = $em->getDao(Notification::getClassName())->findBy([
 	'user' => $user,
 	'read' => FALSE
 ]);

@@ -12,7 +12,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 $data = [
     "comment" => "Super"
@@ -27,12 +27,12 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createComment', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 
 //Test unauthorized user and private song.
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(1));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createComment', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
@@ -42,11 +42,11 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createComment', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::class);
+}, AuthorizationException::getClassName());
 
 //songbook doesn't exist
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createComment', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken) // set session token
@@ -64,7 +64,7 @@ ResponseTester::test($response)
 
 //Test created rating.
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createComment', RequestBuilder::METHOD_POST) // specify target
 ->setHeader('X-Session-Token', $sessionToken)

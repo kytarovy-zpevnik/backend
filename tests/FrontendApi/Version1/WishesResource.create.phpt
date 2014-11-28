@@ -11,7 +11,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 //Test unlogged user.
 $data = [
@@ -26,7 +26,7 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'create', RequestBuil
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 
 //Test created wish.
@@ -36,7 +36,7 @@ $data = [
     "note" => "Dochází mi nápady"
 ];
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(1));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'wishes', 'create', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)

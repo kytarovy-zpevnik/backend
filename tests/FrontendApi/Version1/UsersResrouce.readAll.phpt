@@ -11,9 +11,9 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(3)); // user markatom, registered
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(3)); // user markatom, registered
 
 $request = RequestBuilder::target('frontend', 1, 'users', 'readAll', RequestBuilder::METHOD_GET) // specify target
 	->setHeader('X-Session-Token', $sessionToken) // set session token
@@ -21,9 +21,9 @@ $request = RequestBuilder::target('frontend', 1, 'users', 'readAll', RequestBuil
 
 Assert::exception(function () use ($request) {
 	handleRequest($request);
-}, AuthorizationException::class);
+}, AuthorizationException::getClassName());
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(1)); // user pepa, admin
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1)); // user pepa, admin
 
 $request = RequestBuilder::target('frontend', 1, 'users', 'readAll', RequestBuilder::METHOD_GET) // specify target
 	->setHeader('X-Session-Token', $sessionToken) // set session token

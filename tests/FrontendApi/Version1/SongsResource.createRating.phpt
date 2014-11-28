@@ -12,7 +12,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 $data = [
     "comment" => "Super",
@@ -28,12 +28,12 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', Reques
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 
 //Test user's and private song.
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(1));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(1));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
@@ -43,11 +43,11 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', Reques
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::class);
+}, AuthorizationException::getClassName());
 
 //song doesn't exist
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
 ->setHeader('X-Session-Token', $sessionToken) // set session token
@@ -65,7 +65,7 @@ ResponseTester::test($response)
 
 //Test created rating.
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', RequestBuilder::METHOD_POST) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
