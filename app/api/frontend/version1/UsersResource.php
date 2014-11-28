@@ -83,7 +83,7 @@ class UsersResource extends FrontendResource
         $userName = $this->request->getQuery('username');
 
         if($userName){
-            $user = $this->em->getDao(User::class)->findOneBy(['username' => $userName]);
+            $user = $this->em->getDao(User::getClassName())->findOneBy(['username' => $userName]);
 
             if (!$user) {
                 return response::json([
@@ -176,12 +176,12 @@ class UsersResource extends FrontendResource
     {
 
         $this->assumeLoggedIn();
-        $user = $this->em->getDao(User::class)->find($id);
+        $user = $this->em->getDao(User::getClassName())->find($id);
 
         $subject = $this->request->getQuery('subject');
 
         if($subject == 'songbook'){
-            $sharings = $this->em->getDao(SongbookSharing::class)->findBy(['user' => $user]);
+            $sharings = $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user]);
 
             $songbooks = array_map(function (SongbookSharing $sharing){
                 return [
@@ -196,7 +196,7 @@ class UsersResource extends FrontendResource
             return response::json($songbooks);
         }
         else{
-            $sharings = $this->em->getDao(SongSharing::class)->findBy(['user' => $user]);
+            $sharings = $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user]);
 
             $songs = array_map(function (SongSharing $sharing){
                 return [

@@ -12,7 +12,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::class);
+$em = $dic->getByType(EntityManager::getClassName());
 
 //Test unlogged user.
 
@@ -22,10 +22,10 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteComment', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::class);
+}, AuthenticationException::getClassName());
 
 //Test unauthorized user
-$sessionToken = logUserIn($em->getDao(User::class)->find(3));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(3));
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteComment', RequestBuilder::METHOD_DELETE) // specify target
     ->setHeader('X-Session-Token', $sessionToken)
@@ -34,10 +34,10 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteComment', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::class);
+}, AuthorizationException::getClassName());
 
 
-$sessionToken = logUserIn($em->getDao(User::class)->find(2));
+$sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
 //Rating doesn't exist
 $request = RequestBuilder::target('frontend', 1, 'songs', 'deleteComment', RequestBuilder::METHOD_DELETE) // specify target

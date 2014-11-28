@@ -33,7 +33,7 @@ class SongPublicSearchQuery extends QueryObject
 	{
 		return $repository->createQueryBuilder()
 			->select('s')
-			->from(Song::class, 's')
+			->from(Song::getClassName(), 's')
             ->orWhere('s.title LIKE :query')
             ->orWhere('s.author LIKE :query')
             ->orWhere('s.originalAuthor LIKE :query')

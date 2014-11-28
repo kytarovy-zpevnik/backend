@@ -94,8 +94,8 @@ class SongsResource extends FrontendResource {
 
         if ($songFromId = $this->request->getQuery('takenFrom')) {
             /** @var Song $songFrom */
-            $songFrom = $this->em->getDao(Song::class)->find($songFromId);
-            $userFrom = $this->em->getDao(User::class)->findOneBy(['username' => $songFrom->owner->username]);
+            $songFrom = $this->em->getDao(Song::getClassName())->find($songFromId);
+            $userFrom = $this->em->getDao(User::getClassName())->findOneBy(['username' => $songFrom->owner->username]);
             $takenSongNotification = new Notification();
             $takenSongNotification->user = $userFrom;
             $takenSongNotification->created = new DateTime();
@@ -218,7 +218,7 @@ class SongsResource extends FrontendResource {
 			$this->assumeLoggedIn();
 
 			if ($this->getActiveSession()->user !== $song->owner
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
 				throw new AuthorizationException;
 			}
 		}
@@ -270,13 +270,13 @@ class SongsResource extends FrontendResource {
 
 		}
         else if ($search = $this->request->getQuery('searchPublic')) {
-            $songs = $this->em->getDao(Song::class)
+            $songs = $this->em->getDao(Song::getClassName())
                 ->fetch(new SongPublicSearchQuery($search))
                 ->getIterator()
                 ->getArrayCopy();
         }
         else if ($this->request->getQuery('searchAllPublic', FALSE)) {
-            $songs = $this->em->getDao(Song::class)->findBy(["public" => 1]);
+            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1]);
         }
         else if (count($this->request->getQuery()) > 0) {
             $title  = $this->request->getQuery('title');
@@ -336,7 +336,7 @@ class SongsResource extends FrontendResource {
 
 
         if (($this->getActiveSession()->user == $song->owner) || (!$song->public
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $song]))){
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song]))){
             throw new AuthorizationException;
         }
 
@@ -381,7 +381,7 @@ class SongsResource extends FrontendResource {
         if(!$song->public) {
 
             if ($user !== $song->owner
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $user, 'song' => $song])){
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
                 throw new AuthorizationException;
             }
         }
@@ -430,7 +430,7 @@ class SongsResource extends FrontendResource {
 
 
             if ($this->getActiveSession()->user !== $rating->song->owner
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $rating->song])){
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $rating->song])){
                 throw new AuthorizationException;
             }
         }
@@ -531,7 +531,7 @@ class SongsResource extends FrontendResource {
 
 
         if (($this->getActiveSession()->user !== $song->owner) && (!$song->public)
-            && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])){
+            && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])){
             throw new AuthorizationException;
         }
 
@@ -576,7 +576,7 @@ class SongsResource extends FrontendResource {
         if(!$song->public) {
 
             if ($user !== $song->owner
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $user, 'song' => $song])){
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
                 throw new AuthorizationException;
             }
         }
@@ -625,7 +625,7 @@ class SongsResource extends FrontendResource {
         if(!$comment->song->public) {
 
             if ($this->getActiveSession()->user !== $comment->song->owner
-                && !$this->em->getDao(SongSharing::class)->findBy(['user' => $this->getActiveSession()->user, 'song' => $comment->song])){
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $comment->song])){
                 throw new AuthorizationException;
             }
         }
@@ -684,7 +684,7 @@ class SongsResource extends FrontendResource {
         $data = $this->request->getData();
 
         /** @var SongComment $comment */
-        $comment = $this->em->getDao(SongComment::class)->find($relationId);
+        $comment = $this->em->getDao(SongComment::getClassName())->find($relationId);
 
         if (!$comment) {
             return Response::json([
@@ -716,7 +716,7 @@ class SongsResource extends FrontendResource {
     {
         $this->assumeLoggedIn();
 
-        $song = $this->em->getDao(Song::class)->find($id);
+        $song = $this->em->getDao(Song::getClassName())->find($id);
 
         if (!$song) {
             return Response::json([
@@ -727,7 +727,7 @@ class SongsResource extends FrontendResource {
 
         $data = $this->request->getData();
 
-        $user = $this->em->getDao(User::class)->find($data['user']);
+        $user = $this->em->getDao(User::getClassName())->find($data['user']);
 
         if (!$user) {
             return Response::json([
@@ -740,7 +740,7 @@ class SongsResource extends FrontendResource {
             throw new AuthorizationException;
         }
 
-        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::class)->findBy(['user' => $user, 'song' => $song])){
+        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
                 'message' => 'Song already shared with this user.'
