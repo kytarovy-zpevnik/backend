@@ -13,7 +13,7 @@ use Tester\Assert;
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
 /** @var EntityManager $em */
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $data = ['read' => TRUE];
 
@@ -25,7 +25,7 @@ $request = RequestBuilder::target('frontend', 1, 'notifications', 'updateAll', R
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

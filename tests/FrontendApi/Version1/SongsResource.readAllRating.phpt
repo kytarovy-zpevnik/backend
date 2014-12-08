@@ -12,7 +12,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 //unlogged user
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', RequestBuilder::METHOD_GET) // specify target
@@ -21,7 +21,7 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 
 //unauthorized user
@@ -34,7 +34,7 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'readAllRating', Reque
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthorizationException');
 
 
 //songbook doesn't exist

@@ -13,7 +13,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $data = [
     "name" => "Dole v dole",
@@ -30,7 +30,7 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'update', RequestBuil
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 //Test unauthorized user
 $sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
@@ -44,7 +44,7 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'update', RequestBuil
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthorizationException');
 
 
 

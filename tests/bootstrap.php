@@ -37,7 +37,7 @@ function loadSqlDump($file)
 	global $dic;
 
 	/** @var Connection $connection */
-	$connection = $dic->getByType(Connection::getClassName());
+	$connection = $dic->getByType('Kdyby\Doctrine\Connection');
 
 	$connection->query('DROP DATABASE ' . $connection->getDatabase() . '; CREATE DATABASE '. $connection->getDatabase() . ' COLLATE utf8_czech_ci; USE ' . $connection->getDatabase());
 
@@ -52,9 +52,9 @@ function logUserIn(User $user)
 {
 	global $dic;
 
-	$session = $dic->getByType(SessionService::getClassName())->create($user);
+	$session = $dic->getByType('App\Model\Service\SessionService')->create($user);
 
-	$dic->getByType(EntityManager::getClassName())->flush();
+	$dic->getByType('Kdyby\Doctrine\EntityManager')->flush();
 
 	return $session->token;
 }
@@ -67,7 +67,7 @@ function handleRequest(Request $request)
 {
 	global $dic;
 
-	$resourceFactory = $dic->getByType(ResourceFactory::getClassName());
+	$resourceFactory = $dic->getByType('Markatom\RestApp\Resource\ResourceFactory');
 
 	$resource = $resourceFactory->create($request->getApiName(), $request->getResourceName(), $request->getApiVersion());
 

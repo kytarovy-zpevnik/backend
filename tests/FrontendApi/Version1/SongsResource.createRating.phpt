@@ -12,7 +12,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $data = [
     "comment" => "Super",
@@ -28,7 +28,7 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', Reques
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 
 //Test user's and private song.
@@ -43,7 +43,7 @@ $request = RequestBuilder::target('frontend', 1, 'songs', 'createRating', Reques
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthorizationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthorizationException');
 
 //song doesn't exist
 

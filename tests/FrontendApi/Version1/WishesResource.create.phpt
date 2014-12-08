@@ -11,7 +11,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 //Test unlogged user.
 $data = [
@@ -26,7 +26,7 @@ $request = RequestBuilder::target('frontend', 1, 'wishes', 'create', RequestBuil
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 
 //Test created wish.

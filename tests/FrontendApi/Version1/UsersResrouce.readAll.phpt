@@ -11,7 +11,7 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $sessionToken = logUserIn($em->getDao(User::getClassName())->find(3)); // user markatom, registered
 
@@ -21,7 +21,7 @@ $request = RequestBuilder::target('frontend', 1, 'users', 'readAll', RequestBuil
 
 Assert::exception(function () use ($request) {
 	handleRequest($request);
-}, AuthorizationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthorizationException');
 
 $sessionToken = logUserIn($em->getDao(User::getClassName())->find(1)); // user pepa, admin
 

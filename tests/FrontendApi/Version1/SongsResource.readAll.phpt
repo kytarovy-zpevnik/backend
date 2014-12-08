@@ -11,14 +11,14 @@ use Tester\Assert;
 
 loadSqlDump(__DIR__ . '/../../files/dump.sql');
 
-$em = $dic->getByType(EntityManager::getClassName());
+$em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $request = RequestBuilder::target('frontend', 1, 'songs', 'readAll', RequestBuilder::METHOD_GET) // specify target
 ->create(); // create request
 
 Assert::exception(function () use ($request) {
     handleRequest($request);
-}, AuthenticationException::getClassName());
+}, 'Markatom\RestApp\Routing\AuthenticationException');
 
 $sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
@@ -40,7 +40,8 @@ ResponseTester::test($response)
 			"year" => NULL,
 			"note" => "",
             "public" => false,
-            "username" => "Franta"
+            "username" => "Franta",
+			"tags" => []
 		],
 		[
 			"id"        => 5,
@@ -51,7 +52,8 @@ ResponseTester::test($response)
 			"year" => 2014,
 			"note" => "Lorem ipsum",
             "public" => false,
-            "username" => "Franta"
+            "username" => "Franta",
+			"tags" => []
 		],
         [
             "id"        => 2,
@@ -62,6 +64,7 @@ ResponseTester::test($response)
             "year" => 2005,
 			"note" => "",
             "public" => false,
-            "username" => "Franta"
+            "username" => "Franta",
+			"tags" => []
         ]
     ]);
