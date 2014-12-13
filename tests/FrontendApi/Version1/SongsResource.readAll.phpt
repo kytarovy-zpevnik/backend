@@ -55,6 +55,18 @@ ResponseTester::test($response)
             "username" => "Franta",
 			"tags" => []
 		],
+		[
+			"id"             => 8,
+			"title"          => "Knocking on Heaven's Door",
+			"album"          => "Pat Garrett & Billy the Kid",
+			"author"         => "Bob Dylan",
+			"originalAuthor" => NULL,
+			"year"           => 1973,
+			"note"           => NULL,
+			"public"         => TRUE,
+			"username"       => "Franta",
+			"tags"           => []
+		],
         [
             "id"        => 2,
             "title"  => "supersong",
@@ -66,5 +78,5 @@ ResponseTester::test($response)
             "public" => false,
             "username" => "Franta",
 			"tags" => []
-        ]
+        ],
     ]);

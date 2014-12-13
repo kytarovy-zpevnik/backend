@@ -7,6 +7,8 @@ use App\Model\Entity\User;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use Nette\Object;
+use Nette\Utils\Json;
+use Nette\Utils\Strings;
 
 /**
  * Song service
@@ -15,8 +17,13 @@ use Nette\Object;
 class SongService extends Object
 {
 
+	const NOTE_PATTERN = '~C#|D#|F#|G#|C|D|E|F|G|A|B|H~';
+
     /** @var EntityManager */
     private $em;
+
+	/** @var array */
+	private static $chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'B', 'H'];
 
     /**
      * @param EntityManager $em
@@ -91,5 +98,30 @@ class SongService extends Object
     {
         return $this->em->getDao(Song::getClassName())->findBy(["public" => true]);
     }
+
+	/**
+	 * Transposes all song chords.
+	 * @param Song $song
+	 * @param $offset
+	 */
+	public function transpose(Song $song, $offset)
+	{
+		$chords = Json::decode($song->chords, Json::FORCE_ARRAY);
+
+		foreach ($chords as & $chord) {
+			$chord = Strings::replace($chord, self::NOTE_PATTERN, function (array $matches) use ($offset) {
+				$key = array_search($matches[0], self::$chromaticScale);
+				$key += $offset;
+
+				if ($key >= count(self::$chromaticScale)) {
+					$key -= count(self::$chromaticScale);
+				}
+
+				return self::$chromaticScale[$key];
+			});
+		}
+
+		$song->chords = Json::encode($chords);
+	}
 
 }

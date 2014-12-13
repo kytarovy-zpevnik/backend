@@ -15,6 +15,7 @@ use App\Model\Query\SongAdvSearchQuery;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Query\SongPublicSearchQuery;
 use App\Model\Service\SessionService;
+use App\Model\Service\SongService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
@@ -32,15 +33,20 @@ class SongsResource extends FrontendResource {
     /** @var EntityManager */
     private $em;
 
+	/** @var SongService */
+	private $songService;
+
 	/**
 	 * @param SessionService $sessionService
 	 * @param EntityManager $em
+	 * @param SongService $songService
 	 */
-    public function __construct(SessionService $sessionService, EntityManager $em)
+    public function __construct(SessionService $sessionService, EntityManager $em, SongService $songService)
     {
         parent::__construct($sessionService);
 
-        $this->em = $em;
+		$this->em          = $em;
+		$this->songService = $songService;
     }
 
     /**
@@ -204,54 +210,16 @@ class SongsResource extends FrontendResource {
 	 */
 	public function read($id)
 	{
-		/** @var Song $song */
-		$song = $this->em->getDao(Song::getClassName())->find($id);
+		$song = $this->getSong($id);
 
 		if (!$song) {
 			return Response::json([
-				'error' => 'UNKNOWN_SONG',
+				'error'   => 'UNKNOWN_SONG',
 				'message' => 'Song with given id not found.'
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
 		}
 
-		if (!$song->public) {
-			$this->assumeLoggedIn();
-
-			if ($this->getActiveSession()->user !== $song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
-				throw new AuthorizationException;
-			}
-		}
-
-		$songbooks = array_map(function (Songbook $songbook) {
-			return [
-				'id'   => $songbook->id,
-				'name' => $songbook->name,
-                'note' => $songbook->note
-			];
-		}, $song->songbooks);
-
-        $tags = array_map(function (SongTag $tag) {
-            return [
-                'tag' => $tag->tag
-            ];
-        }, $song->tags);
-
-		return Response::json([
-            'id'             => $song->id,
-            'title'          => $song->title,
-            'album'          => $song->album,
-            'author'         => $song->author,
-            'originalAuthor' => $song->originalAuthor,
-            'year'           => $song->year,
-            'lyrics'         => $song->lyrics,
-            'chords'         => $song->chords,
-            'note'           => $song->note,
-            'public'         => $song->public,
-			'songbooks'      => $songbooks,
-            'username'       => $song->owner->username,
-            'tags'           => $tags
-		]);
+		return $this->songToResponse($song);
 	}
 
     /**
@@ -769,5 +737,93 @@ class SongsResource extends FrontendResource {
             'id' => $sharing->id
         ]);
     }
+
+	/**
+	 * Song transposition.
+	 * @param int $id
+	 * @param int $relationId
+	 * @return \Markatom\RestApp\Api\Response
+	 */
+	public function readTranspose($id, $relationId)
+	{
+		$offset = $relationId; // actually not relationId, but offset, using default CRUD route
+
+		$song = $this->getSong($id);
+
+		if (!$song) {
+			return Response::json([
+				'error'   => 'UNKNOWN_SONG',
+				'message' => 'Song with given id not found.'
+			])->setHttpStatus(Response::HTTP_NOT_FOUND);
+		}
+
+		$this->songService->transpose($song, $offset);
+
+		return $this->songToResponse($song);
+	}
+
+	/**
+	 * Obtains song entity by given id.
+	 * @param int $id
+	 * @return Song|FALSE
+	 */
+	private function getSong($id)
+	{
+		/** @var Song $song */
+		$song = $this->em->getDao(Song::getClassName())->find($id);
+
+		if (!$song) {
+			return FALSE;
+		}
+
+		if (!$song->public) {
+			$this->assumeLoggedIn();
+
+			if ($this->getActiveSession()->user !== $song->owner
+				&& !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
+				throw new AuthorizationException;
+			}
+		}
+
+		return $song;
+	}
+
+	/**
+	 * Maps song data to api response.
+	 * @param Song $song
+	 * @return Response
+	 */
+	private function SongToResponse(Song $song)
+	{
+		$songbooks = array_map(function (Songbook $songbook) {
+			return [
+				'id'   => $songbook->id,
+				'name' => $songbook->name,
+				'note' => $songbook->note
+			];
+		}, $song->songbooks);
+
+		$tags = array_map(function (SongTag $tag) {
+			return [
+				'tag' => $tag->tag
+			];
+		}, $song->tags);
+
+		return Response::json([
+			'id'             => $song->id,
+			'title'          => $song->title,
+			'album'          => $song->album,
+			'author'         => $song->author,
+			'originalAuthor' => $song->originalAuthor,
+			'year'           => $song->year,
+			'lyrics'         => $song->lyrics,
+			'chords'         => $song->chords,
+			'note'           => $song->note,
+			'public'         => $song->public,
+			'songbooks'      => $songbooks,
+			'username'       => $song->owner->username,
+			'tags'           => $tags
+		]);
+	}
 
 }
