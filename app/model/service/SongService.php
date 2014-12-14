@@ -138,14 +138,6 @@ class SongService extends Object
                 break;  // no more lines
             }
 
-            if ($match = Strings::match($current, self::SECTION_PATTERN)) {
-                $section = substr(trim($match[0]), -1); // trim it and remove last character
-                // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
-                $section = preg_split('~~u', $section, -1, PREG_SPLIT_NO_EMPTY);
-
-                $lyrics = array_merge($lyrics, $section);
-            }
-
             // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
             $current = preg_split('~~u', $current, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -161,14 +153,6 @@ class SongService extends Object
             if ($next === NULL) {
                 $lyrics = array_merge($lyrics, $current, ["\n"]);
                 break; // no more lines
-            }
-
-            if ($match = Strings::match($next, self::SECTION_PATTERN)) {
-                $section = substr(trim($match[0]), -1); // trim it and remove last character
-                // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
-                $section = preg_split('~~u', $section, -1, PREG_SPLIT_NO_EMPTY);
-
-                $lyrics = array_merge($lyrics, $section);
             }
 
             // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
