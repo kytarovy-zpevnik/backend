@@ -59,7 +59,7 @@ class SongsResource extends FrontendResource {
 
 		$data = $this->request->getData();
 
-		$song = new Song();
+		$song = new Song;
 
 		$ids = array_map(function ($songbook) {
 			return $songbook['id'];
@@ -218,6 +218,10 @@ class SongsResource extends FrontendResource {
 				'message' => 'Song with given id not found.'
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
 		}
+
+        if ($transpose = $this->request->getQuery('transpose')) {
+            $this->songService->transpose($song, $transpose);
+        }
 
 		return $this->songToResponse($song);
 	}
@@ -737,30 +741,6 @@ class SongsResource extends FrontendResource {
             'id' => $sharing->id
         ]);
     }
-
-	/**
-	 * Song transposition.
-	 * @param int $id
-	 * @param int $relationId
-	 * @return \Markatom\RestApp\Api\Response
-	 */
-	public function readTranspose($id, $relationId)
-	{
-		$offset = $relationId; // actually not relationId, but offset, using default CRUD route
-
-		$song = $this->getSong($id);
-
-		if (!$song) {
-			return Response::json([
-				'error'   => 'UNKNOWN_SONG',
-				'message' => 'Song with given id not found.'
-			])->setHttpStatus(Response::HTTP_NOT_FOUND);
-		}
-
-		$this->songService->transpose($song, $offset);
-
-		return $this->songToResponse($song);
-	}
 
 	/**
 	 * Obtains song entity by given id.

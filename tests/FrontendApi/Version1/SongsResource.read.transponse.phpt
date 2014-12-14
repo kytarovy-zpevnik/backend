@@ -12,9 +12,10 @@ $em = $dic->getByType('Kdyby\Doctrine\EntityManager');
 
 $sessionToken = logUserIn($em->getDao(User::getClassName())->find(2));
 
-$request = RequestBuilder::target('frontend', 1, 'songs', 'readTranspose', RequestBuilder::METHOD_GET)
+$request = RequestBuilder::target('frontend', 1, 'songs', 'read', RequestBuilder::METHOD_GET)
 	->setHeader('X-Session-Token', $sessionToken)
-	->setParams(['id' => 8, 'relationId' => 3])
+	->setParams(['id' => 8])
+	->setQuery(['transpose' => 3])
 	->create();
 
 $response = handleRequest($request);
