@@ -61,7 +61,7 @@ function logUserIn(User $user)
 
 /**
  * @param Request $request
- * @return Markatom\RestApp\Resource\IResource
+ * @return Response
  */
 function handleRequest(Request $request)
 {
