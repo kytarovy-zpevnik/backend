@@ -124,4 +124,111 @@ class SongService extends Object
 		$song->chords = Json::encode($chords);
 	}
 
+	public function importAgama(Song $song, $agama)
+	{
+        $lyrics = [];
+        $chords = [];
+
+		$lines = explode("\n", $agama);
+
+        while (TRUE) {
+            $current = array_shift($lines);
+
+            if ($current === NULL) {
+                break;  // no more lines
+            }
+
+            if ($match = Strings::match($current, self::SECTION_PATTERN)) {
+                $section = substr(trim($match[0]), -1); // trim it and remove last character
+                // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
+                $section = preg_split('~~u', $section, -1, PREG_SPLIT_NO_EMPTY);
+
+                $lyrics = array_merge($lyrics, $section);
+            }
+
+            // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
+            $current = preg_split('~~u', $current, -1, PREG_SPLIT_NO_EMPTY);
+
+            if ($current === []) {
+                if (array_slice($lyrics, -2) !== ["\n", "\n"]) { // allow only one blank line
+                    $lyrics[] = "\n";
+                }
+                continue;
+            }
+
+            $next = array_shift($lines);
+
+            if ($next === NULL) {
+                $lyrics = array_merge($lyrics, $current, ["\n"]);
+                break; // no more lines
+            }
+
+            if ($match = Strings::match($next, self::SECTION_PATTERN)) {
+                $section = substr(trim($match[0]), -1); // trim it and remove last character
+                // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
+                $section = preg_split('~~u', $section, -1, PREG_SPLIT_NO_EMPTY);
+
+                $lyrics = array_merge($lyrics, $section);
+            }
+
+            // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
+            $next = preg_split('~~u', $next, -1, PREG_SPLIT_NO_EMPTY);
+
+            if ($current[0] !== ' ' && $next[0] !== ' ') { // both lyrics
+                $lyrics = array_merge($lyrics, $current, ["\n"]);
+                $lyrics = array_merge($lyrics, $next, ["\n"]);
+                continue;
+            }
+
+            $offset        = count($lyrics);
+            $currentLength = count($current);
+            $nextLength    = count($next);
+            $maxLength     = max($currentLength, $nextLength);
+
+            $chord = '';
+            $ignoreSpace = TRUE;
+            $chordOffset = 0;
+            for ($i = 0; $i <= $maxLength; $i++) { // intentionally <= to get one more iteration
+                if ($i < $currentLength && $current[$i] !== ' ') { // found chord's letter
+                    if (!$chord) { // beginning of chord
+                        $chordOffset = $offset; // capture offset
+                        $ignoreSpace = TRUE; // ignore space in lyrics
+                    }
+
+                    $chord .= $current[$i]; // append chord's character
+
+                } elseif ($chord) { // chord ended
+                    if (isset($chords[$chordOffset])) { // multiple chords
+                        $chords[$chordOffset] .= ', ' . $chord; // append chord
+                    } else {
+                        $chords[$chordOffset] = $chord; // store chord
+                    }
+
+                    $chord = ''; // reset chord
+                }
+
+                if ($i < $nextLength) {
+                    if ($next[$i] !== ' ' // not space
+                        || ( // or space
+                            !$ignoreSpace // do not ignore spaces
+                            && (
+                                $offset === 0 // no previous character
+                                || $lyrics[$offset - 1] !== ' ' // or previous character must not be space
+                            )
+                        )
+                    ) {
+                        $lyrics[] = $next[$i]; // append character to lyrics
+                        $offset++; // advance offset
+                        $ignoreSpace = FALSE; // do not ignore next space
+                    }
+                }
+            }
+
+            $lyrics[] = "\n"; // line break
+        }
+
+        $song->lyrics = implode('', $lyrics); // array of utf8 characters to string
+        $song->chords = Json::encode($chords);
+	}
+
 }

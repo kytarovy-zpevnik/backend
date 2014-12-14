@@ -83,13 +83,19 @@ class SongsResource extends FrontendResource {
             $this->em->persist($_tag);
         }
 
+        if ($this->request->getQuery('import') === 'agama') {
+            $this->songService->importAgama($song, $data['agama']);
+
+        } else {
+            $song->lyrics = $data['lyrics'];
+            $song->chords = $data['chords'];
+        }
+
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
 		$song->author         = $data['author'];
 		$song->originalAuthor = $data['originalAuthor'];
 		$song->year           = $data['year'];
-		$song->lyrics         = $data['lyrics'];
-		$song->chords         = $data['chords'];
         $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = $data['public'];
