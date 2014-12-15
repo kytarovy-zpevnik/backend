@@ -25,6 +25,14 @@ class SongService extends Object
 	/** @var array */
 	private static $chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'B', 'H'];
 
+    /** @link {self::exportAgama} */
+    const SECTION_PATTERN = '~
+        \(\(   # opening parentheses
+        [^)]+  # anything but not parenthesis
+        \)\)   # closing parentheses
+        \s*    # trailing whitespaces
+    ~x';
+
     /**
      * @param EntityManager $em
      */
@@ -214,5 +222,70 @@ class SongService extends Object
         $song->lyrics = implode('', $lyrics); // array of utf8 characters to string
         $song->chords = Json::encode($chords);
 	}
+
+    public function exportAgama(Song $song)
+    {
+        $agama = '';
+
+        $chords = Json::decode($song->chords, Json::FORCE_ARRAY);
+
+        $lyrics = Strings::replace($song->lyrics, self::SECTION_PATTERN, ''); // remove sections, not supported yet
+
+        $lyrics = implode("\n", array_map('trim', explode("\n", $lyrics))); // trim lines
+
+        // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
+        $lyrics = preg_split('~~u', $lyrics, -1, PREG_SPLIT_NO_EMPTY);
+
+        $length = count($lyrics);
+
+        $chordsLineLength = 0;
+        $chordsLine = $lyricsLine = '';
+        for ($i = 0; $i < $length; $i++) {
+            $insertCount = 0; // number of spaces to be inserted into lyrics to avoid collision of chords
+
+            $insertChar = $i + 1  === $length || in_array($lyrics[$i + 1] , [' ', "\n"]) // character to insert into lyrics
+                ? ' ' // space if outside of word
+                : '-'; // dash if inside of word
+
+            if (isset($chords[$i])) { // found chord
+                $chordsLineLength += strlen($chords[$i]) + 1;
+                $chordsLine .= $chords[$i] . ' ';
+
+                $chordLength = strlen($chords[$i]);
+                // look for next chord positions
+                for ($j = $i + 1; $j < $length && $j <= $i + $chordLength; $j++) { // intentionally <= to ensure there is room for space between chords
+                    if (isset($chords[$j])) { // is there chord
+                        $available = $j - $i; // available room for chord
+                        $insertCount = $chordLength - $available + 1; // add one more character for space
+                        break;
+                    }
+                }
+            }
+
+            if ($chordsLineLength === $i) {
+                $chordsLineLength++;
+                $chordsLine .= ' ';
+            }
+
+            if ($lyrics[$i] === "\n") {
+                if (trim($chordsLine)) {
+                    $agama .= $chordsLine . "\n";
+                }
+
+                $agama .= $lyricsLine . "\n";
+
+                $chordsLine = $lyricsLine = '';
+
+                $chordsLineLength = $i + 1;
+
+            } else {
+                $lyricsLine .= $lyrics[$i];
+            }
+
+            $lyricsLine .= str_repeat($insertChar, $insertCount);
+        }
+
+        return $agama;
+    }
 
 }

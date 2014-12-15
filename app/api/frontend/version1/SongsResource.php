@@ -229,8 +229,15 @@ class SongsResource extends FrontendResource {
             $this->songService->transpose($song, $transpose);
         }
 
-		return $this->songToResponse($song);
-	}
+        if ($this->request->getQuery('export') === 'agama') {
+            return Response::json([
+                'agama' => $this->songService->exportAgama($song)
+            ]);
+
+        } else {
+            return $this->songToResponse($song);
+        }
+    }
 
     /**
 	 * Returns brief information about all user's songs.
