@@ -184,12 +184,19 @@ class UsersResource extends FrontendResource
             $sharings = $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user]);
 
             $songbooks = array_map(function (SongbookSharing $sharing){
+                $tags = array_map(function (SongbookTag $tag) {
+                    return [
+                        'tag' => $tag->tag
+                    ];
+                }, $sharing->songbook->tags);
+
                 return [
                     'id'    => $sharing->songbook->id,
                     'name'  => $sharing->songbook->name,
                     'note'  => $sharing->songbook->note,
                     'public' => $sharing->songbook->public,
-                    'username' => $sharing->songbook->owner->username
+                    'username' => $sharing->songbook->owner->username,
+                    'tags' => $tags
                 ];
             }, $sharings);
 
