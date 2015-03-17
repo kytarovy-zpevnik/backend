@@ -166,6 +166,12 @@ class SongService extends Object
             // split to utf8 characters, because $s = 'čau' becomes $s[0] = '�', $s[1] = '�', $s[2] = 'a', $s[3] = 'u'
             $next = preg_split('~~u', $next, -1, PREG_SPLIT_NO_EMPTY);
 
+            if ($next === []) {
+                $lyrics = array_merge($lyrics, $current, ["\n"]);
+                $lyrics[] = "\n";
+                continue;
+            }
+
             if ($current[0] !== ' ' && $next[0] !== ' ') { // both lyrics
                 $lyrics = array_merge($lyrics, $current, ["\n"]);
                 $lyrics = array_merge($lyrics, $next, ["\n"]);

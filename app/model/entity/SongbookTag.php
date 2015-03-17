@@ -7,9 +7,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  *
- * @property Song $song
+ * @property Songbook $songbook
  *
- * SongTag entity.
+ * SongbookTag entity.
  * @author Tomáš Jirásek
  */
 

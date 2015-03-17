@@ -3,6 +3,7 @@
 namespace App\Model\Query;
 
 use App\Model\Entity\Song;
+use Doctrine\ORM\Query\Expr\Orx;
 use Kdyby\Doctrine\QueryBuilder;
 use Kdyby\Doctrine\QueryObject;
 use Kdyby\Persistence\Queryable;
@@ -31,15 +32,24 @@ class SongPublicSearchQuery extends QueryObject
 	 */
 	protected function doCreateQuery(Queryable $repository)
 	{
+
+        $or = new Orx([
+            's.title LIKE :query',
+            's.album LIKE :query',
+            's.author LIKE :query',
+            's.originalAuthor LIKE :query',
+            's.year LIKE :query',
+            't.tag LIKE :query'
+        ]);
+
 		return $repository->createQueryBuilder()
 			->select('s')
 			->from(Song::getClassName(), 's')
-            ->orWhere('s.title LIKE :query')
-            ->orWhere('s.author LIKE :query')
-            ->orWhere('s.originalAuthor LIKE :query')
+            ->leftJoin('s.tags', 't')
             ->andWhere('s.public = 1')
-			->setParameter('query', "%$this->search%")
-			->orderBy('s.title');
+            ->andWhere($or)
+            ->setParameter('query', "%$this->search%")
+            ->orderBy('s.title');
 	}
 
 }

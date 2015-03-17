@@ -43,12 +43,14 @@ class SongSearchQuery extends QueryObject
 			's.album LIKE :query',
 			's.author LIKE :query',
 			's.originalAuthor LIKE :query',
-			's.year LIKE :query'
+			's.year LIKE :query',
+            't.tag LIKE :query'
 		]);
 
 		return $repository->createQueryBuilder()
 			->select('s')
 			->from(Song::getClassName(), 's')
+            ->leftJoin('s.tags', 't')
 			->andWhere('s.owner = :owner')
 			->andWhere($or)
 			->setParameter('owner', $this->user)

@@ -38,6 +38,8 @@ class SongbooksResource extends FrontendResource {
 
     public function create()
     {
+        $this->assumeLoggedIn();
+
         $data = $this->request->getData();
 
         /** @var Songbook */
@@ -68,7 +70,7 @@ class SongbooksResource extends FrontendResource {
 
         return Response::json([
             'id' => $songbook->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
     /**

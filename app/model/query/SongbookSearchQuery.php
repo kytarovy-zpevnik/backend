@@ -4,6 +4,7 @@ namespace App\Model\Query;
 
 use App\Model\Entity\Songbook;
 use App\Model\Entity\User;
+use Doctrine\ORM\Query\Expr\Orx;
 use Kdyby\Doctrine\QueryBuilder;
 use Kdyby\Doctrine\QueryObject;
 use Kdyby\Persistence\Queryable;
@@ -37,11 +38,17 @@ class SongbookSearchQuery extends QueryObject
 	 */
 	protected function doCreateQuery(Queryable $repository)
 	{
+        $or = new Orx([
+            's.name LIKE :query',
+            't.tag LIKE :query'
+        ]);
+
 		return $repository->createQueryBuilder()
 			->select('s')
 			->from(Songbook::getClassName(), 's')
+            ->leftJoin('s.tags', 't')
 			->andWhere('s.owner = :owner')
-			->andWhere('s.name LIKE :query')
+            ->andWhere($or)
 			->setParameter('owner', $this->user)
 			->setParameter('query', "%$this->search%")
 			->orderBy('s.name');

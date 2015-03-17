@@ -137,7 +137,7 @@ class SongsResource extends FrontendResource {
 
 		return Response::json([
 			'id' => $song->id
-		]);
+		])->setHttpStatus(Response::HTTP_CREATED);
 	}
 
 	/**
@@ -255,14 +255,23 @@ class SongsResource extends FrontendResource {
 
 		}
         else if ($search = $this->request->getQuery('searchPublic')) {
-            $songs = $this->em->getDao(Song::getClassName())
+            /*$songs = $this->em->getDao(Song::getClassName())
                 ->fetch(new SongPublicSearchQuery($search))
                 ->getIterator()
-                ->getArrayCopy();
+                ->getArrayCopy();*/
+            if($search == ' '){
+                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+            }
+            else{
+                $songs = $this->em->getDao(Song::getClassName())
+                    ->fetch(new SongPublicSearchQuery($search))
+                    ->getIterator()
+                    ->getArrayCopy();
+            }
         }
-        else if ($this->request->getQuery('searchAllPublic', FALSE)) {
+        /*else if ($this->request->getQuery('searchAllPublic', FALSE)) {
             $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1]);
-        }
+        }*/
         else if (count($this->request->getQuery()) > 0) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
