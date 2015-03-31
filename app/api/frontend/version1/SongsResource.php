@@ -272,6 +272,16 @@ class SongsResource extends FrontendResource {
         /*else if ($this->request->getQuery('searchAllPublic', FALSE)) {
             $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1]);
         }*/
+        else if ($this->request->getQuery('randomPublic')) {
+            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+            $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
+
+            while (list($k, $v) = each($keys))
+            {
+                $randSongs[] = $songs[$v];
+            }
+            $songs = $randSongs;
+        }
         else if (count($this->request->getQuery()) > 0) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
