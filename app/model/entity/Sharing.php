@@ -11,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property User $user
- * @property bool $editable
  *
  * Sharing entity.
  * @author Jiří Mantlík
@@ -28,11 +27,6 @@ class Sharing extends BaseEntity
      */
     protected $user;
 
-    /**
-     * @var bool
-     * @ORM\Column(type="boolean")
-     */
-    protected $editable;
 
 
 }

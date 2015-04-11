@@ -83,13 +83,14 @@ class SongsResource extends FrontendResource {
             $this->em->persist($_tag);
         }
 
-        if ($this->request->getQuery('import') === 'agama') {
+        // XML IMPORT
+        /*if ($this->request->getQuery('import') === 'agama') {
             $this->songService->importAgama($song, $data['agama']);
 
-        } else {
+        } else {*/
             $song->lyrics = $data['lyrics'];
             $song->chords = $data['chords'];
-        }
+        //}
 
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
@@ -229,14 +230,15 @@ class SongsResource extends FrontendResource {
             $this->songService->transpose($song, $transpose);
         }
 
-        if ($this->request->getQuery('export') === 'agama') {
+        // XML EXPORT
+        /*if ($this->request->getQuery('export') === 'agama') {
             return Response::json([
                 'agama' => $this->songService->exportAgama($song)
             ]);
 
-        } else {
+        } else {*/
             return $this->songToResponse($song);
-        }
+        //}
     }
 
     /**
@@ -245,9 +247,9 @@ class SongsResource extends FrontendResource {
      */
     public function readAll()
     {
-        $this->assumeLoggedIn(); // only logged can list his songs
 
 		if ($search = $this->request->getQuery('search')) {
+            $this->assumeLoggedIn(); // only logged can list his songs
 			$songs = $this->em->getDao(Song::getClassName())
 				->fetch(new SongSearchQuery($this->getActiveSession()->user, $search))
 				->getIterator()
@@ -283,6 +285,7 @@ class SongsResource extends FrontendResource {
             $songs = $randSongs;
         }
         else if (count($this->request->getQuery()) > 0) {
+            $this->assumeLoggedIn(); // only logged can list his songs
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
             $author = $this->request->getQuery('author');
@@ -293,6 +296,7 @@ class SongsResource extends FrontendResource {
                 ->getArrayCopy();
 
         } else {
+            $this->assumeLoggedIn(); // only logged can list his songs
 			$songs = $this->em->getDao(Song::getClassName())
 				->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
 		}
@@ -755,7 +759,6 @@ class SongsResource extends FrontendResource {
 
         $sharing->song = $song;
         $sharing->user = $user;
-        $sharing->editable = $data['editable'];
 
         $this->em->persist($sharing);
 

@@ -132,7 +132,8 @@ class SongService extends Object
 		$song->chords = Json::encode($chords);
 	}
 
-	public function importAgama(Song $song, $agama)
+    // XML IMPORT
+	/*public function importAgama(Song $song, $agama)
 	{
         $lyrics = [];
         $chords = [];
@@ -227,9 +228,10 @@ class SongService extends Object
 
         $song->lyrics = implode('', $lyrics); // array of utf8 characters to string
         $song->chords = Json::encode($chords);
-	}
+	}*/
 
-    public function exportAgama(Song $song)
+    // XML EXPORT
+    /*public function exportAgama(Song $song)
     {
         $agama = '';
 
@@ -292,6 +294,6 @@ class SongService extends Object
         }
 
         return $agama;
-    }
+    }*/
 
 }
