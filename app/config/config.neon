@@ -25,6 +25,8 @@ extensions:
 	doctrine: Kdyby\Doctrine\DI\OrmExtension
 
 doctrine:
+	filters:
+		DeletedFilter: App\Model\Sql\DeletedFilter
 	metadata:
 		App\Model\Entity: %appDir%/model/entity
 
@@ -34,6 +36,12 @@ console:
 services:
 	router: Nette\Application\Routers\RouteList
 	apiRouter: Routing\RouterFactory::create()
+
+	filters:
+		factory: @Kdyby\Doctrine\EntityManager::getFilters
+		setup:
+			- enable(DeletedFilter)
+		tags: [run]
 
 	#################### services ####################
 

@@ -9,6 +9,7 @@ use App\Model\Entity\Role;
 use App\Model\Entity\SongbookSharing;
 use App\Model\Entity\SongSharing;
 use App\Model\Entity\User;
+use App\Model\Entity\SongbookTag;
 use App\Model\Service\SessionService;
 use App\Model\Service\UserService;
 use FrontendApi\FrontendResource;

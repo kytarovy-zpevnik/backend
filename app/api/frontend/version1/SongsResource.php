@@ -210,6 +210,37 @@ class SongsResource extends FrontendResource {
 		$this->em->flush();
 	}
 
+    /**
+     * Deletes Song by id.
+     * @param $id
+     */
+    public function delete($id)
+    {
+
+        $this->assumeLoggedIn();
+
+        /** @var Song */
+        $song = $this->em->getDao(Song::getClassName())->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if($this->getActiveSession()->user !== $song->owner){
+            throw new AuthorizationException;
+        }
+
+        $song->archived = true;
+        $song->modified = new DateTime();
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
 	/**
 	 * Reads detailed information about song.
 	 * @param int $id

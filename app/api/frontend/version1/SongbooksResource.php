@@ -135,15 +135,38 @@ class SongbooksResource extends FrontendResource {
      */
     public function readAll()
     {
-        $this->assumeLoggedIn(); // only logged can list his songs
 
 		if ($search = $this->request->getQuery('search')) {
+            $this->assumeLoggedIn(); // only logged can list his songbooks
 			$songbooks = $this->em->getDao(Songbook::getClassName())
 				->fetch(new SongbookSearchQuery($this->getActiveSession()->user, $search))
 				->getIterator()
 				->getArrayCopy();
 
-		} else {
+		}
+        else if ($search = $this->request->getQuery('searchPublic')) {
+            if($search == ' '){
+                $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
+            }
+            /*else{
+                $songbooks = $this->em->getDao(Songbook::getClassName())
+                    ->fetch(new SongPublicSearchQuery($search))
+                    ->getIterator()
+                    ->getArrayCopy();
+            }*/
+        }
+        else if ($this->request->getQuery('randomPublic')) {
+            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
+            $keys = array_rand ($songbooks, (8 < sizeof($songbooks) ? 8 : sizeof($songbooks)));
+
+            while (list($k, $v) = each($keys))
+            {
+                $randSongbooks[] = $songbooks[$v];
+            }
+            $songbooks = $randSongbooks;
+        }
+        else {
+            $this->assumeLoggedIn(); // only logged can list his songbooks
 			$songbooks = $this->em->getDao(Songbook::getClassName())
 				->findBy(['owner'=>$this->getActiveSession()->user], ['name' => 'ASC']);
 		}
@@ -175,8 +198,21 @@ class SongbooksResource extends FrontendResource {
     {
         $data = $this->request->getData();
 
+        $this->assumeLoggedIn();
+
         /** @var Songbook */
         $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if($this->getActiveSession()->user !== $songbook->owner){
+            throw new AuthorizationException;
+        }
 
         $tags = array_map(function ($tag) {
             return $tag['tag'];
@@ -200,6 +236,37 @@ class SongbooksResource extends FrontendResource {
         $songbook->modified = new DateTime();
 
         $this->em->flush();
+    }
+
+    /**
+     * Deletes Songbook by id.
+     * @param $id
+     */
+    public function delete($id)
+    {
+
+        $this->assumeLoggedIn();
+
+        /** @var Songbook */
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+
+        if (!$songbook) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if($this->getActiveSession()->user !== $songbook->owner){
+            throw new AuthorizationException;
+        }
+
+        $songbook->archived = true;
+        $songbook->modified = new DateTime();
+
+        $this->em->flush();
+
+        return Response::blank();
     }
 
     /**
