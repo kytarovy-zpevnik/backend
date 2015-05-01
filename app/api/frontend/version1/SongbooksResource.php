@@ -157,13 +157,22 @@ class SongbooksResource extends FrontendResource {
         }
         else if ($this->request->getQuery('randomPublic')) {
             $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
-            $keys = array_rand ($songbooks, (8 < sizeof($songbooks) ? 8 : sizeof($songbooks)));
+            if(sizeof($songbooks) > 1){
+                $keys = array_rand ($songbooks, (8 < sizeof($songbooks) ? 8 : sizeof($songbooks)));
 
-            while (list($k, $v) = each($keys))
-            {
-                $randSongbooks[] = $songbooks[$v];
+                while (list($k, $v) = each($keys))
+                {
+                    $randSongbooks[] = $songbooks[$v];
+                }
+                $songbooks = $randSongbooks;
             }
-            $songbooks = $randSongbooks;
+        }
+        else if($this->request->getQuery('admin')){
+            $this->assumeAdmin();
+            $this->em->getFilters()->disable('DeletedFilter');
+            $songbooks = $this->em->getDao(Songbook::getClassName())
+                ->findBy(array(), ['id' => 'ASC']);
+            $this->em->getFilters()->enable('DeletedFilter');
         }
         else {
             $this->assumeLoggedIn(); // only logged can list his songbooks
@@ -179,11 +188,13 @@ class SongbooksResource extends FrontendResource {
             }, $songbook->tags);
 
             return [
-                'id'    => $songbook->id,
-                'name'  => $songbook->name,
-                'note'  => $songbook->note,
+                'id'       => $songbook->id,
+                'name'     => $songbook->name,
+                'note'     => $songbook->note,
+                'public'   => $songbook->public,
+                'archived' => $songbook->archived,
                 'username' => $songbook->owner->username,
-                'tags' => $tags
+                'tags'     => $tags
             ];
         }, $songbooks);
 
@@ -201,7 +212,9 @@ class SongbooksResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         /** @var Songbook */
+        $this->em->getFilters()->disable('DeletedFilter');
         $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+        $this->em->getFilters()->enable('DeletedFilter');
 
         if (!$songbook) {
             return Response::json([
@@ -210,8 +223,8 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if($this->getActiveSession()->user !== $songbook->owner){
-            throw new AuthorizationException;
+        if ($this->getActiveSession()->user !== $songbook->owner) {
+            $this->assumeAdmin();
         }
 
         $tags = array_map(function ($tag) {
@@ -233,6 +246,7 @@ class SongbooksResource extends FrontendResource {
         $songbook->name = $data['name'];
         $songbook->note = $data['note'];
         $songbook->public = $data['public'];
+        $songbook->archived = $data['archived'];
         $songbook->modified = new DateTime();
 
         $this->em->flush();

@@ -147,10 +147,14 @@ class SongsResource extends FrontendResource {
 	 */
 	public function update($id)
 	{
+        $this->assumeLoggedIn();
+
 		$data = $this->request->getData();
 
 		/** @var Song $song */
+        $this->em->getFilters()->disable('DeletedFilter');
 		$song = $this->em->getDao(Song::getClassName())->find($id);
+        $this->em->getFilters()->enable('DeletedFilter');
 
 		if (!$song) {
 			return Response::json([
@@ -159,13 +163,9 @@ class SongsResource extends FrontendResource {
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
 		}
 
-		if (!$song->public) {
-			$this->assumeLoggedIn();
-
-			if ($this->getActiveSession()->user !== $song->owner) {
-				throw new AuthorizationException;
-			}
-		}
+		if ($this->getActiveSession()->user !== $song->owner) {
+            $this->assumeAdmin();
+        }
 
 		$ids = array_map(function ($songbook) {
 			return $songbook['id'];
@@ -205,6 +205,7 @@ class SongsResource extends FrontendResource {
         $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = $data['public'];
+        $song->archived       = $data['archived'];
         $song->modified       = new DateTime();
 
 		$this->em->flush();
@@ -288,10 +289,6 @@ class SongsResource extends FrontendResource {
 
 		}
         else if ($search = $this->request->getQuery('searchPublic')) {
-            /*$songs = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongPublicSearchQuery($search))
-                ->getIterator()
-                ->getArrayCopy();*/
             if($search == ' '){
                 $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
             }
@@ -302,18 +299,24 @@ class SongsResource extends FrontendResource {
                     ->getArrayCopy();
             }
         }
-        /*else if ($this->request->getQuery('searchAllPublic', FALSE)) {
-            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1]);
-        }*/
         else if ($this->request->getQuery('randomPublic')) {
             $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
-            $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
+            if(sizeof($songs) > 1){
+                $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
 
-            while (list($k, $v) = each($keys))
-            {
-                $randSongs[] = $songs[$v];
+                while (list($k, $v) = each($keys))
+                {
+                    $randSongs[] = $songs[$v];
+                }
+                $songs = $randSongs;
             }
-            $songs = $randSongs;
+        }
+        else if($this->request->getQuery('admin')){
+            $this->assumeAdmin();
+            $this->em->getFilters()->disable('DeletedFilter');
+            $songs = $this->em->getDao(Song::getClassName())
+                ->findBy(array(), ['id' => 'ASC']);
+            $this->em->getFilters()->enable('DeletedFilter');
         }
         else if (count($this->request->getQuery()) > 0) {
             $this->assumeLoggedIn(); // only logged can list his songs
@@ -347,6 +350,7 @@ class SongsResource extends FrontendResource {
                 'year'            => $song->year,
                 'note'            => $song->note,
                 'public'          => $song->public,
+                'archived'        => $song->archived,
                 'username'        => $song->owner->username,
                 'tags'            => $tags
             ];
