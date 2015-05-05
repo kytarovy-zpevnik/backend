@@ -216,7 +216,7 @@ class UsersResource extends FrontendResource
                     'year'            => $sharing->song->year,
                     'note'            => $sharing->song->note,
                     'public'          => $sharing->song->public,
-                    'username'          => $sharing->song->owner->username
+                    'username'        => $sharing->song->owner->username
                 ];
             }, $sharings);
 

@@ -49,7 +49,10 @@ class SessionsResource extends FrontendResource
 	 */
 	public function create()
 	{
-		$data = $this->request->getData();
+
+        $data = $this->request->getData();
+        if(!is_array($data))
+                $data = json_decode($data, true);
 
 		/** @var User $user */
 		$result = $this->em->getDao(User::getClassName())
