@@ -212,9 +212,7 @@ class SongbooksResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         /** @var Songbook */
-        $this->em->getFilters()->disable('DeletedFilter');
         $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
-        $this->em->getFilters()->enable('DeletedFilter');
 
         if (!$songbook) {
             return Response::json([
@@ -246,7 +244,6 @@ class SongbooksResource extends FrontendResource {
         $songbook->name = $data['name'];
         $songbook->note = $data['note'];
         $songbook->public = $data['public'];
-        $songbook->archived = $data['archived'];
         $songbook->modified = new DateTime();
 
         $this->em->flush();
@@ -262,7 +259,9 @@ class SongbooksResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         /** @var Songbook */
+        $this->em->getFilters()->disable('DeletedFilter');
         $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+        $this->em->getFilters()->enable('DeletedFilter');
 
         if (!$songbook) {
             return Response::json([
@@ -275,7 +274,10 @@ class SongbooksResource extends FrontendResource {
             $this->assumeAdmin();
         }
 
-        $songbook->archived = true;
+        if($songbook->archived == true)
+            $songbook->archived = false;
+        else
+            $songbook->archived = true;
         $songbook->modified = new DateTime();
 
         $this->em->flush();

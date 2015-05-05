@@ -152,9 +152,7 @@ class SongsResource extends FrontendResource {
 		$data = $this->request->getData();
 
 		/** @var Song $song */
-        $this->em->getFilters()->disable('DeletedFilter');
 		$song = $this->em->getDao(Song::getClassName())->find($id);
-        $this->em->getFilters()->enable('DeletedFilter');
 
 		if (!$song) {
 			return Response::json([
@@ -205,7 +203,6 @@ class SongsResource extends FrontendResource {
         $song->note           = $data['note'];
 		$song->owner          = $this->getActiveSession()->user;
 		$song->public         = $data['public'];
-        $song->archived       = $data['archived'];
         $song->modified       = new DateTime();
 
 		$this->em->flush();
@@ -221,7 +218,9 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         /** @var Song */
+        $this->em->getFilters()->disable('DeletedFilter');
         $song = $this->em->getDao(Song::getClassName())->find($id);
+        $this->em->getFilters()->enable('DeletedFilter');
 
         if (!$song) {
             return Response::json([
@@ -234,7 +233,10 @@ class SongsResource extends FrontendResource {
             $this->assumeAdmin();
         }
 
-        $song->archived = true;
+        if($song->archived == true)
+            $song->archived = false;
+        else
+            $song->archived = true;
         $song->modified = new DateTime();
 
         $this->em->flush();
