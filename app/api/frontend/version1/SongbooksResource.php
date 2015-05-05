@@ -272,7 +272,7 @@ class SongbooksResource extends FrontendResource {
         }
 
         if($this->getActiveSession()->user !== $songbook->owner){
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $songbook->archived = true;

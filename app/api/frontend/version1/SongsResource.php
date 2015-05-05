@@ -231,7 +231,7 @@ class SongsResource extends FrontendResource {
         }
 
         if($this->getActiveSession()->user !== $song->owner){
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $song->archived = true;
