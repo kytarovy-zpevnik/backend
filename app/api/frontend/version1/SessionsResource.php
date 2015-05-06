@@ -51,8 +51,8 @@ class SessionsResource extends FrontendResource
 	{
 
         $data = $this->request->getData();
-        if(!is_array($data))
-                $data = json_decode($data, true);
+        /*if(!is_array($data))
+                $data = json_decode($data, true);*/
 
 		/** @var User $user */
 		$result = $this->em->getDao(User::getClassName())
