@@ -96,39 +96,38 @@ class Router extends ArrayList implements IRouter
             throw self::cannotCreateApiRequestException();
         }
 
-		if (!isset($params['version'])) {
-			$params['version'] = NULL;
-		}
+        if (!isset($params['version'])) {
+            $params['version'] = NULL;
+        }
 
-		$contentType = $httpRequest->getHeader('Content-Type', '');
+        $contentType = $httpRequest->getHeader('Content-Type', '');
 
-		$delimiter = strpos($contentType, ';');
-		$mimeType  = is_int($delimiter)
-			? substr($contentType, 0, $delimiter)
-			: $contentType;
+        $delimiter = strpos($contentType, ';');
+        $mimeType  = trim(substr($contentType, 0, $delimiter === FALSE ? strlen($contentType) : $delimiter));
 
-		switch (trim($mimeType)) {
-			case 'application/json':
-				$post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
-				break;
+        switch ($mimeType) {
+            case 'application/json':
+                $post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
+                break;
 
-			case 'application/x-www-form-urlencoded':
-				$post = $httpRequest->getPost();
-				break;
+            case 'application/x-www-form-urlencoded':
+                $post = $httpRequest->getPost();
+                break;
 
-			default: // raw
-				$post = file_get_contents('php://input');
-		}
+            default: // raw
+                $post = file_get_contents('php://input');
+        }
 
-		$apiName      = $params['api'];
-		$apiVersion   = $params['version'];
-		$resourceName = $params['resource'];
-		$handlerName  = $params['handler'];
+        $apiName      = $params['api'];
+        $apiVersion   = $params['version'];
+        $resourceName = $params['resource'];
+        $handlerName  = $params['handler'];
 
-		unset($params['api'], $params['version'], $params['resource'], $params['handler']);
+        unset($params['api'], $params['version'], $params['resource'], $params['handler']);
 
         return new Request($apiName, $apiVersion, $resourceName, $handlerName, $httpRequest->getMethod(), $httpRequest->getHeaders(), $params, $httpRequest->getQuery(), $post, $httpRequest->getFiles());
     }
+
 
     /**
      * @return CannotCreateApiRequestException
