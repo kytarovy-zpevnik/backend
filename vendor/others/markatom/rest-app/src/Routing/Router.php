@@ -103,9 +103,11 @@ class Router extends ArrayList implements IRouter
 		$contentType = $httpRequest->getHeader('Content-Type', '');
 
 		$delimiter = strpos($contentType, ';');
-		$mimeType  = trim(substr($contentType, 0, $delimiter === FALSE ? NULL : $delimiter));
+		$mimeType  = is_int($delimiter)
+			? substr($contentType, 0, $delimiter)
+			: $contentType;
 
-		switch ($mimeType) {
+		switch (trim($mimeType)) {
 			case 'application/json':
 				$post = Json::decode(file_get_contents('php://input'), Json::FORCE_ARRAY);
 				break;
