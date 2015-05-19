@@ -27,4 +27,16 @@ abstract class Tag extends BaseEntity
      * @ORM\Column(type="string")
      */
     protected $tag;
+
+    /**
+     * @var bool
+     * @ORM\Column(type="boolean")
+     */
+    protected $public;
+
+    /**
+     * @var User
+     * @ORM\ManyToOne(targetEntity="App\Model\Entity\User", inversedBy="tags")
+     */
+    protected $user;
 }

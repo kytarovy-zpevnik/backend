@@ -72,15 +72,17 @@ class SongsResource extends FrontendResource {
 		}
 
         $tags = array_map(function ($tag) {
-            return $tag['tag'];
+            $_tag = new SongTag();
+            $_tag->tag = $tag['tag'];
+            $_tag->public = $tag['public'];
+            $_tag->user = $this->getActiveSession()->user;
+            return $_tag;
         }, $data['tags']);
 
         foreach ($tags as $tag) {
-            $_tag = new SongTag();
-            $_tag->tag = $tag;
-            $_tag->song = $song;
-            $song->addTag($_tag);
-            $this->em->persist($_tag);
+            $tag->song = $song;
+            $song->addTag($tag);
+            $this->em->persist($tag);
         }
 
         // XML IMPORT
@@ -141,14 +143,140 @@ class SongsResource extends FrontendResource {
 		])->setHttpStatus(Response::HTTP_CREATED);
 	}
 
+    /**
+     * Returns brief information about all user's songs.
+     * @return Response
+     */
+    public function readAll()
+    {
+
+        if ($search = $this->request->getQuery('search')) {
+            $this->assumeLoggedIn(); // only logged can list his songs
+            $songs = $this->em->getDao(Song::getClassName())
+                ->fetch(new SongSearchQuery($this->getActiveSession()->user, $search))
+                ->getIterator()
+                ->getArrayCopy();
+
+        }
+        else if ($search = $this->request->getQuery('searchPublic')) {
+            if($search == ' '){
+                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+            }
+            else{
+                $songs = $this->em->getDao(Song::getClassName())
+                    ->fetch(new SongPublicSearchQuery($search))
+                    ->getIterator()
+                    ->getArrayCopy();
+            }
+        }
+        else if ($this->request->getQuery('randomPublic')) {
+            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+            if(sizeof($songs) > 1){
+                $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
+
+                $randSongs = array();
+                while (list($k, $v) = each($keys))
+                {
+                    $randSongs[] = $songs[$v];
+                }
+                $songs = $randSongs;
+            }
+        }
+        else if($this->request->getQuery('admin')){
+            $this->assumeAdmin();
+            $this->em->getFilters()->disable('DeletedFilter');
+            $songs = $this->em->getDao(Song::getClassName())
+                ->findBy(array(), ['id' => 'ASC']);
+            $this->em->getFilters()->enable('DeletedFilter');
+        }
+        else if (count($this->request->getQuery()) > 0) {
+            $this->assumeLoggedIn(); // only logged can list his songs
+            $title  = $this->request->getQuery('title');
+            $album  = $this->request->getQuery('album');
+            $author = $this->request->getQuery('author');
+            $tag    = $this->request->getQuery('tag');
+            $songs  = $this->em->getDao(Song::getClassName())
+                ->fetch(new SongAdvSearchQuery($this->getActiveSession()->user, $title, $album, $author, $tag))
+                ->getIterator()
+                ->getArrayCopy();
+
+        } else {
+            $this->assumeLoggedIn(); // only logged can list his songs
+            $songs = $this->em->getDao(Song::getClassName())
+                ->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
+        }
+
+        $songs = array_map(function (Song $song){
+
+            $tags = array();
+            foreach($song->tags as $tag){
+                if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+                    $tags[] = $tag;
+                }
+            }
+
+            $tags = array_map(function(SongTag $tag){
+                return [
+                    'tag'    => $tag->tag,
+                    'public' => $tag->public
+                ];
+            }, $tags);
+
+            return [
+                'id'              => $song->id,
+                'title'           => $song->title,
+                'album'           => $song->album,
+                'author'          => $song->author,
+                'originalAuthor'  => $song->originalAuthor,
+                'year'            => $song->year,
+                'note'            => $song->note,
+                'public'          => $song->public,
+                'archived'        => $song->archived,
+                'username'        => $song->owner->username,
+                'tags'            => $tags
+            ];
+        }, $songs);
+
+        return response::json($songs);
+    }
+
+    /**
+     * Reads detailed information about song.
+     * @param int $id
+     * @return Response
+     */
+    public function read($id)
+    {
+        $song = $this->getSong($id);
+
+        if (!$song) {
+            return Response::json([
+                'error'   => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($transpose = $this->request->getQuery('transpose')) {
+            $this->songService->transpose($song, $transpose);
+        }
+
+        // XML EXPORT
+        /*if ($this->request->getQuery('export') === 'agama') {
+            return Response::json([
+                'agama' => $this->songService->exportAgama($song)
+            ]);
+
+        } else {*/
+        return $this->songToResponse($song);
+        //}
+    }
+
 	/**
 	 * Updates existing song.
 	 * @param int $id
 	 */
 	public function update($id)
 	{
-        $this->assumeLoggedIn();
-
 		$data = $this->request->getData();
 
 		/** @var Song $song */
@@ -160,6 +288,36 @@ class SongsResource extends FrontendResource {
 				'message' => 'Song with given id not found.'
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
 		}
+
+        $tags = array_map(function ($tag) {
+            $_tag = new SongTag();
+            $_tag->tag = $tag['tag'];
+            $_tag->public = $tag['public'];
+            $_tag->user = $this->getActiveSession()->user;
+            return $_tag;
+        }, $data['tags']);
+
+        foreach ($song->tags as $tag) {
+            if($tag->user != $this->getActiveSession()->user){
+                $tags[] = $tag;
+            }
+            $this->em->remove($tag);
+        }
+        $song->clearTags();
+        foreach ($tags as $tag) {
+            $tag->song = $song;
+            $song->addTag($tag);
+            $this->em->persist($tag);
+        }
+
+        if($action = $this->request->getQuery('action')){
+            if($action == 'tags'){
+                $this->em->flush();
+                return Response::blank();
+            }
+        }
+
+        $this->assumeLoggedIn();
 
 		if ($this->getActiveSession()->user !== $song->owner) {
             $this->assumeAdmin();
@@ -175,23 +333,6 @@ class SongsResource extends FrontendResource {
 		foreach ($songbooks as $songbook) {
 			$song->addSongbook($songbook);
 		}
-
-        $tags = array_map(function ($tag) {
-            return $tag['tag'];
-        }, $data['tags']);
-
-
-        foreach ($song->tags as $tag) {
-            $this->em->remove($tag);
-        }
-        $song->clearTags();
-        foreach ($tags as $tag) {
-            $_tag = new SongTag();
-            $_tag->tag = $tag;
-            $_tag->song = $song;
-            $song->addTag($_tag);
-            $this->em->persist($_tag);
-        }
 
 		$song->title          = $data['title'];
 		$song->album          = $data['album'];
@@ -244,121 +385,76 @@ class SongsResource extends FrontendResource {
         return Response::blank();
     }
 
-	/**
-	 * Reads detailed information about song.
-	 * @param int $id
-	 * @return Response
-	 */
-	public function read($id)
-	{
-		$song = $this->getSong($id);
+    /**
+     * Obtains song entity by given id.
+     * @param int $id
+     * @return Song|FALSE
+     */
+    private function getSong($id)
+    {
+        /** @var Song $song */
+        $song = $this->em->getDao(Song::getClassName())->find($id);
 
-		if (!$song) {
-			return Response::json([
-				'error'   => 'UNKNOWN_SONG',
-				'message' => 'Song with given id not found.'
-			])->setHttpStatus(Response::HTTP_NOT_FOUND);
-		}
-
-        if ($transpose = $this->request->getQuery('transpose')) {
-            $this->songService->transpose($song, $transpose);
+        if (!$song) {
+            return FALSE;
         }
 
-        // XML EXPORT
-        /*if ($this->request->getQuery('export') === 'agama') {
-            return Response::json([
-                'agama' => $this->songService->exportAgama($song)
-            ]);
+        if (!$song->public) {
+            $this->assumeLoggedIn();
 
-        } else {*/
-            return $this->songToResponse($song);
-        //}
+            if ($this->getActiveSession()->user !== $song->owner
+                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
+                throw new AuthorizationException;
+            }
+        }
+
+        return $song;
     }
 
     /**
-	 * Returns brief information about all user's songs.
+     * Maps song data to api response.
+     * @param Song $song
      * @return Response
      */
-    public function readAll()
+    private function SongToResponse(Song $song)
     {
-
-		if ($search = $this->request->getQuery('search')) {
-            $this->assumeLoggedIn(); // only logged can list his songs
-			$songs = $this->em->getDao(Song::getClassName())
-				->fetch(new SongSearchQuery($this->getActiveSession()->user, $search))
-				->getIterator()
-				->getArrayCopy();
-
-		}
-        else if ($search = $this->request->getQuery('searchPublic')) {
-            if($search == ' '){
-                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
-            }
-            else{
-                $songs = $this->em->getDao(Song::getClassName())
-                    ->fetch(new SongPublicSearchQuery($search))
-                    ->getIterator()
-                    ->getArrayCopy();
-            }
-        }
-        else if ($this->request->getQuery('randomPublic')) {
-            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
-            if(sizeof($songs) > 1){
-                $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
-
-                while (list($k, $v) = each($keys))
-                {
-                    $randSongs[] = $songs[$v];
-                }
-                $songs = $randSongs;
-            }
-        }
-        else if($this->request->getQuery('admin')){
-            $this->assumeAdmin();
-            $this->em->getFilters()->disable('DeletedFilter');
-            $songs = $this->em->getDao(Song::getClassName())
-                ->findBy(array(), ['id' => 'ASC']);
-            $this->em->getFilters()->enable('DeletedFilter');
-        }
-        else if (count($this->request->getQuery()) > 0) {
-            $this->assumeLoggedIn(); // only logged can list his songs
-            $title  = $this->request->getQuery('title');
-            $album  = $this->request->getQuery('album');
-            $author = $this->request->getQuery('author');
-            $tag    = $this->request->getQuery('tag');
-            $songs  = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongAdvSearchQuery($this->getActiveSession()->user, $title, $album, $author, $tag))
-                ->getIterator()
-                ->getArrayCopy();
-
-        } else {
-            $this->assumeLoggedIn(); // only logged can list his songs
-			$songs = $this->em->getDao(Song::getClassName())
-				->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
-		}
-
-        $songs = array_map(function (Song $song){
-
-            $tags = array_map(function(SongTag $tag){
-                return ['tag' => $tag->tag];
-            }, $song->tags);
-
+        $songbooks = array_map(function (Songbook $songbook) {
             return [
-                'id'              => $song->id,
-                'title'           => $song->title,
-                'album'           => $song->album,
-                'author'          => $song->author,
-                'originalAuthor'  => $song->originalAuthor,
-                'year'            => $song->year,
-                'note'            => $song->note,
-                'public'          => $song->public,
-                'archived'        => $song->archived,
-                'username'        => $song->owner->username,
-                'tags'            => $tags
+                'id'   => $songbook->id,
+                'name' => $songbook->name,
+                'note' => $songbook->note
             ];
-        }, $songs);
+        }, $song->songbooks);
 
-        return response::json($songs);
+        $tags = array();
+        foreach($song->tags as $tag){
+            if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+                $tags[] = $tag;
+            }
+        }
+
+        $tags = array_map(function(SongTag $tag){
+            return [
+                'tag'    => $tag->tag,
+                'public' => $tag->public
+            ];
+        }, $tags);
+
+        return Response::json([
+            'id'             => $song->id,
+            'title'          => $song->title,
+            'album'          => $song->album,
+            'author'         => $song->author,
+            'originalAuthor' => $song->originalAuthor,
+            'year'           => $song->year,
+            'lyrics'         => $song->lyrics,
+            'chords'         => $song->chords,
+            'note'           => $song->note,
+            'public'         => $song->public,
+            'songbooks'      => $songbooks,
+            'username'       => $song->owner->username,
+            'tags'           => $tags
+        ]);
     }
 
     /**
@@ -813,69 +909,5 @@ class SongsResource extends FrontendResource {
             'id' => $sharing->id
         ]);
     }
-
-	/**
-	 * Obtains song entity by given id.
-	 * @param int $id
-	 * @return Song|FALSE
-	 */
-	private function getSong($id)
-	{
-		/** @var Song $song */
-		$song = $this->em->getDao(Song::getClassName())->find($id);
-
-		if (!$song) {
-			return FALSE;
-		}
-
-		if (!$song->public) {
-			$this->assumeLoggedIn();
-
-			if ($this->getActiveSession()->user !== $song->owner
-				&& !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
-				throw new AuthorizationException;
-			}
-		}
-
-		return $song;
-	}
-
-	/**
-	 * Maps song data to api response.
-	 * @param Song $song
-	 * @return Response
-	 */
-	private function SongToResponse(Song $song)
-	{
-		$songbooks = array_map(function (Songbook $songbook) {
-			return [
-				'id'   => $songbook->id,
-				'name' => $songbook->name,
-				'note' => $songbook->note
-			];
-		}, $song->songbooks);
-
-		$tags = array_map(function (SongTag $tag) {
-			return [
-				'tag' => $tag->tag
-			];
-		}, $song->tags);
-
-		return Response::json([
-			'id'             => $song->id,
-			'title'          => $song->title,
-			'album'          => $song->album,
-			'author'         => $song->author,
-			'originalAuthor' => $song->originalAuthor,
-			'year'           => $song->year,
-			'lyrics'         => $song->lyrics,
-			'chords'         => $song->chords,
-			'note'           => $song->note,
-			'public'         => $song->public,
-			'songbooks'      => $songbooks,
-			'username'       => $song->owner->username,
-			'tags'           => $tags
-		]);
-	}
 
 }

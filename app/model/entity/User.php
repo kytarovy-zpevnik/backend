@@ -26,6 +26,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @property Songbook[] $sharedEditableSongbooks
  * @property Wish[] $wishes;
  * @property Ban[] $bans
+ * @property Tag[] $tags
  * @property Notification[] $notifications
  * @property Recommendation[] $myRecommendations
  * @property PasswordReset $passwordReset
@@ -116,6 +117,12 @@ class User extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Ban", mappedBy="user")
      */
     protected $bans;
+
+    /**
+     * @var Tag[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\Tag", mappedBy="user")
+     */
+    protected $tags;
 
     /**
      * @var Notification[]
