@@ -10,6 +10,7 @@ use App\Model\Entity\SongbookSharing;
 use App\Model\Entity\SongSharing;
 use App\Model\Entity\User;
 use App\Model\Entity\SongbookTag;
+use App\Model\Entity\SongTag;
 use App\Model\Service\SessionService;
 use App\Model\Service\UserService;
 use FrontendApi\FrontendResource;
@@ -207,6 +208,21 @@ class UsersResource extends FrontendResource
             $sharings = $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user]);
 
             $songs = array_map(function (SongSharing $sharing){
+
+                $tags = array();
+                foreach($sharing->song->tags as $tag){
+                    if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+                        $tags[] = $tag;
+                    }
+                }
+
+                $tags = array_map(function(SongTag $tag){
+                    return [
+                        'tag'    => $tag->tag,
+                        'public' => $tag->public
+                    ];
+                }, $tags);
+
                 return [
                     'id'              => $sharing->song->id,
                     'title'           => $sharing->song->title,
@@ -216,7 +232,8 @@ class UsersResource extends FrontendResource
                     'year'            => $sharing->song->year,
                     'note'            => $sharing->song->note,
                     'public'          => $sharing->song->public,
-                    'username'        => $sharing->song->owner->username
+                    'username'        => $sharing->song->owner->username,
+                    'tags'            => $tags
                 ];
             }, $sharings);
 

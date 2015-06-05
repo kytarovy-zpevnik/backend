@@ -208,9 +208,10 @@ class SongsResource extends FrontendResource {
 
         $songs = array_map(function (Song $song){
 
+            $session = $this->getActiveSession();
             $tags = array();
             foreach($song->tags as $tag){
-                if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+                if($tag->public == true || ($session && $tag->user == $session->user)){
                     $tags[] = $tag;
                 }
             }

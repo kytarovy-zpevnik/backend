@@ -105,7 +105,10 @@ class SessionsResource extends FrontendResource
 		$session = $this->getActiveSession();
 
 		if (!$session) {
-			throw new AuthenticationException;
+            return Response::json([
+                'error' => 'INVALID_SESSION',
+                'message' => 'Unknown session or missing session token header.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
 		}
 
 		return response::json([
