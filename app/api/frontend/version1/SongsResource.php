@@ -223,6 +223,8 @@ class SongsResource extends FrontendResource {
                 ];
             }, $tags);
 
+            $averageRating = $this->getAverageRating($song);
+
             return [
                 'id'              => $song->id,
                 'title'           => $song->title,
@@ -234,7 +236,8 @@ class SongsResource extends FrontendResource {
                 'public'          => $song->public,
                 'archived'        => $song->archived,
                 'username'        => $song->owner->username,
-                'tags'            => $tags
+                'tags'            => $tags,
+                'rating'          => $averageRating
             ];
         }, $songs);
 
@@ -387,6 +390,28 @@ class SongsResource extends FrontendResource {
     }
 
     /**
+     * Counts average rating for given song
+     * @param Song $song
+     * @return int
+     */
+    private function getAverageRating(Song $song)
+    {
+        $ratings = $this->em->getDao(SongRating::getClassName())
+            ->findBy(['song' => $song]);
+
+        $average = 0;
+
+        foreach ($ratings as & $rating) {
+            $average += $rating->rating;
+        }
+
+        if(count($ratings) > 0)
+            $average /= count($ratings);
+
+        return $average;
+    }
+
+    /**
      * Obtains song entity by given id.
      * @param int $id
      * @return Song|FALSE
@@ -441,6 +466,8 @@ class SongsResource extends FrontendResource {
             ];
         }, $tags);
 
+        $averageRating = $this->getAverageRating($song);
+
         return Response::json([
             'id'             => $song->id,
             'title'          => $song->title,
@@ -454,7 +481,8 @@ class SongsResource extends FrontendResource {
             'public'         => $song->public,
             'songbooks'      => $songbooks,
             'username'       => $song->owner->username,
-            'tags'           => $tags
+            'tags'           => $tags,
+            'rating'         => $averageRating
         ]);
     }
 
