@@ -112,6 +112,14 @@ class Songbook extends BaseEntity
     }
 
     /**
+     * Removes all songs.
+     */
+    public function clearSongs()
+    {
+        $this->songs->clear();
+    }
+
+    /**
      * Removes all tags.
      */
     public function clearTags()

@@ -230,9 +230,7 @@ class SongsResource extends FrontendResource {
                 'title'           => $song->title,
                 'album'           => $song->album,
                 'author'          => $song->author,
-                'originalAuthor'  => $song->originalAuthor,
                 'year'            => $song->year,
-                'note'            => $song->note,
                 'public'          => $song->public,
                 'archived'        => $song->archived,
                 'username'        => $song->owner->username,
@@ -293,6 +291,8 @@ class SongsResource extends FrontendResource {
 			])->setHttpStatus(Response::HTTP_NOT_FOUND);
 		}
 
+        $this->assumeLoggedIn();
+
         $tags = array_map(function ($tag) {
             $_tag = new SongTag();
             $_tag->tag = $tag['tag'];
@@ -320,8 +320,6 @@ class SongsResource extends FrontendResource {
                 return Response::blank();
             }
         }
-
-        $this->assumeLoggedIn();
 
 		if ($this->getActiveSession()->user !== $song->owner) {
             $this->assumeAdmin();
@@ -452,9 +450,10 @@ class SongsResource extends FrontendResource {
             ];
         }, $song->songbooks);
 
+        $session = $this->getActiveSession();
         $tags = array();
         foreach($song->tags as $tag){
-            if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+            if($tag->public == true || ($session && $tag->user == $session->user)){
                 $tags[] = $tag;
             }
         }

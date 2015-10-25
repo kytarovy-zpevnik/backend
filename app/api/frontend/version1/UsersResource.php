@@ -204,10 +204,10 @@ class UsersResource extends FrontendResource
                 return [
                     'id'    => $sharing->songbook->id,
                     'name'  => $sharing->songbook->name,
-                    'note'  => $sharing->songbook->note,
                     'public' => $sharing->songbook->public,
                     'username' => $sharing->songbook->owner->username,
-                    'tags' => $tags
+                    'tags' => $tags,
+                    'songs'    => count($sharing->songbook->songs)
                 ];
             }, $sharings);
 
@@ -237,9 +237,7 @@ class UsersResource extends FrontendResource
                     'title'           => $sharing->song->title,
                     'album'           => $sharing->song->album,
                     'author'          => $sharing->song->author,
-                    'originalAuthor'  => $sharing->song->originalAuthor,
                     'year'            => $sharing->song->year,
-                    'note'            => $sharing->song->note,
                     'public'          => $sharing->song->public,
                     'username'        => $sharing->song->owner->username,
                     'tags'            => $tags

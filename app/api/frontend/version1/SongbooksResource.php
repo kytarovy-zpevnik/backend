@@ -10,6 +10,7 @@ use App\Model\Entity\SongbookRating;
 use App\Model\Entity\SongbookComment;
 use App\Model\Entity\SongbookSharing;
 use App\Model\Entity\SongbookTag;
+use App\Model\Entity\SongTag;
 use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Service\SessionService;
@@ -91,9 +92,9 @@ class SongbooksResource extends FrontendResource {
 
         }
         else if ($search = $this->request->getQuery('searchPublic')) {
-            if($search == ' '){
+            //if($search == ' '){
                 $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
-            }
+            //}
             /*else{
                 $songbooks = $this->em->getDao(Songbook::getClassName())
                     ->fetch(new SongPublicSearchQuery($search))
@@ -147,11 +148,11 @@ class SongbooksResource extends FrontendResource {
             return [
                 'id'       => $songbook->id,
                 'name'     => $songbook->name,
-                'note'     => $songbook->note,
                 'public'   => $songbook->public,
                 'archived' => $songbook->archived,
                 'username' => $songbook->owner->username,
-                'tags'     => $tags
+                'tags'     => $tags,
+                'songs'    => count($songbook->songs)
             ];
         }, $songbooks);
 
@@ -184,9 +185,10 @@ class SongbooksResource extends FrontendResource {
             }
         }
 
+        $session = $this->getActiveSession();
         $tags = array();
         foreach($songbook->tags as $tag){
-            if($tag->public == true || $tag->user == $this->getActiveSession()->user){
+            if($tag->public == true || ($session && $tag->user == $session->user)){
                 $tags[] = $tag;
             }
         }
@@ -199,17 +201,33 @@ class SongbooksResource extends FrontendResource {
         }, $tags);
 
         $songs = array_map(function (Song $song){
+            $session = $this->getActiveSession();
+            $songTags = array();
+            foreach($song->tags as $tag){
+                if($tag->public == true || ($session && $tag->user == $session->user)){
+                    $songTags[] = $tag;
+                }
+            }
+
+            $songTags = array_map(function(SongTag $tag){
+                return [
+                    'tag'    => $tag->tag,
+                    'public' => $tag->public
+                ];
+            }, $songTags);
             return [
                 'id'             => $song->id,
                 'title'          => $song->title,
                 'album'          => $song->album,
                 'author'         => $song->author,
-                'originalAuthor' => $song->originalAuthor,
                 'year'           => $song->year,
                 'public'         => $song->public,
-                'username'       => $song->owner->username
+                'username'       => $song->owner->username,
+                'tags'           => $songTags
             ];
         }, $songbook->songs);
+
+        $averageRating = $this->getAverageRating($songbook);
 
         return Response::json([
             'id'       => $songbook->id,
@@ -218,7 +236,8 @@ class SongbooksResource extends FrontendResource {
             'songs'    => $songs,
             'public'   => $songbook->public,
             'username' => $songbook->owner->username,
-            'tags'     => $tags
+            'tags'     => $tags,
+            'rating'   => $averageRating
         ]);
     }
 
@@ -239,6 +258,8 @@ class SongbooksResource extends FrontendResource {
                 'message' => 'Songbook with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
+
+        $this->assumeLoggedIn();
 
         $tags = array_map(function ($tag) {
             $_tag = new SongbookTag();
@@ -268,10 +289,19 @@ class SongbooksResource extends FrontendResource {
             }
         }
 
-        $this->assumeLoggedIn();
-
         if ($this->getActiveSession()->user !== $songbook->owner) {
             $this->assumeAdmin();
+        }
+
+        $ids = array_map(function ($song) {
+            return $song['id'];
+        }, $data['songs']);
+
+        $songs = $this->em->getDao(Song::getClassName())->findBy(['id' => $ids]);
+
+        $songbook->clearSongs();
+        foreach ($songs as $song) {
+            $songbook->addSong($song);
         }
 
         $songbook->name = $data['name'];
@@ -316,6 +346,28 @@ class SongbooksResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Counts average rating for given songbook
+     * @param Songbook $songbook
+     * @return int
+     */
+    private function getAverageRating(Songbook $songbook)
+    {
+        $ratings = $this->em->getDao(SongbookRating::getClassName())
+            ->findBy(['songbook' => $songbook]);
+
+        $average = 0;
+
+        foreach ($ratings as & $rating) {
+            $average += $rating->rating;
+        }
+
+        if(count($ratings) > 0)
+            $average /= count($ratings);
+
+        return $average;
     }
 
     /**
