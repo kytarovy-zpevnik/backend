@@ -83,8 +83,8 @@ class Songbook extends BaseEntity
     protected $songbookShares;
 
     /**
-     * @var Song[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Song", mappedBy="songbooks")
+     * @var SongSongbook[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongSongbook", mappedBy="songbook")
      */
     protected $songs;
 
@@ -108,6 +108,7 @@ class Songbook extends BaseEntity
 
     public function __construct()
     {
+        $this->songs = new ArrayCollection();
         $this->tags = new ArrayCollection();
     }
 

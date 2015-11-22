@@ -120,8 +120,8 @@ class Song extends BaseEntity
     protected $owner;
 
     /**
-     * @var Songbook[]
-     * @ORM\ManyToMany(targetEntity="App\Model\Entity\Songbook", inversedBy="songs")
+     * @var SongSongbook[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongSongbook", mappedBy="song")
      */
     protected $songbooks;
 

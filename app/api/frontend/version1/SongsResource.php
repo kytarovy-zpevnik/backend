@@ -5,6 +5,7 @@ namespace FrontendApi\Version1;
 use App\Model\Entity\Song;
 use App\Model\Entity\SongRating;
 use App\Model\Entity\Songbook;
+use App\Model\Entity\SongSongbook;
 use App\Model\Entity\SongComment;
 use App\Model\Entity\SongSharing;
 use App\Model\Entity\User;
@@ -67,9 +68,14 @@ class SongsResource extends FrontendResource {
 
 		$songbooks = $this->em->getDao(Songbook::getClassName())->findBy(['id' => $ids]);
 
-		foreach ($songbooks as $songbook) {
-			$song->addSongbook($songbook);
-		}
+        foreach ($songbooks as $songbook) {
+            $songsongbook = new SongSongbook();
+            $songsongbook->song = $song;
+            $songsongbook->songbook = $songbook;
+            $songsongbook->position = count($songbook->songs) + 1;
+            $this->em->persist($songsongbook);
+            $song->addSongbook($songsongbook);
+        }
 
         $tags = array_map(function ($tag) {
             $_tag = new SongTag();
@@ -331,9 +337,42 @@ class SongsResource extends FrontendResource {
 
 		$songbooks = $this->em->getDao(Songbook::getClassName())->findBy(['id' => $ids]);
 
-		$song->clearSongbooks();
+        foreach ($song->songbooks as $songsongbook) {
+            $keepit = false;
+            foreach($songbooks as $songbook){
+                if($songsongbook->songbook->id == $songbook->id){
+                    $keepit = true;
+                    break;
+                }
+            }
+            if($keepit){
+                continue;
+            }
+            $this->em->remove($songsongbook);
+            $this->em->flush($songsongbook);
+            $othersongs = $this->em->getDao(SongSongbook::getClassName())->findBy(['songbook' => $songsongbook->songbook], ['position' => 'ASC']);
+
+            foreach ($othersongs as $other){
+                if($other->position > $songsongbook->position){
+                    $other->position -= 1;
+                    $this->em->persist($other);
+                }
+            }
+            $song->removeSongbook($songsongbook);
+
+        }
+
 		foreach ($songbooks as $songbook) {
-			$song->addSongbook($songbook);
+            $songsongbook = $this->em->getDao(SongSongbook::getClassName())->findOneBy(['songbook' => $songbook, 'song' => $song]);
+            if(!$songsongbook){
+                $songsongbook = new SongSongbook();
+                $songsongbook->song = $song;
+                $songsongbook->songbook = $songbook;
+                $songsongbook->position = count($songbook->songs) + 1;
+                $this->em->persist($songsongbook);
+                $song->addSongbook($songsongbook);
+            }
+			//$song->addSongbook($songbook);
 		}
 
 		$song->title          = $data['title'];
@@ -442,7 +481,8 @@ class SongsResource extends FrontendResource {
      */
     private function SongToResponse(Song $song)
     {
-        $songbooks = array_map(function (Songbook $songbook) {
+        $songbooks = array_map(function (SongSongbook $songsongbook) {
+            $songbook = $songsongbook->songbook;
             return [
                 'id'   => $songbook->id,
                 'name' => $songbook->name,
