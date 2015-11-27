@@ -327,6 +327,7 @@ class SongbooksResource extends FrontendResource {
                 if($other->position > $songsongbook->position){
                     $other->position -= 1;
                     $this->em->persist($other);
+                    $this->em->flush($other);
                 }
             }
             $songbook->removeSong($songsongbook);
@@ -500,6 +501,7 @@ class SongbooksResource extends FrontendResource {
                 'id'       => $rating->id,
                 'comment'  => $rating->comment,
                 'rating'   => $rating->rating,
+                'user'     => $rating->user->id,
                 'created'  => self::formatDateTime($rating->created),
                 'modified' => self::formatDateTime($rating->modified)
             ];
@@ -552,7 +554,7 @@ class SongbooksResource extends FrontendResource {
      * @param int $relationId
      * @return Response Response with SongbookRating object.
      */
-    public function updateRating($id, $relationId)
+    public function updateRating($relationId)
     {
         $data = $this->request->getData();
 
@@ -585,13 +587,13 @@ class SongbooksResource extends FrontendResource {
 
     /**
      * Delete songbook rating.
-     * @param int $ratingId
+     * @param int $relationId
      * @return Response
      */
-    public function deleteRating($ratingId)
+    public function deleteRating($relationId)
     {
         /** @var SongbookRating $rating */
-        $rating = $this->em->getDao(SongbookRating::getClassName())->find($ratingId);
+        $rating = $this->em->getDao(SongbookRating::getClassName())->find($relationId);
 
         if (!$rating) {
             return Response::json([

@@ -417,8 +417,13 @@ class SongsResource extends FrontendResource {
 
         if($song->archived == true)
             $song->archived = false;
-        else
+        else{
+            foreach ($song->songbooks as $songbook) {
+                $this->em->remove($songbook);
+            }
+            $song->clearTags();
             $song->archived = true;
+        }
         $song->modified = new DateTime();
 
         $this->em->flush();
@@ -445,7 +450,10 @@ class SongsResource extends FrontendResource {
         if(count($ratings) > 0)
             $average /= count($ratings);
 
-        return $average;
+        return [
+            'rating'      => $average,
+            'numOfRating' => count($ratings)
+        ];
     }
 
     /**
@@ -608,6 +616,7 @@ class SongsResource extends FrontendResource {
                 'id'       => $rating->id,
                 'comment'  => $rating->comment,
                 'rating'   => $rating->rating,
+                'user'     => $rating->user->id,
                 'created'  => self::formatDateTime($rating->created),
                 'modified' => self::formatDateTime($rating->modified)
             ];
@@ -659,7 +668,7 @@ class SongsResource extends FrontendResource {
      * @param int $relationId
      * @return Response Response with SongRating object.
      */
-    public function updateRating($id, $relationId)
+    public function updateRating($relationId)
     {
         $data = $this->request->getData();
 
@@ -692,13 +701,13 @@ class SongsResource extends FrontendResource {
 
     /**
      * Delete song rating.
-     * @param int $ratingId
+     * @param int $relationId
      * @return Response
      */
-    public function deleteRating($ratingId)
+    public function deleteRating($relationId)
     {
         /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::getClassName())->find($ratingId);
+        $rating = $this->em->getDao(SongRating::getClassName())->find($relationId);
 
         if (!$rating) {
             return Response::json([
