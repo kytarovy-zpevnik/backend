@@ -45,7 +45,7 @@ class FrontendResource extends Resource
 			return Response::blank()->setHttpStatus(Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
 		}
 
-		parent::handle($request);
+		return parent::handle($request);
 	}
 
 	/**
