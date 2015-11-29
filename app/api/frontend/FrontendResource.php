@@ -5,6 +5,8 @@ namespace FrontendApi;
 use App\Model\Entity\Session;
 use App\Model\Service\SessionService;
 use DateTime;
+use Markatom\RestApp\Api\Request;
+use Markatom\RestApp\Api\Response;
 use Markatom\RestApp\Resource\Resource;
 use Markatom\RestApp\Routing\AuthenticationException;
 use Markatom\RestApp\Routing\AuthorizationException;
@@ -31,6 +33,19 @@ class FrontendResource extends Resource
 	public function __construct(SessionService $serviceService)
 	{
 		$this->sessionService = $serviceService;
+	}
+
+	/**
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function handle(Request $request)
+	{
+		if (!is_array($request->getData())) {
+			return Response::blank()->setHttpStatus(Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
+		}
+
+		parent::handle($request);
 	}
 
 	/**
