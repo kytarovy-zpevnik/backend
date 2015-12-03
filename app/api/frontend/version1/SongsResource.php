@@ -473,9 +473,8 @@ class SongsResource extends FrontendResource {
         if (!$song->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])) {
-                throw new AuthorizationException;
+            if ($this->getActiveSession()->user !== $song->owner) {
+                $this->assumeAdmin();
             }
         }
 
@@ -551,10 +550,15 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        if ($this->getActiveSession()->user == $song->owner){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot rate his own songs.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
 
-        if (($this->getActiveSession()->user == $song->owner) || (!$song->public
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song]))){
-            throw new AuthorizationException;
+        if (!$song->public){
+            $this->assumeAdmin();
         }
 
         $data = $this->request->getData();
@@ -592,24 +596,16 @@ class SongsResource extends FrontendResource {
                 'message' => 'Song with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
-        $this->assumeLoggedIn();
-        $user = $this->getActiveSession()->user;
 
         if(!$song->public) {
+            $this->assumeLoggedIn();
 
-            if ($user !== $song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
-                throw new AuthorizationException;
+            if ($this->getActiveSession()->user !== $song->owner){
+                $this->assumeAdmin();
             }
         }
 
-        if ($this->request->getQuery('checkRated', FALSE)) {
-            $ratings = $this->em->getDao(SongRating::getClassName())->findBy(['user' => $user, 'song' => $song]);
-        }
-        else {
-            $ratings = $this->em->getDao(SongRating::getClassName())
-                ->findBy(['song' => $song]);
-        }
+        $ratings = $this->em->getDao(SongRating::getClassName())->findBy(['song' => $song]);
 
         $ratings = array_map(function (SongRating $rating){
             return [
@@ -624,44 +620,6 @@ class SongsResource extends FrontendResource {
 
         return response::json($ratings);
     }
-
-
-    /**
-     * Reads detailed information about rating.
-     * @param int $relationId
-     * @return Response
-     */
-    public function readRating($id, $relationId)
-    {
-        /** @var SongRating $rating */
-        $rating = $this->em->getDao(SongRating::getClassName())->find($relationId);
-
-        if (!$rating) {
-            return Response::json([
-                'error' => 'UNKNOWN_SONG_RATING',
-                'message' => 'Song rating with given id not found.'
-            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
-        }
-
-        $this->assumeLoggedIn();
-        if(!$rating->song->public) {
-
-
-            if ($this->getActiveSession()->user !== $rating->song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $rating->song])){
-                throw new AuthorizationException;
-            }
-        }
-
-        return Response::json([
-            'id'       => $rating->id,
-            'comment'  => $rating->comment,
-            'rating'   => $rating->rating,
-            'created'  => self::formatDateTime($rating->created),
-            'modified' => self::formatDateTime($rating->modified)
-        ]);
-    }
-
 
     /**
      * Updates existing song rating.
@@ -685,7 +643,7 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         if ($this->getActiveSession()->user !== $rating->user){
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $rating->comment = $data['comment'];
@@ -719,7 +677,7 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         if ($this->getActiveSession()->user !== $rating->user) {
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $this->em->remove($rating);
@@ -748,9 +706,8 @@ class SongsResource extends FrontendResource {
         }
 
 
-        if (($this->getActiveSession()->user !== $song->owner) && (!$song->public)
-            && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $song])){
-            throw new AuthorizationException;
+        if ($this->getActiveSession()->user !== $song->owner && !$song->public){
+            $this->assumeAdmin();
         }
 
         $data = $this->request->getData();
@@ -788,25 +745,15 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        $this->assumeLoggedIn();
-        $user = $this->getActiveSession()->user;
-
         if(!$song->public) {
+            $this->assumeLoggedIn();
 
-            if ($user !== $song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
-                throw new AuthorizationException;
+            if ($this->getActiveSession()->user !== $song->owner){
+                $this->assumeAdmin();
             }
         }
 
-        if ($this->request->getQuery('usersComment', FALSE)) {
-            $comments = $this->em->getDao(SongComment::getClassName())->findBy(['user' => $user, 'song' => $song]);
-        }
-        else {
-            $comments = $this->em->getDao(SongComment::getClassName())
-                ->findBy(['song' => $song]);
-        }
-
+        $comments = $this->em->getDao(SongComment::getClassName())->findBy(['song' => $song]);
 
         $comments = array_map(function (SongComment $comment){
             return [
@@ -842,9 +789,8 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
         if(!$comment->song->public) {
 
-            if ($this->getActiveSession()->user !== $comment->song->owner
-                && !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $this->getActiveSession()->user, 'song' => $comment->song])){
-                throw new AuthorizationException;
+            if ($this->getActiveSession()->user !== $comment->song->owner){
+                $this->assumeAdmin();
             }
         }
 
@@ -879,7 +825,7 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         if ($this->getActiveSession()->user !== $comment->user){
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $comment->comment = $data['comment'];
@@ -913,9 +859,8 @@ class SongsResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        $user = $this->getActiveSession()->user;
-        if (($user !== $comment->user) && ($user->role->slug !== 'admin')){
-            throw new AuthorizationException;
+        if ($this->getActiveSession()->user !== $comment->user){
+            $this->assumeAdmin();
         }
 
         $this->em->remove($comment);
