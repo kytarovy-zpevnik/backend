@@ -8,6 +8,7 @@ use App\Model\Entity\Songbook;
 use App\Model\Entity\SongSongbook;
 use App\Model\Entity\SongComment;
 use App\Model\Entity\SongSharing;
+use App\Model\Entity\SongTaking;
 use App\Model\Entity\User;
 use App\Model\Entity\Wish;
 use App\Model\Entity\Notification;
@@ -117,13 +118,18 @@ class SongsResource extends FrontendResource {
             /** @var Song $songFrom */
             $songFrom = $this->em->getDao(Song::getClassName())->find($songFromId);
             $userFrom = $this->em->getDao(User::getClassName())->findOneBy(['username' => $songFrom->owner->username]);
-            $takenSongNotification = new Notification();
-            $takenSongNotification->user = $userFrom;
-            $takenSongNotification->created = new DateTime();
-            $takenSongNotification->read = false;
-            $takenSongNotification->song = $songFrom;
-            $takenSongNotification->text = 'Vaše píseň "'.$songFrom->title.'" byla převzata uživatelem "'.$this->getActiveSession()->user->username.'".';
-            $this->em->persist($takenSongNotification);
+            $copyNotification = new Notification();
+            $copyNotification->user = $userFrom;
+            $copyNotification->created = new DateTime();
+            $copyNotification->read = false;
+            $copyNotification->song = $songFrom;
+            $copyNotification->text = 'Vaše píseň "'.$songFrom->title.'" byla zkopírována uživatelem "'.$this->getActiveSession()->user->username.'".';
+            $this->em->persist($copyNotification);
+
+            $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $this->getActiveSession()->user, 'song' => $songFrom]);
+            if($taking){
+                $this->em->remove($taking);
+            }
         }
 
         if ($song->public) {
@@ -208,8 +214,16 @@ class SongsResource extends FrontendResource {
 
         } else {
             $this->assumeLoggedIn(); // only logged can list his songs
+            $user = $this->getActiveSession()->user;
             $songs = $this->em->getDao(Song::getClassName())
-                ->findBy(['owner' => $this->getActiveSession()->user], ['title' => 'ASC']);
+                ->findBy(['owner' => $user], ['title' => 'ASC']);
+
+            $takenSongs = $this->em->getDao(SongTaking::getClassName())
+                ->findBy(['user' => $user]);
+            $takenSongs = array_map(function(SongTaking $taking){
+                return $taking->song;
+            }, $takenSongs);
+            $songs = array_merge($songs, $takenSongs);
         }
 
         $songs = array_map(function (Song $song){
@@ -264,10 +278,6 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($transpose = $this->request->getQuery('transpose')) {
-            $this->songService->transpose($song, $transpose);
-        }
-
         // XML EXPORT
         /*if ($this->request->getQuery('export') === 'agama') {
             return Response::json([
@@ -298,6 +308,11 @@ class SongsResource extends FrontendResource {
 		}
 
         $this->assumeLoggedIn();
+        $user = $this->getActiveSession()->user;
+        if ($user !== $song->owner &&
+            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])) {
+            $this->assumeAdmin();
+        }
 
         $tags = array_map(function ($tag) {
             $_tag = new SongTag();
@@ -315,6 +330,9 @@ class SongsResource extends FrontendResource {
         }
         $song->clearTags();
         foreach ($tags as $tag) {
+            if($tag->public && $tag->user != $song->owner){
+                continue;
+            }
             $tag->song = $song;
             $song->addTag($tag);
             $this->em->persist($tag);
@@ -473,8 +491,11 @@ class SongsResource extends FrontendResource {
         if (!$song->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $song->owner) {
-                $this->assumeAdmin();
+            $user = $this->getActiveSession()->user;
+            if ($user !== $song->owner &&
+                !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+                !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])) {
+                    $this->assumeAdmin();
             }
         }
 
@@ -489,6 +510,7 @@ class SongsResource extends FrontendResource {
     private function SongToResponse(Song $song)
     {
         $songbooks = array_map(function (SongSongbook $songsongbook) {
+            /* tady by se měly tahat jen vlastní songbooky */
             $songbook = $songsongbook->songbook;
             return [
                 'id'   => $songbook->id,
@@ -514,6 +536,11 @@ class SongsResource extends FrontendResource {
 
         $averageRating = $this->getAverageRating($song);
 
+        $taken = false;
+        if($session && $this->em->getDao(SongTaking::getClassName())->findBy(['user' => $session->user, 'song' => $song])){
+            $taken = true;
+        }
+
         return Response::json([
             'id'             => $song->id,
             'title'          => $song->title,
@@ -528,7 +555,8 @@ class SongsResource extends FrontendResource {
             'songbooks'      => $songbooks,
             'username'       => $song->owner->username,
             'tags'           => $tags,
-            'rating'         => $averageRating
+            'rating'         => $averageRating,
+            'taken'          => $taken
         ]);
     }
 
@@ -550,15 +578,18 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($this->getActiveSession()->user == $song->owner){
+        $user = $this->getActiveSession()->user;
+        if ($user == $song->owner){
             return Response::json([
                 'error' => 'BAD_REQUEST',
                 'message' => 'User cannot rate his own songs.'
             ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
         }
 
-        if (!$song->public){
-            $this->assumeAdmin();
+        if (!$song->public &&
+            !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])){
+                $this->assumeAdmin();
         }
 
         $data = $this->request->getData();
@@ -600,8 +631,11 @@ class SongsResource extends FrontendResource {
         if(!$song->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $song->owner){
-                $this->assumeAdmin();
+            $user = $this->getActiveSession()->user;
+            if ($user !== $song->owner &&
+                !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+                !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])){
+                    $this->assumeAdmin();
             }
         }
 
@@ -705,9 +739,11 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-
-        if ($this->getActiveSession()->user !== $song->owner && !$song->public){
-            $this->assumeAdmin();
+        $user = $this->getActiveSession()->user;
+        if ($user !== $song->owner && !$song->public &&
+            !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])){
+                $this->assumeAdmin();
         }
 
         $data = $this->request->getData();
@@ -748,8 +784,11 @@ class SongsResource extends FrontendResource {
         if(!$song->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $song->owner){
-                $this->assumeAdmin();
+            $user = $this->getActiveSession()->user;
+            if ($user !== $song->owner &&
+                !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+                !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])){
+                    $this->assumeAdmin();
             }
         }
 
@@ -786,11 +825,14 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        $this->assumeLoggedIn();
         if(!$comment->song->public) {
+            $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $comment->song->owner){
-                $this->assumeAdmin();
+            $user = $this->getActiveSession()->user;
+            if ($user !== $comment->song->owner &&
+                !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $comment->song]) &&
+                !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $comment->song])){
+                    $this->assumeAdmin();
             }
         }
 
@@ -899,11 +941,13 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($this->getActiveSession()->user !== $song->owner){
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser !== $song->owner){
             throw new AuthorizationException;
         }
 
-        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
+        if ($curUser == $user || $song->public ||
+            $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
                 'message' => 'Song already shared with this user.'
@@ -922,13 +966,65 @@ class SongsResource extends FrontendResource {
         $notification->created = new DateTime();
         $notification->read = false;
         $notification->song = $song;
-        $notification->text = "Uživatel s vámi sdílel píseň.";
+        $notification->text = "Uživatel ".$curUser->username." s vámi sdílel píseň.";
         $this->em->persist($notification);
 
         $this->em->flush();
 
         return Response::json([
             'id' => $sharing->id
+        ]);
+    }
+
+    /**
+     * Creates song taking by song id.
+     * @param int $id
+     * @return Response Response with SongTaking object.
+     */
+    public function createTaking($id)
+    {
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::getClassName())->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser == $song->owner){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot take his own songs.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
+        else if(!($song->public ||
+            $this->em->getDao(SongSharing::getClassName())->findBy(['user' => $curUser, 'song' => $song]))){
+            throw new AuthorizationException;
+        }
+
+        $taking = new SongTaking();
+
+        $taking->song = $song;
+        $taking->user = $curUser;
+
+        $this->em->persist($taking);
+
+        $notification = new Notification();
+        $notification->user = $song->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->song = $song;
+        $notification->text = "Uživatel ".$curUser->username." převzal vaši píseň.";
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $taking->id
         ]);
     }
 

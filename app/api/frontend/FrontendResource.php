@@ -41,7 +41,7 @@ class FrontendResource extends Resource
 	 */
 	public function handle(Request $request)
 	{
-		if (!is_array($request->getData())) {
+		if ($request->getData() != null && !is_array($request->getData())) {
 			return Response::blank()->setHttpStatus(Response::HTTP_UNSUPPORTED_MEDIA_TYPE);
 		}
 

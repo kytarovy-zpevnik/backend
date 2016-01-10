@@ -17,13 +17,8 @@ use Nette\Utils\Strings;
 class SongService extends Object
 {
 
-	const NOTE_PATTERN = '~C#|D#|F#|G#|C|D|E|F|G|A|B|H~';
-
     /** @var EntityManager */
     private $em;
-
-	/** @var array */
-	private static $chromaticScale = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'B', 'H'];
 
     /** @link {self::exportAgama} */
     const SECTION_PATTERN = '~
@@ -106,31 +101,6 @@ class SongService extends Object
     {
         return $this->em->getDao(Song::getClassName())->findBy(["public" => true]);
     }
-
-	/**
-	 * Transposes all song chords.
-	 * @param Song $song
-	 * @param $offset
-	 */
-	public function transpose(Song $song, $offset)
-	{
-		$chords = Json::decode($song->chords, Json::FORCE_ARRAY);
-
-		foreach ($chords as & $chord) {
-			$chord = Strings::replace($chord, self::NOTE_PATTERN, function (array $matches) use ($offset) {
-				$key = array_search($matches[0], self::$chromaticScale);
-				$key += $offset;
-
-				if ($key >= count(self::$chromaticScale)) {
-					$key -= count(self::$chromaticScale);
-				}
-
-				return self::$chromaticScale[$key];
-			});
-		}
-
-		$song->chords = Json::encode($chords);
-	}
 
     // XML IMPORT
 	/*public function importAgama(Song $song, $agama)
@@ -228,10 +198,10 @@ class SongService extends Object
 
         $song->lyrics = implode('', $lyrics); // array of utf8 characters to string
         $song->chords = Json::encode($chords);
-	}*/
+	}
 
     // XML EXPORT
-    /*public function exportAgama(Song $song)
+    public function exportAgama(Song $song)
     {
         $agama = '';
 

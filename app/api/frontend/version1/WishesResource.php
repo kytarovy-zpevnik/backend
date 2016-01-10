@@ -56,7 +56,7 @@ class WishesResource extends FrontendResource
 
         return Response::json([
             'id' => $wish->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
     /**

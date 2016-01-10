@@ -2,6 +2,7 @@
 
 namespace Routing;
 
+use Markatom\RestApp\ApplicationException;
 use Markatom\RestApp\Routing\Api;
 use Markatom\RestApp\Routing\CrudRoute;
 use Markatom\RestApp\Routing\IRouter;
@@ -23,6 +24,9 @@ class RouterFactory extends Object
     {
         $router = new Router();
 
+        // build
+        //$router[] = $api = new Api('api/frontend/<version>', 'frontend');
+        // dev
         $router[] = $api = new Api('frontend/<version>', 'frontend');
 
 		// generic create-read-update-delete routes for users resource
@@ -35,6 +39,7 @@ class RouterFactory extends Object
 
         // custom routes for sessions resource
 		$api[] = new Route([Route::METHOD_POST], 'sessions', 'sessions:create');
+        $api[] = new Route([Route::METHOD_GET], 'sessions', 'sessions:checkActive');
 		$api[] = new Route([Route::METHOD_GET], 'sessions/active', 'sessions:readActive');
 		$api[] = new Route([Route::METHOD_DELETE], 'sessions/active', 'sessions:deleteActive');
 

@@ -83,6 +83,12 @@ class Songbook extends BaseEntity
     protected $songbookShares;
 
     /**
+     * @var SongbookTaking[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookTaking", mappedBy="songbook")
+     */
+    protected $songbookTakes;
+
+    /**
      * @var SongSongbook[]
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongSongbook", mappedBy="songbook")
      */

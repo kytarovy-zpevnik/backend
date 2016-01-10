@@ -95,6 +95,12 @@ class User extends BaseEntity
     protected $sharedSongs;
 
     /**
+     * @var SongTaking[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongTaking", mappedBy="user")
+     */
+    protected $takenSongs;
+
+    /**
      * @var Songbook[]
      * @ORM\OneToMany(targetEntity="App\Model\Entity\Songbook", mappedBy="owner")
      */
@@ -105,6 +111,12 @@ class User extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookSharing", mappedBy="user")
      */
     protected $sharedSongbooks;
+
+    /**
+     * @var SongbookTaking[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongbookTaking", mappedBy="user")
+     */
+    protected $takenSongbooks;
 
     /**
      * @var Wish[]

@@ -96,6 +96,17 @@ class SessionsResource extends FrontendResource
 		]);
 	}
 
+    /**
+     * Check if there is session
+     * @return Response
+     */
+    public function checkActive()
+    {
+        $this->assumeLoggedIn();
+
+        return Response::blank();
+    }
+
 	/**
 	 * Gets active session.
 	 * @return Response

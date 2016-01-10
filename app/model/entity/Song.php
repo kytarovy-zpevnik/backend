@@ -132,6 +132,12 @@ class Song extends BaseEntity
     protected $songShares;
 
     /**
+     * @var SongTaking[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\SongTaking", mappedBy="song")
+     */
+    protected $songTakes;
+
+    /**
      * @var BadContent[]
      * @ORM\OneToMany(targetEntity="App\Model\Entity\BadContent", mappedBy="song")
      */

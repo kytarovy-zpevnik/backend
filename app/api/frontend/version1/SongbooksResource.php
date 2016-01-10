@@ -183,7 +183,9 @@ class SongbooksResource extends FrontendResource {
         if(!$songbook->public){
             $this->assumeLoggedIn();
 
-            if($this->getActiveSession()->user !== $songbook->owner){
+            $user = $this->getActiveSession()->user;
+            if($user !== $songbook->owner &&
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -282,6 +284,9 @@ class SongbooksResource extends FrontendResource {
         }
         $songbook->clearTags();
         foreach ($tags as $tag) {
+            if($tag->public && $tag->user != $songbook->owner){
+                continue;
+            }
             $tag->songbook = $songbook;
             $songbook->addTag($tag);
             $this->em->persist($tag);
@@ -352,6 +357,10 @@ class SongbooksResource extends FrontendResource {
         $songbook->modified = new DateTime();
 
         $this->em->flush();
+
+        return Response::json([
+            'id' => $songbook->id
+        ]);
     }
 
     /**
@@ -433,14 +442,17 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($this->getActiveSession()->user == $songbook->owner){
+
+        $user = $this->getActiveSession()->user;
+        if ($user == $songbook->owner){
             return Response::json([
                 'error' => 'BAD_REQUEST',
                 'message' => 'User cannot rate his own songbooks.'
             ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
         }
 
-        if (!$songbook->public){
+        if (!$songbook->public &&
+            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             $this->assumeAdmin();
         }
 
@@ -484,7 +496,9 @@ class SongbooksResource extends FrontendResource {
         if(!$songbook->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $songbook->owner){
+            $user = $this->getActiveSession()->user;
+            if ($user !== $songbook->owner &&
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -589,8 +603,9 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-
-        if ($this->getActiveSession()->user !== $songbook->owner && !$songbook->public){
+        $user = $this->getActiveSession()->user;
+        if ($user !== $songbook->owner && !$songbook->public &&
+            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             $this->assumeAdmin();
         }
 
@@ -631,7 +646,9 @@ class SongbooksResource extends FrontendResource {
         if(!$songbook->public) {
             $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $songbook->owner){
+            $user = $this->getActiveSession()->user;
+            if ($user !== $songbook->owner &&
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -668,11 +685,13 @@ class SongbooksResource extends FrontendResource {
                 'message' => 'Songbook comment with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
-        $this->assumeLoggedIn();
 
         if(!$comment->songbook->public) {
+            $this->assumeLoggedIn();
 
-            if ($this->getActiveSession()->user !== $comment->songbook->owner){
+            $user = $this->getActiveSession()->user;
+            if ($user !== $comment->songbook->owner &&
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $comment->songbook])){
                 $this->assumeAdmin();
             }
         }
