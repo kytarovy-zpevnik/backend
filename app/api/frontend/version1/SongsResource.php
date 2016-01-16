@@ -216,7 +216,7 @@ class SongsResource extends FrontendResource {
             $author = $this->request->getQuery('author');
             $tag    = $this->request->getQuery('tag');
             $songs  = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongAdvSearchQuery($user, $title, $album, $author, $tag)) // pridat public
+                ->fetch(new SongAdvSearchQuery($user, $title, $album, $author, $tag, $public))
                 ->getIterator()
                 ->getArrayCopy();
         }

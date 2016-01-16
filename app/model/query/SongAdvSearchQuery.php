@@ -32,20 +32,25 @@ class SongAdvSearchQuery extends QueryObject
     /** @var string */
     private $tag;
 
+    /** @var bool */
+    private $public;
+
     /**
      * @param User $user
      * @param $title
      * @param $album
      * @param $author
      * @param $tag
+     * @param bool $public
      */
-	public function __construct(User $user, $title, $album, $author, $tag)
+	public function __construct($user, $title, $album, $author, $tag, $public)
 	{
 		$this->user   = $user;
 	    $this->title  = $title;
         $this->album  = $album;
         $this->author = $author;
         $this->tag    = $tag;
+        $this->public = $public;
 	}
 
 	/**
@@ -54,21 +59,29 @@ class SongAdvSearchQuery extends QueryObject
 	 */
 	protected function doCreateQuery(Queryable $repository)
 	{
+        $condition = $this->public ? 's.public = 1' : 's.owner = :owner';
+
         $query = $repository->createQueryBuilder()
 			->select('s')
 			->from(Song::getClassName(), 's')
-			->andWhere('s.owner = :owner')
-			->setParameter('owner', $this->user);
+			->andWhere($condition)
+            ->orderBy('s.title');
+
         if ($this->title != null)
             $query->andWhere('s.title LIKE :title')->setParameter('title', "%$this->title%");
+
 		if ($this->album != null)
             $query->andWhere('s.album LIKE :album')->setParameter('album', "%$this->album%");
+
         if ($this->author != null)
             $query->andWhere('s.author LIKE :author')->setParameter('author', "%$this->author%");
+
         if ($this->tag != null) {
             $query->innerJoin('s.tags', 't')->andWhere('t.tag LIKE :tag')->setParameter('tag', "%$this->tag%");
         }
-        $query->orderBy('s.title');
+
+        if(!$this->public)
+            $query->setParameter('owner', $this->user);
 
         return $query;
 	}
