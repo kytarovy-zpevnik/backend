@@ -14,6 +14,8 @@ use App\Model\Entity\SongbookTag;
 use App\Model\Entity\SongTag;
 use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
+use App\Model\Query\SongbookPublicSearchQuery;
+use App\Model\Query\SongbookAdvSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
@@ -121,8 +123,24 @@ class SongbooksResource extends FrontendResource {
                 ->getIterator()
                 ->getArrayCopy();
         }
-        else if ($search = $this->request->getQuery('searchPublic')) {
+        else if ($search = $this->request->getQuery('searchPublic')) { // pro potreby androida - posleze zrusit
+            if($search == ' '){
             $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
+            }
+            else{
+                $songbooks = $this->em->getDao(Songbook::getClassName())
+                    ->fetch(new SongbookPublicSearchQuery($search))
+                    ->getIterator()
+                    ->getArrayCopy();
+            }
+        }
+        else if ((!$public && count($this->request->getQuery()) > 0) || count($this->request->getQuery()) > 1) {
+            $name  = $this->request->getQuery('name');
+            $tag    = $this->request->getQuery('tag');
+            $songbooks  = $this->em->getDao(Songbook::getClassName())
+                ->fetch(new SongbookAdvSearchQuery($user, $name, $tag, $public))
+                ->getIterator()
+                ->getArrayCopy();
         }
         else {
             $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
