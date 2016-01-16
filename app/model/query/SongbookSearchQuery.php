@@ -22,14 +22,19 @@ class SongbookSearchQuery extends QueryObject
 	/** @var string */
 	private $search;
 
+    /** @var bool */
+    private $public;
+
 	/**
 	 * @param User $user
 	 * @param string $search
+     * @param bool $public
 	 */
-	public function __construct(User $user, $search)
+	public function __construct(User $user, $search, $public)
 	{
 		$this->user   = $user;
 		$this->search = $search;
+        $this->public = $public;
 	}
 
 	/**
@@ -43,15 +48,21 @@ class SongbookSearchQuery extends QueryObject
             't.tag LIKE :query'
         ]);
 
-		return $repository->createQueryBuilder()
+        $condition = $this->public ? 's.public = 1' : 's.owner = :owner';
+
+		$qb = $repository->createQueryBuilder()
 			->select('s')
 			->from(Songbook::getClassName(), 's')
             ->leftJoin('s.tags', 't')
-			->andWhere('s.owner = :owner')
+            ->andWhere($condition)
             ->andWhere($or)
-			->setParameter('owner', $this->user)
 			->setParameter('query', "%$this->search%")
 			->orderBy('s.name');
+
+        if(!$this->public)
+            $qb->setParameter('owner', $this->user);
+
+        return $qb;
 	}
 
 }

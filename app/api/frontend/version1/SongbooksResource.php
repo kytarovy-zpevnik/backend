@@ -83,28 +83,27 @@ class SongbooksResource extends FrontendResource {
      */
     public function readAll()
     {
+        $public = false;
+        $user = null;
+        if ($this->request->getQuery('public')) {
+            $public = true;
+            $findBy = ["public" => 1];
+        }
+        else {
+            $this->assumeLoggedIn(); // only logged can list his songs
+            $user = $this->getActiveSession()->user;
+            $findBy = ['owner' => $user];
+        }
 
-        if ($search = $this->request->getQuery('search')) {
-            $this->assumeLoggedIn(); // only logged can list his songbooks
+        if($this->request->getQuery('admin')){
+            $this->assumeAdmin();
+            $this->em->getFilters()->disable('DeletedFilter');
             $songbooks = $this->em->getDao(Songbook::getClassName())
-                ->fetch(new SongbookSearchQuery($this->getActiveSession()->user, $search))
-                ->getIterator()
-                ->getArrayCopy();
-
+                ->findBy(array(), ['id' => 'ASC']);
+            $this->em->getFilters()->enable('DeletedFilter');
         }
-        else if ($search = $this->request->getQuery('searchPublic')) {
-            //if($search == ' '){
-                $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
-            //}
-            /*else{
-                $songbooks = $this->em->getDao(Songbook::getClassName())
-                    ->fetch(new SongPublicSearchQuery($search))
-                    ->getIterator()
-                    ->getArrayCopy();
-            }*/
-        }
-        else if ($this->request->getQuery('randomPublic')) {
-            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
+        else if ($this->request->getQuery('random')) {
+            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
             if(sizeof($songbooks) > 1){
                 $keys = array_rand ($songbooks, (8 < sizeof($songbooks) ? 8 : sizeof($songbooks)));
 
@@ -116,17 +115,25 @@ class SongbooksResource extends FrontendResource {
                 $songbooks = $randSongbooks;
             }
         }
-        else if($this->request->getQuery('admin')){
-            $this->assumeAdmin();
-            $this->em->getFilters()->disable('DeletedFilter');
+        else if ($search = $this->request->getQuery('search')) {
             $songbooks = $this->em->getDao(Songbook::getClassName())
-                ->findBy(array(), ['id' => 'ASC']);
-            $this->em->getFilters()->enable('DeletedFilter');
+                ->fetch(new SongbookSearchQuery($user, $search, $public))
+                ->getIterator()
+                ->getArrayCopy();
+        }
+        else if ($search = $this->request->getQuery('searchPublic')) {
+            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(["public" => 1], ['name' => 'ASC']);
         }
         else {
-            $this->assumeLoggedIn(); // only logged can list his songbooks
-            $songbooks = $this->em->getDao(Songbook::getClassName())
-                ->findBy(['owner'=>$this->getActiveSession()->user], ['name' => 'ASC']);
+            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
+            /*if (!$public){
+                $takenSongs = $this->em->getDao(SongTaking::getClassName())
+                    ->findBy(['user' => $user]);
+                $takenSongs = array_map(function(SongTaking $taking){
+                    return $taking->song;
+                }, $takenSongs);
+                $songs = array_merge($songs, $takenSongs);
+            }*/
         }
 
         $songbooks = array_map(function (Songbook $songbook){
