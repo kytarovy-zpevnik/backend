@@ -161,28 +161,27 @@ class SongsResource extends FrontendResource {
      */
     public function readAll()
     {
-
-        if ($search = $this->request->getQuery('search')) {
+        $public = false;
+        $user = null;
+        if ($this->request->getQuery('public')) {
+            $public = true;
+            $findBy = ["public" => 1];
+        }
+        else {
             $this->assumeLoggedIn(); // only logged can list his songs
-            $songs = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongSearchQuery($this->getActiveSession()->user, $search))
-                ->getIterator()
-                ->getArrayCopy();
+            $user = $this->getActiveSession()->user;
+            $findBy = ['owner' => $user];
+        }
 
+        if ($this->request->getQuery('admin')) {
+            $this->assumeAdmin();
+            $this->em->getFilters()->disable('DeletedFilter');
+            $songs = $this->em->getDao(Song::getClassName())
+                ->findBy(array(), ['id' => 'ASC']);
+            $this->em->getFilters()->enable('DeletedFilter');
         }
-        else if ($search = $this->request->getQuery('searchPublic')) {
-            if($search == ' '){
-                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
-            }
-            else{
-                $songs = $this->em->getDao(Song::getClassName())
-                    ->fetch(new SongPublicSearchQuery($search))
-                    ->getIterator()
-                    ->getArrayCopy();
-            }
-        }
-        else if ($this->request->getQuery('randomPublic')) {
-            $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+        else if ($this->request->getQuery('random')) {
+            $songs = $this->em->getDao(Song::getClassName())->findBy($findBy, ['title' => 'ASC']);
             if(sizeof($songs) > 1){
                 $keys = array_rand ($songs, (8 < sizeof($songs) ? 8 : sizeof($songs)));
 
@@ -194,36 +193,43 @@ class SongsResource extends FrontendResource {
                 $songs = $randSongs;
             }
         }
-        else if($this->request->getQuery('admin')){
-            $this->assumeAdmin();
-            $this->em->getFilters()->disable('DeletedFilter');
+        else if ($search = $this->request->getQuery('search')) {
             $songs = $this->em->getDao(Song::getClassName())
-                ->findBy(array(), ['id' => 'ASC']);
-            $this->em->getFilters()->enable('DeletedFilter');
+                ->fetch(new SongSearchQuery($user, $search, $public))
+                ->getIterator()
+                ->getArrayCopy();
         }
-        else if (count($this->request->getQuery()) > 0) {
-            $this->assumeLoggedIn(); // only logged can list his songs
+        else if ($search = $this->request->getQuery('searchPublic')) { // pro potreby androida - posleze zrusit
+            if($search == ' '){
+                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
+            }
+            else{
+                $songs = $this->em->getDao(Song::getClassName())
+                    ->fetch(new SongPublicSearchQuery($search))
+                    ->getIterator()
+                    ->getArrayCopy();
+            }
+        }
+        else if ((!$public && count($this->request->getQuery()) > 0) || count($this->request->getQuery()) > 1) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
             $author = $this->request->getQuery('author');
             $tag    = $this->request->getQuery('tag');
             $songs  = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongAdvSearchQuery($this->getActiveSession()->user, $title, $album, $author, $tag))
+                ->fetch(new SongAdvSearchQuery($user, $title, $album, $author, $tag)) // pridat public
                 ->getIterator()
                 ->getArrayCopy();
-
-        } else {
-            $this->assumeLoggedIn(); // only logged can list his songs
-            $user = $this->getActiveSession()->user;
-            $songs = $this->em->getDao(Song::getClassName())
-                ->findBy(['owner' => $user], ['title' => 'ASC']);
-
-            $takenSongs = $this->em->getDao(SongTaking::getClassName())
-                ->findBy(['user' => $user]);
-            $takenSongs = array_map(function(SongTaking $taking){
-                return $taking->song;
-            }, $takenSongs);
-            $songs = array_merge($songs, $takenSongs);
+        }
+        else {
+            $songs = $this->em->getDao(Song::getClassName())->findBy($findBy, ['title' => 'ASC']);
+            if (!$public){
+                $takenSongs = $this->em->getDao(SongTaking::getClassName())
+                    ->findBy(['user' => $user]);
+                $takenSongs = array_map(function(SongTaking $taking){
+                    return $taking->song;
+                }, $takenSongs);
+                $songs = array_merge($songs, $takenSongs);
+            }
         }
 
         $songs = array_map(function (Song $song){
