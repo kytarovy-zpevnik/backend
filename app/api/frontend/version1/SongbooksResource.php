@@ -12,6 +12,8 @@ use App\Model\Entity\SongbookComment;
 use App\Model\Entity\SongbookSharing;
 use App\Model\Entity\SongbookTag;
 use App\Model\Entity\SongTag;
+use App\Model\Entity\SongSharing;
+use App\Model\Entity\SongTaking;
 use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Query\SongbookPublicSearchQuery;
@@ -230,6 +232,23 @@ class SongbooksResource extends FrontendResource {
             ];
         }, $tags);
 
+        $songs = array();
+        foreach($songbook->songs as $songsongbook){
+            $song = $songsongbook->song;
+            if(!$song->public){
+                if(!$session){
+                    continue;
+                }
+                $user = $session->user;
+                if($song->owner != $user &&
+                    !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
+                    !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])) {
+                    continue;
+                }
+            }
+            $songs[] = $songsongbook;
+        }
+
         $songs = array_map(function (SongSongbook $songsongbook){
             $song = $songsongbook->song;
             $session = $this->getActiveSession();
@@ -257,7 +276,7 @@ class SongbooksResource extends FrontendResource {
                 'tags'           => $songTags,
                 'position'       => $songsongbook->position
             ];
-        }, $songbook->songs);
+        }, $songs);
 
         $averageRating = $this->getAverageRating($songbook);
 
