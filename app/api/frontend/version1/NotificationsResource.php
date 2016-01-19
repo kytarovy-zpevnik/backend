@@ -50,10 +50,12 @@ class NotificationsResource extends FrontendResource
 			$notifications = $this->em->getDao(Notification::getClassName())->findBy([
 				'user' => $user,
 				'read' => FALSE
-			], ['created' => 'ASC']);
+			], ['created' => 'DESC']);
 
 		} else {
-			$notifications = $this->em->getDao(Notification::getClassName())->findBy(['user' => $user], ['created' => 'ASC']);
+			$notifications = $this->em->getDao(Notification::getClassName())->findBy(
+                ['user' => $user],
+                ['created' => 'DESC']);
 		}
 
 		$data = array_map(function (Notification $notification) {
@@ -120,4 +122,30 @@ class NotificationsResource extends FrontendResource
 		$this->em->flush();
 	}
 
+    /**
+     * Marks given notification as read.
+     * @param int $id
+     */
+    public function update($id)
+    {
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+
+        $data = $this->request->getData();
+
+        if ($data !== ['read' => TRUE]) {
+            return Response::json([
+                'error' => 'NOT_IMPLEMENTED',
+                'message' => 'Not implemented.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
+
+        /** @var Notification $notification */
+        $notification = $this->em->getDao(Notification::getClassName())->find($id);
+
+        $notification->read = TRUE;
+
+        $this->em->flush();
+    }
 }
