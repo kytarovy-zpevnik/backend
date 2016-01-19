@@ -93,6 +93,9 @@ class SongbooksResource extends FrontendResource {
             $public = true;
             $findBy = ["public" => 1];
         }
+        else if ($search = $this->request->getQuery('searchPublic')) { // pro potreby androida - posleze zrusit
+            $public = true;
+        }
         else {
             $this->assumeLoggedIn(); // only logged can list his songs
             $user = $this->getActiveSession()->user;
