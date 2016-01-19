@@ -848,11 +848,12 @@ class SongbooksResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if ($this->getActiveSession()->user !== $songbook->owner){
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser !== $songbook->owner){
             throw new AuthorizationException;
         }
 
-        if ($this->getActiveSession()->user == $user || $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+        if ($curUser == $user || $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
                 'message' => 'Songbook already shared with this user.'
@@ -872,7 +873,7 @@ class SongbooksResource extends FrontendResource {
         $notification->created = new DateTime();
         $notification->read = false;
         $notification->songbook = $songbook;
-        $notification->text = "Uživatel s vámi sdílel zpěvník.";
+        $notification->text = 'Uživatel "'.$curUser->username.'" s vámi sdílel zpěvník "'.$songbook->name.'".';
         $this->em->persist($notification);
 
         $this->em->flush();

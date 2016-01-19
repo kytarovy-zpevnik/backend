@@ -142,7 +142,7 @@ class SongsResource extends FrontendResource {
                     $notification->created = new DateTime();
                     $notification->read = false;
                     $notification->song = $song;
-                    $notification->text = "Píseň, která by se Vám mohla líbit.";
+                    $notification->text = '"'.$song->title.'" Píseň, která by se Vám mohla líbit.';
                     $this->em->persist($notification);
                 }
             }
@@ -998,7 +998,7 @@ class SongsResource extends FrontendResource {
         $notification->created = new DateTime();
         $notification->read = false;
         $notification->song = $song;
-        $notification->text = "Uživatel ".$curUser->username." s vámi sdílel píseň.";
+        $notification->text = 'Uživatel "'.$curUser->username.'" s vámi sdílel píseň "'.$song->title.'".';
         $this->em->persist($notification);
 
         $this->em->flush();
@@ -1050,7 +1050,7 @@ class SongsResource extends FrontendResource {
         $notification->created = new DateTime();
         $notification->read = false;
         $notification->song = $song;
-        $notification->text = "Uživatel ".$curUser->username." převzal vaši píseň.";
+        $notification->text = 'Uživatel "'.$curUser->username.'" převzal vaši píseň "'.$song->title.'".';
         $this->em->persist($notification);
 
         $this->em->flush();
