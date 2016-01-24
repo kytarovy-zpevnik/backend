@@ -557,7 +557,10 @@ class SongbooksResource extends FrontendResource {
                 'id'       => $rating->id,
                 'comment'  => $rating->comment,
                 'rating'   => $rating->rating,
-                'user'     => $rating->user->id,
+                'user'     => [
+                                'id' => $rating->user->id,
+                                'username' => $rating->user->username
+                              ],
                 'created'  => self::formatDateTime($rating->created),
                 'modified' => self::formatDateTime($rating->modified)
             ];
