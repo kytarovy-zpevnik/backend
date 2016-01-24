@@ -314,89 +314,35 @@ class SongbooksResource extends FrontendResource {
         }
 
         $this->assumeLoggedIn();
-
-        $tags = array_map(function ($tag) {
-            $_tag = new SongbookTag();
-            $_tag->tag = $tag['tag'];
-            $_tag->public = $tag['public'];
-            $_tag->user = $this->getActiveSession()->user;
-            return $_tag;
-        }, $data['tags']);
-
-        foreach ($songbook->tags as $tag) {
-            if($tag->user != $this->getActiveSession()->user){
-                $tags[] = $tag;
-            }
-            $this->em->remove($tag);
-        }
-        $songbook->clearTags();
-        foreach ($tags as $tag) {
-            if($tag->public && $tag->user != $songbook->owner){
-                continue;
-            }
-            $tag->songbook = $songbook;
-            $songbook->addTag($tag);
-            $this->em->persist($tag);
+        $user = $this->getActiveSession()->user;
+        if ($user !== $songbook->owner/* &&
+            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])*/) {
+            $this->assumeAdmin();
         }
 
         if($action = $this->request->getQuery('action')){
             if($action == 'tags'){
+                $this->updateTags($songbook, $data['tags']);
                 $this->em->flush();
-                return Response::blank();
+                return Response::json([
+                    'id' => $songbook->id
+                ]);
+            }
+            if($action == 'songbooks'){
+                $this->updateSongs($songbook, $data['songs']);
+                $this->em->flush();
+                return Response::json([
+                    'id' => $songbook->id
+                ]);
             }
         }
 
-        if ($this->getActiveSession()->user !== $songbook->owner) {
+        if ($user !== $songbook->owner) {
             $this->assumeAdmin();
         }
 
-        $ids = array_map(function ($song) {
-            return $song['id'];
-        }, $data['songs']);
-
-        $songs = $this->em->getDao(Song::getClassName())->findBy(['id' => $ids]);
-
-        $position = 1;
-
-        foreach ($songbook->songs as $songsongbook) {
-            $keepit = false;
-            foreach($songs as $song){
-                if($songsongbook->song->id == $song->id){
-                    $position++;
-                    $keepit = true;
-                    break;
-                }
-            }
-            if($keepit){
-                continue;
-            }
-            $this->em->remove($songsongbook);
-            $this->em->flush($songsongbook);
-            $othersongs = $this->em->getDao(SongSongbook::getClassName())->findBy(['songbook' => $songbook], ['position' => 'ASC']);
-
-            foreach ($othersongs as $other){
-                if($other->position > $songsongbook->position){
-                    $other->position -= 1;
-                    $this->em->persist($other);
-                    $this->em->flush($other);
-                }
-            }
-            $songbook->removeSong($songsongbook);
-
-        }
-
-        foreach ($songs as $song) {
-            $songsongbook = $this->em->getDao(SongSongbook::getClassName())->findOneBy(['songbook' => $songbook, 'song' => $song]);
-            if(!$songsongbook){
-                $songsongbook = new SongSongbook();
-                $songsongbook->song = $song;
-                $songsongbook->songbook = $songbook;
-                $songsongbook->position = $position++;
-                $this->em->persist($songsongbook);
-                $songbook->addSong($songsongbook);
-            }
-            //$songbook->addSong($song);
-        }
+        $this->updateTags($songbook, $data['tags']);
+        $this->updateSongs($songbook, $data['songs']);
 
         $songbook->name = $data['name'];
         $songbook->note = $data['note'];
@@ -444,6 +390,91 @@ class SongbooksResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Updates tags for given songbook
+     * @param Songbook $songbook
+     * @param $tags
+     */
+    private function updateTags(Songbook $songbook, $tags)
+    {
+        $tags = array_map(function ($tag) {
+            $_tag = new SongbookTag();
+            $_tag->tag = $tag['tag'];
+            $_tag->public = $tag['public'];
+            $_tag->user = $this->getActiveSession()->user;
+            return $_tag;
+        }, $tags);
+
+        foreach ($songbook->tags as $tag) {
+            if($tag->user != $this->getActiveSession()->user){
+                $tags[] = $tag;
+            }
+            $this->em->remove($tag);
+        }
+        $songbook->clearTags();
+        foreach ($tags as $tag) {
+            if($tag->public && $tag->user != $songbook->owner){
+                continue;
+            }
+            $tag->songbook = $songbook;
+            $songbook->addTag($tag);
+            $this->em->persist($tag);
+        }
+    }
+
+    /**
+     * Updates songbooks for given song
+     * @param Song $song
+     * @param $songbooks
+     */
+    private function updateSongs(Songbook $songbook, $songs)
+    {
+        $ids = array_map(function ($song) {
+            return $song['id'];
+        }, $songs);
+
+        $songs = $this->em->getDao(Song::getClassName())->findBy(['id' => $ids]);
+
+        // Which songs to keep and which delete
+        foreach ($songbook->songs as $songsongbook) {
+            $keepit = false;
+            foreach($songs as $song){
+                if($songsongbook->song->id == $song->id){
+                    $keepit = true;
+                    break;
+                }
+            }
+            if($keepit){
+                continue;
+            }
+            $this->em->remove($songsongbook);
+            $this->em->flush($songsongbook);
+            $othersongs = $this->em->getDao(SongSongbook::getClassName())->findBy(['songbook' => $songbook], ['position' => 'ASC']);
+
+            foreach ($othersongs as $other){
+                if($other->position > $songsongbook->position){
+                    $other->position -= 1;
+                    $this->em->persist($other);
+                    $this->em->flush($other);
+                }
+            }
+            $songbook->removeSong($songsongbook);
+
+        }
+
+        foreach ($songs as $song) {
+            $songsongbook = $this->em->getDao(SongSongbook::getClassName())->findOneBy(['songbook' => $songbook, 'song' => $song]);
+            if(!$songsongbook){
+                $songsongbook = new SongSongbook();
+                $songsongbook->song = $song;
+                $songsongbook->songbook = $songbook;
+                $songsongbook->position = count($songbook->songs) + 1;
+                $this->em->persist($songsongbook);
+                $songbook->addSong($songsongbook);
+            }
+        }
     }
 
     /**
