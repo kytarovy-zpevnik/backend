@@ -52,6 +52,7 @@ class SongbookAdvSearchQuery extends QueryObject
         $query = $repository->createQueryBuilder()
             ->select('s')
             ->from(Songbook::getClassName(), 's')
+            ->andWhere('s.archived = 0')
             ->andWhere($condition)
             ->orderBy('s.name');
 

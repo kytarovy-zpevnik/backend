@@ -163,25 +163,21 @@ class SongsResource extends FrontendResource {
     {
         $public = false;
         $user = null;
+        $findBy = ['archived' => 0];
         if ($this->request->getQuery('public')) {
             $public = true;
-            $findBy = ["public" => 1];
-        }
-        else if ($search = $this->request->getQuery('searchPublic')) { // pro potreby androida - posleze zrusit
-            $public = true;
+            $findBy['public'] = 1;
         }
         else {
             $this->assumeLoggedIn(); // only logged can list his songs
             $user = $this->getActiveSession()->user;
-            $findBy = ['owner' => $user];
+            $findBy['owner'] = $user;
         }
 
         if ($this->request->getQuery('admin')) {
             $this->assumeAdmin();
-            $this->em->getFilters()->disable('DeletedFilter');
             $songs = $this->em->getDao(Song::getClassName())
                 ->findBy(array(), ['id' => 'ASC']);
-            $this->em->getFilters()->enable('DeletedFilter');
         }
         else if ($this->request->getQuery('random')) {
             $songs = $this->em->getDao(Song::getClassName())->findBy($findBy, ['title' => 'ASC']);
@@ -201,17 +197,6 @@ class SongsResource extends FrontendResource {
                 ->fetch(new SongSearchQuery($user, $search, $public))
                 ->getIterator()
                 ->getArrayCopy();
-        }
-        else if ($search = $this->request->getQuery('searchPublic')) { // pro potreby androida - posleze zrusit
-            if($search == ' '){
-                $songs = $this->em->getDao(Song::getClassName())->findBy(["public" => 1], ['title' => 'ASC']);
-            }
-            else{
-                $songs = $this->em->getDao(Song::getClassName())
-                    ->fetch(new SongPublicSearchQuery($search))
-                    ->getIterator()
-                    ->getArrayCopy();
-            }
         }
         else if ((!$public && count($this->request->getQuery()) > 0) || count($this->request->getQuery()) > 1) {
             $title  = $this->request->getQuery('title');
@@ -309,7 +294,7 @@ class SongsResource extends FrontendResource {
 		/** @var Song $song */
 		$song = $this->em->getDao(Song::getClassName())->find($id);
 
-		if (!$song) {
+		if (!$song || $song->archived) {
 			return Response::json([
 				'error' => 'UNKNOWN_SONG',
 				'message' => 'Song with given id not found.'
@@ -367,9 +352,7 @@ class SongsResource extends FrontendResource {
         $this->assumeLoggedIn();
 
         /** @var Song */
-        $this->em->getFilters()->disable('DeletedFilter');
         $song = $this->em->getDao(Song::getClassName())->find($id);
-        $this->em->getFilters()->enable('DeletedFilter');
 
         if (!$song) {
             return Response::json([
@@ -516,7 +499,7 @@ class SongsResource extends FrontendResource {
         /** @var Song $song */
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return FALSE;
         }
 
@@ -603,7 +586,7 @@ class SongsResource extends FrontendResource {
 
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
@@ -662,7 +645,7 @@ class SongsResource extends FrontendResource {
         /** @var SongRating $rating */
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
@@ -785,7 +768,7 @@ class SongsResource extends FrontendResource {
 
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
@@ -838,7 +821,7 @@ class SongsResource extends FrontendResource {
     {
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
@@ -998,7 +981,7 @@ class SongsResource extends FrontendResource {
 
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
@@ -1062,7 +1045,7 @@ class SongsResource extends FrontendResource {
 
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song) {
+        if (!$song || $song->archived) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'

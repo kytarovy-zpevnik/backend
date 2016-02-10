@@ -54,6 +54,7 @@ class SongbookSearchQuery extends QueryObject
 			->select('s')
 			->from(Songbook::getClassName(), 's')
             ->leftJoin('s.tags', 't')
+            ->andWhere('s.archived = 0')
             ->andWhere($condition)
             ->andWhere($or)
 			->setParameter('query', "%$this->search%")
