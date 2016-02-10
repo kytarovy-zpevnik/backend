@@ -10,6 +10,7 @@ use App\Model\Entity\SongSongbook;
 use App\Model\Entity\SongbookRating;
 use App\Model\Entity\SongbookComment;
 use App\Model\Entity\SongbookSharing;
+use App\Model\Entity\SongbookTaking;
 use App\Model\Entity\SongbookTag;
 use App\Model\Entity\SongTag;
 use App\Model\Entity\SongSharing;
@@ -134,14 +135,14 @@ class SongbooksResource extends FrontendResource {
         }
         else {
             $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
-            /*if (!$public){
-                $takenSongs = $this->em->getDao(SongTaking::getClassName())
+            if (!$public){
+                $takenSongbooks = $this->em->getDao(SongbookTaking::getClassName())
                     ->findBy(['user' => $user]);
-                $takenSongs = array_map(function(SongTaking $taking){
-                    return $taking->song;
-                }, $takenSongs);
-                $songs = array_merge($songs, $takenSongs);
-            }*/
+                $takenSongbooks = array_map(function(SongbookTaking $taking){
+                    return $taking->songbook;
+                }, $takenSongbooks);
+                $songbooks = array_merge($songbooks, $takenSongbooks);
+            }
         }
 
         $songbooks = array_map(function (Songbook $songbook){
@@ -200,7 +201,8 @@ class SongbooksResource extends FrontendResource {
 
             $user = $this->getActiveSession()->user;
             if($user !== $songbook->owner &&
-                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&
+                !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -268,6 +270,11 @@ class SongbooksResource extends FrontendResource {
 
         $averageRating = $this->getAverageRating($songbook);
 
+        $taken = false;
+        if($session && $this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $session->user, 'songbook' => $songbook])){
+            $taken = true;
+        }
+
         return Response::json([
             'id'       => $songbook->id,
             'name'     => $songbook->name,
@@ -276,7 +283,8 @@ class SongbooksResource extends FrontendResource {
             'public'   => $songbook->public,
             'username' => $songbook->owner->username,
             'tags'     => $tags,
-            'rating'   => $averageRating
+            'rating'   => $averageRating,
+            'taken'    => $taken
         ]);
     }
 
@@ -300,8 +308,8 @@ class SongbooksResource extends FrontendResource {
 
         $this->assumeLoggedIn();
         $user = $this->getActiveSession()->user;
-        if ($user !== $songbook->owner/* &&
-            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])*/) {
+        if ($user !== $songbook->owner &&
+            !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])) {
             $this->assumeAdmin();
         }
 
@@ -513,7 +521,8 @@ class SongbooksResource extends FrontendResource {
         }
 
         if (!$songbook->public &&
-            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&
+            !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             $this->assumeAdmin();
         }
 
@@ -568,7 +577,8 @@ class SongbooksResource extends FrontendResource {
 
             $user = $this->getActiveSession()->user;
             if ($user !== $songbook->owner &&
-                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&
+                !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -687,7 +697,8 @@ class SongbooksResource extends FrontendResource {
 
         $user = $this->getActiveSession()->user;
         if ($user !== $songbook->owner && !$songbook->public &&
-            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+            !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&
+            !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             $this->assumeAdmin();
         }
 
@@ -741,7 +752,8 @@ class SongbooksResource extends FrontendResource {
 
             $user = $this->getActiveSession()->user;
             if ($user !== $songbook->owner &&
-                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&
+                !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -784,7 +796,8 @@ class SongbooksResource extends FrontendResource {
 
             $user = $this->getActiveSession()->user;
             if ($user !== $comment->songbook->owner &&
-                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $comment->songbook])){
+                !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $comment->songbook]) &&
+                !$this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $user, 'songbook' => $comment->songbook])){
                 $this->assumeAdmin();
             }
         }
@@ -949,6 +962,58 @@ class SongbooksResource extends FrontendResource {
 
         return Response::json([
             'id' => $sharing->id
+        ]);
+    }
+
+    /**
+     * Creates songbook taking by songbook id.
+     * @param int $id
+     * @return Response Response with SongbookTaking object.
+     */
+    public function createTaking($id)
+    {
+        $this->assumeLoggedIn();
+
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+
+        if (!$songbook || $songbook->archived) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser == $songbook->owner){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot take his own songbooks.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
+        else if(!($songbook->public ||
+            $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $curUser, 'songbook' => $songbook]))){
+            throw new AuthorizationException;
+        }
+
+        $taking = new SongbookTaking();
+
+        $taking->songbook = $songbook;
+        $taking->user = $curUser;
+
+        $this->em->persist($taking);
+
+        $notification = new Notification();
+        $notification->user = $songbook->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->songbook = $songbook;
+        $notification->text = 'Uživatel "'.$curUser->username.'" převzal váš zpěvník "'.$songbook->name.'".';
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $taking->id
         ]);
     }
 
