@@ -116,7 +116,7 @@ class SongsResource extends FrontendResource {
 
         if ($songFromId = $this->request->getQuery('takenFrom')) {
             /** @var Song $songFrom */
-            $songFrom = $this->em->getDao(Song::getClassName())->find($songFromId);
+            $songFrom = $this->em->getDao(Song::getClassName())->find($songFromId); // tohle bude chtít upravit při kopírování smazaného
             $userFrom = $this->em->getDao(User::getClassName())->findOneBy(['username' => $songFrom->owner->username]);
             $copyNotification = new Notification();
             $copyNotification->user = $userFrom;
@@ -129,6 +129,12 @@ class SongsResource extends FrontendResource {
             $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $this->getActiveSession()->user, 'song' => $songFrom]);
             if($taking){
                 $this->em->remove($taking);
+                foreach ($songFrom->tags as $tag) {
+                    if($tag->user == $this->getActiveSession()->user){
+                        $songFrom->removeTag($tag);
+                        $this->em->remove($tag);
+                    }
+                }
             }
         }
 
@@ -368,10 +374,9 @@ class SongsResource extends FrontendResource {
         if($song->archived == true)
             $song->archived = false;
         else{
-            foreach ($song->songbooks as $songbook) {
+            foreach ($song->songbooks as $songbook) { // tohle asi nebude úplně supr ;)
                 $this->em->remove($songbook);
             }
-            $song->clearTags();
             $song->archived = true;
         }
         $song->modified = new DateTime();
@@ -524,17 +529,23 @@ class SongsResource extends FrontendResource {
      */
     private function SongToResponse(Song $song)
     {
-        $songbooks = array_map(function (SongSongbook $songsongbook) {
-            /* tady by se měly tahat jen vlastní songbooky */
+        $session = $this->getActiveSession();
+
+        $songbooks = array();
+        foreach($song->songbooks as $songsongbook){
             $songbook = $songsongbook->songbook;
+            if($session && $songbook->owner == $session->user){
+                $songbooks[] = $songbook;
+            }
+        }
+        $songbooks = array_map(function (Songbook $songbook) {
             return [
                 'id'   => $songbook->id,
                 'name' => $songbook->name,
                 'note' => $songbook->note
             ];
-        }, $song->songbooks);
+        }, $songbooks);
 
-        $session = $this->getActiveSession();
         $tags = array();
         foreach($song->tags as $tag){
             if($tag->public == true || ($session && $tag->user == $session->user)){
