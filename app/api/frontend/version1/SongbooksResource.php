@@ -910,7 +910,8 @@ class SongbooksResource extends FrontendResource {
             throw new AuthorizationException;
         }
 
-        if ($curUser == $user || $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+        if ($curUser == $user || $songbook->public ||
+            $this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
             return Response::json([
                 'error' => 'DUPLICATE_SHARING',
                 'message' => 'Songbook already shared with this user.'
@@ -921,16 +922,27 @@ class SongbooksResource extends FrontendResource {
 
         $sharing->songbook = $songbook;
         $sharing->user = $user;
-        $sharing->editable = $data['editable'];
 
         $this->em->persist($sharing);
+
+        foreach($songbook->songs as $song){
+            if($song->song->owner == $curUser &&
+                !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song->song])){
+                $songSharing = new SongSharing();
+
+                $songSharing->song = $song->song;
+                $songSharing->user = $user;
+
+                $this->em->persist($songSharing);
+            }
+        }
 
         $notification = new Notification();
         $notification->user = $user;
         $notification->created = new DateTime();
         $notification->read = false;
         $notification->songbook = $songbook;
-        $notification->text = 'Uživatel "'.$curUser->username.'" s vámi sdílel zpěvník "'.$songbook->name.'".';
+        $notification->text = 'Uživatel "'.$curUser->username.'" s Vámi sdílel zpěvník "'.$songbook->name.'".';
         $this->em->persist($notification);
 
         $this->em->flush();
