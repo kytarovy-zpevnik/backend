@@ -52,6 +52,21 @@ class SongbooksResource extends FrontendResource {
         /** @var Songbook */
         $songbook = new Songbook();
 
+        $ids = array_map(function ($song) {
+            return $song['id'];
+        }, $data['songs']);
+
+        $songs = $this->em->getDao(Song::getClassName())->findBy(['id' => $ids]);
+
+        foreach ($songs as $song) {
+            $songsongbook = new SongSongbook();
+            $songsongbook->song = $song;
+            $songsongbook->songbook = $songbook;
+            $songsongbook->position = count($songbook->songs) + 1;
+            $this->em->persist($songsongbook);
+            $songbook->addSong($songsongbook);
+        }
+
         $tags = array_map(function ($tag) {
             $_tag = new SongbookTag();
             $_tag->tag = $tag['tag'];
@@ -75,6 +90,31 @@ class SongbooksResource extends FrontendResource {
         $songbook->note = $data['note'];
 
         $this->em->persist($songbook);
+
+        if ($songbookFromId = $this->request->getQuery('takenFrom')) {
+            /** @var Songbook $songbookFrom */
+            $songbookFrom = $this->em->getDao(Songbook::getClassName())->find($songbookFromId); // tohle bude chtít upravit při kopírování smazaného
+            $userFrom = $this->em->getDao(User::getClassName())->findOneBy(['username' => $songbookFrom->owner->username]);
+            $copyNotification = new Notification();
+            $copyNotification->user = $userFrom;
+            $copyNotification->created = new DateTime();
+            $copyNotification->read = false;
+            $copyNotification->song = $songbookFrom;
+            $copyNotification->text = 'Váš zpěvník "'.$songbookFrom->name.'" byl zkopírován uživatelem "'.$this->getActiveSession()->user->username.'".';
+            $this->em->persist($copyNotification);
+
+            $taking = $this->em->getDao(SongbookTaking::getClassName())->findOneBy(['user' => $this->getActiveSession()->user, 'songbook' => $songbookFrom]);
+            if($taking){
+                $this->em->remove($taking);
+                foreach ($songbookFrom->tags as $tag) {
+                    if($tag->user == $this->getActiveSession()->user){
+                        $songbookFrom->removeTag($tag);
+                        $this->em->remove($tag);
+                    }
+                }
+            }
+        }
+
         $this->em->flush();
 
         return Response::json([
