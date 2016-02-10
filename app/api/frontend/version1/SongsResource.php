@@ -628,7 +628,7 @@ class SongsResource extends FrontendResource {
 
         $rating = new SongRating;
 
-        $rating->user = $this->getActiveSession()->user;
+        $rating->user = $user;
         $rating->song = $song;
         $rating->created = new DateTime();
         $rating->modified = $rating->created;
@@ -636,6 +636,15 @@ class SongsResource extends FrontendResource {
         $rating->rating = $data['rating'];
 
         $this->em->persist($rating);
+
+        $notification = new Notification();
+        $notification->user = $song->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->song = $song;
+        $notification->text = 'Uživatel "'.$user->username.'" ohodnotil Vaši píseň "'.$song->title.'".';
+        $this->em->persist($notification);
+
         $this->em->flush();
 
         return Response::json([
@@ -711,13 +720,22 @@ class SongsResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        if ($this->getActiveSession()->user !== $rating->user){
+        $user = $this->getActiveSession()->user;
+        if ($user !== $rating->user){
             $this->assumeAdmin();
         }
 
         $rating->comment = $data['comment'];
         $rating->rating = $data['rating'];
         $rating->modified = new DateTime();
+
+        $notification = new Notification();
+        $notification->user = $rating->song->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->song = $rating->song;
+        $notification->text = 'Uživatel "'.$user->username.'" upravil hodnocení Vaší písně "'.$rating->song->title.'".';
+        $this->em->persist($notification);
 
         $this->em->flush();
 
@@ -785,13 +803,24 @@ class SongsResource extends FrontendResource {
 
         $comment = new SongComment;
 
-        $comment->user = $this->getActiveSession()->user;
+        $comment->user = $user;
         $comment->song = $song;
         $comment->created = new DateTime();
         $comment->modified = $comment->created;
         $comment->comment = $data['comment'];
 
         $this->em->persist($comment);
+
+        if ($user !== $song->owner) {
+            $notification = new Notification();
+            $notification->user = $song->owner;
+            $notification->created = new DateTime();
+            $notification->read = false;
+            $notification->song = $song;
+            $notification->text = 'Uživatel "'.$user->username.'" okomentoval Vaši píseň "'.$song->title.'".';
+            $this->em->persist($notification);
+        }
+
         $this->em->flush();
 
         return Response::json([
@@ -901,12 +930,23 @@ class SongsResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        if ($this->getActiveSession()->user !== $comment->user){
+        $user = $this->getActiveSession()->user;
+        if ($user !== $comment->user){
             $this->assumeAdmin();
         }
 
         $comment->comment = $data['comment'];
         $comment->modified = new DateTime();
+
+        if ($user !== $comment->song->owner) {
+            $notification = new Notification();
+            $notification->user = $comment->song->owner;
+            $notification->created = new DateTime();
+            $notification->read = false;
+            $notification->song = $comment->song;
+            $notification->text = 'Uživatel "' . $user->username . '" upravil komentář u Vaší písně "' . $comment->song->title . '".';
+            $this->em->persist($notification);
+        }
 
         $this->em->flush();
 
