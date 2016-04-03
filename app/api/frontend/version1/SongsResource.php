@@ -1097,4 +1097,53 @@ class SongsResource extends FrontendResource {
         ]);
     }
 
+    /**
+     * Deletes song taking by song id and active user id.
+     * @param int $id
+     * @return Response
+     */
+    public function deleteAllTaking($id)
+    {
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::getClassName())->find($id);
+
+        if (!$song || $song->archived) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+
+        /** @var SongTaking $taking */
+        $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $curUser, 'song' => $song]);
+
+        if (!$taking) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG_TAKING',
+                'message' => 'Song taking with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($curUser !== $taking->user){
+            $this->assumeAdmin();
+        }
+
+        $this->em->remove($taking);
+
+        $notification = new Notification();
+        $notification->user = $taking->song->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->song = $taking->song;
+        $notification->text = 'Uživatel "'.$taking->user->username.'" zrušil převzetí vaší písně "'.$taking->song->title.'".';
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
 }

@@ -1057,6 +1057,55 @@ class SongbooksResource extends FrontendResource {
         ]);
     }
 
+    /**
+     * Deletes songbook taking by songbook id and active user id.
+     * @param int $id
+     * @return Response
+     */
+    public function deleteAllTaking($id)
+    {
+        $this->assumeLoggedIn();
+
+        $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
+
+        if (!$songbook || $songbook->archived) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK',
+                'message' => 'Songbook with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+
+        /** @var SongbookTaking $taking */
+        $taking = $this->em->getDao(SongbookTaking::getClassName())->findOneBy(['user' => $curUser, 'songbook' => $songbook]);
+
+        if (!$taking) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONGBOOK_TAKING',
+                'message' => 'Songbook taking with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($curUser !== $taking->user){
+            $this->assumeAdmin();
+        }
+
+        $this->em->remove($taking);
+
+        $notification = new Notification();
+        $notification->user = $taking->songbook->owner;
+        $notification->created = new DateTime();
+        $notification->read = false;
+        $notification->songbook = $taking->songbook;
+        $notification->text = 'Uživatel "'.$taking->user->username.'" zrušil převzetí vašeho zpěvníku "'.$taking->songbook->name.'".';
+        $this->em->persist($notification);
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
 
 
 } 
