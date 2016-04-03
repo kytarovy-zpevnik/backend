@@ -330,6 +330,17 @@ class SongsResource extends FrontendResource {
             $this->assumeAdmin();
         }
 
+        $takings = $this->em->getDao(SongTaking::getClassName())->findBy(['song' => $song]);
+            foreach ($takings as $taking) {
+                $notification = new Notification();
+                $notification->user = $taking->user;
+                $notification->created = new DateTime();
+                $notification->read = false;
+                $notification->song = $song;
+                $notification->text = 'Uživatel "'.$song->owner->username.'" upravil svou píseň "'.$song->title.'", kterou máte mezi převzatými.';
+                $this->em->persist($notification);
+            }
+
         $this->updateTags($song, $data['tags']);
         $this->updateSongbooks($song, $data['songbooks']);
 

@@ -386,6 +386,17 @@ class SongbooksResource extends FrontendResource {
         $songbook->public = $data['public'];
         $songbook->modified = new DateTime();
 
+        $takings = $this->em->getDao(SongbookTaking::getClassName())->findBy(['songbook' => $songbook]);
+        foreach ($takings as $taking) {
+            $notification = new Notification();
+            $notification->user = $taking->user;
+            $notification->created = new DateTime();
+            $notification->read = false;
+            $notification->songbook = $songbook;
+            $notification->text = 'Uživatel "'.$songbook->owner->username.'" upravil svůj zpěvník "'.$songbook->name.'", který máte mezi převzatými.';
+            $this->em->persist($notification);
+        }
+
         $this->em->flush();
 
         return Response::json([
