@@ -503,14 +503,19 @@ class SongsResource extends FrontendResource {
         /** @var Song $song */
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song || $song->archived) {
+        if (!$song) {
             return FALSE;
         }
-
-        if (!$song->public) {
+        $session = $this->getActiveSession();
+        if ($song->archived) {
+            if (!($session && $this->em->getDao(SongTaking::getClassName())->findBy(['user' => $session->user, 'song' => $song]))) {
+                $this->assumeAdmin();
+            }
+        }
+        else if (!$song->public) {
             $this->assumeLoggedIn();
 
-            $user = $this->getActiveSession()->user;
+            $user = $session->user;
             if ($user !== $song->owner &&
                 !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
                 !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $user, 'song' => $song])) {
@@ -577,6 +582,7 @@ class SongsResource extends FrontendResource {
             'chords'         => $song->chords,
             'note'           => $song->note,
             'public'         => $song->public,
+            'archived'        => $song->archived,
             'songbooks'      => $songbooks,
             'username'       => $song->owner->username,
             'tags'           => $tags,

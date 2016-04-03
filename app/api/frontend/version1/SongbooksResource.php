@@ -228,14 +228,19 @@ class SongbooksResource extends FrontendResource {
         /** @var Songbook */
         $songbook = $this->em->getDao(Songbook::getClassName())->find($id);
 
-        if (!$songbook || $songbook->archived) {
+        if (!$songbook) {
             return Response::json([
                 'error' => 'UNKNOWN_SONGBOOK',
                 'message' => 'Songbook with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
-
-        if(!$songbook->public){
+        $session = $this->getActiveSession();
+        if ($songbook->archived) {
+            if (!($session && $this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $session->user, 'songbook' => $songbook]))) {
+                $this->assumeAdmin();
+            }
+        }
+        else if(!$songbook->public){
             $this->assumeLoggedIn();
 
             $user = $this->getActiveSession()->user;
