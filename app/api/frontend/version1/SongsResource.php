@@ -366,19 +366,35 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if($this->getActiveSession()->user !== $song->owner){
+        $curUser = $this->getActiveSession()->user;
+        if($curUser !== $song->owner){
             $this->assumeAdmin();
         }
 
-        if($song->archived == true)
+        $text = '';
+        if($song->archived == true) {
             $song->archived = false;
+            $text = 'obnovena';
+        }
         else{
             foreach ($song->songbooks as $songbook) { // tohle asi nebude úplně supr ;)
                 $this->em->remove($songbook);
             }
             $song->archived = true;
+            $text = 'smazána';
         }
         $song->modified = new DateTime();
+
+        $takings = $this->em->getDao(SongTaking::getClassName())->findBy(['song' => $song]);
+        foreach ($takings as $taking) {
+            $notification = new Notification();
+            $notification->user = $taking->user;
+            $notification->created = new DateTime();
+            $notification->read = false;
+            $notification->song = $song;
+            $notification->text = 'Píseň "'.$song->title.'", kterou máte mezi převzatými, byla '.$text.' uživatelem "'.$curUser->username.'".';
+            $this->em->persist($notification);
+        }
 
         $this->em->flush();
 

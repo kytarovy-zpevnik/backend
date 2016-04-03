@@ -407,20 +407,36 @@ class SongbooksResource extends FrontendResource {
 
         if (!$songbook) {
             return Response::json([
-                'error' => 'UNKNOWN_SONGBOOK',
+                'error'   => 'UNKNOWN_SONGBOOK',
                 'message' => 'Songbook with given id not found.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
-        if($this->getActiveSession()->user !== $songbook->owner){
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser !== $songbook->owner) {
             $this->assumeAdmin();
         }
 
-        if($songbook->archived == true)
+        $text = '';
+        if ($songbook->archived == true) {
             $songbook->archived = false;
-        else
+            $text = 'obnoven';
+        } else {
             $songbook->archived = true;
+            $text = 'smazán';
+        }
         $songbook->modified = new DateTime();
+
+        $takings = $this->em->getDao(SongbookTaking::getClassName())->findBy(['songbook' => $songbook]);
+        foreach ($takings as $taking) {
+            $notification = new Notification();
+            $notification->user = $taking->user;
+            $notification->created = new DateTime();
+            $notification->read = false;
+            $notification->songbook = $songbook;
+            $notification->text = 'Zpěvník "'.$songbook->name.'", který máte mezi převzatými, byl '.$text.' uživatelem "'.$curUser->username.'".';
+            $this->em->persist($notification);
+        }
 
         $this->em->flush();
 
