@@ -9,6 +9,7 @@ use App\Model\Entity\SongSongbook;
 use App\Model\Entity\SongComment;
 use App\Model\Entity\SongSharing;
 use App\Model\Entity\SongTaking;
+use App\Model\Entity\SongCopy;
 use App\Model\Entity\User;
 use App\Model\Entity\Wish;
 use App\Model\Entity\Notification;
@@ -331,7 +332,23 @@ class SongsResource extends FrontendResource {
         }
 
         $takings = $this->em->getDao(SongTaking::getClassName())->findBy(['song' => $song]);
+        $takings = array_filter($takings, function(SongTaking $taking){
+            return $taking->songCopy ? FALSE : TRUE;
+        });
+        if ($takings) {
+            $copy = new SongCopy();
+            $copy->title          = $song->title;
+            $copy->album          = $song->album;
+            $copy->author         = $song->author;
+            $copy->originalAuthor = $song->originalAuthor;
+            $copy->year           = $song->year;
+            $copy->lyrics         = $song->lyrics;
+            $copy->chords         = $song->chords;
+            $this->em->persist($copy);
+
             foreach ($takings as $taking) {
+                $taking->songCopy = $copy;
+
                 $notification = new Notification();
                 $notification->user = $taking->user;
                 $notification->created = new DateTime();
@@ -340,6 +357,7 @@ class SongsResource extends FrontendResource {
                 $notification->text = 'Uživatel "'.$song->owner->username.'" upravil svou píseň "'.$song->title.'", kterou máte mezi převzatými.';
                 $this->em->persist($notification);
             }
+        }
 
         $this->updateTags($song, $data['tags']);
         $this->updateSongbooks($song, $data['songbooks']);
