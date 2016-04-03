@@ -611,9 +611,14 @@ class SongsResource extends FrontendResource {
 
         $averageRating = $this->getAverageRating($song);
 
-        $taken = false;
-        if($session && $this->em->getDao(SongTaking::getClassName())->findBy(['user' => $session->user, 'song' => $song])){
-            $taken = true;
+        $taken = [
+            'taken' => false,
+            'copy'  => null
+        ];
+        if($session && $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $session->user, 'song' => $song])){
+            $taken['taken'] = true;
+            if($taking->songCopy)
+                $taken['copy'] = $taking->songCopy->id;
         }
 
         return Response::json([
@@ -632,7 +637,7 @@ class SongsResource extends FrontendResource {
             'username'       => $song->owner->username,
             'tags'           => $tags,
             'rating'         => $averageRating,
-            'taken'          => $taken
+            'taking'          => $taken
         ]);
     }
 
