@@ -15,7 +15,6 @@ use App\Model\Entity\Notification;
 use App\Model\Entity\SongTag;
 use App\Model\Query\SongAdvSearchQuery;
 use App\Model\Query\SongSearchQuery;
-use App\Model\Query\SongPublicSearchQuery;
 use App\Model\Service\SessionService;
 use App\Model\Service\SongService;
 use FrontendApi\FrontendResource;
@@ -345,7 +344,7 @@ class SongsResource extends FrontendResource {
 		$song->public         = $data['public'];
         $song->modified       = new DateTime();
 
-		$this->em->flush();
+        $this->em->flush();
 	}
 
     /**
@@ -643,7 +642,7 @@ class SongsResource extends FrontendResource {
 
         return Response::json([
             'id' => $rating->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
     /**
@@ -819,7 +818,7 @@ class SongsResource extends FrontendResource {
 
         return Response::json([
             'id' => $comment->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
 
@@ -1042,7 +1041,7 @@ class SongsResource extends FrontendResource {
 
         return Response::json([
             'id' => $sharing->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
     /**
@@ -1094,7 +1093,7 @@ class SongsResource extends FrontendResource {
 
         return Response::json([
             'id' => $taking->id
-        ]);
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
     /**

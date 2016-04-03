@@ -17,7 +17,6 @@ use App\Model\Entity\SongSharing;
 use App\Model\Entity\SongTaking;
 use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
-use App\Model\Query\SongbookPublicSearchQuery;
 use App\Model\Query\SongbookAdvSearchQuery;
 use App\Model\Service\SessionService;
 use FrontendApi\FrontendResource;

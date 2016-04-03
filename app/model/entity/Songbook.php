@@ -19,11 +19,12 @@ use Doctrine\ORM\Mapping as ORM;
  * @property string $public
  * @property string $note
  * @property User $owner
- * @property User[] $viewers
- * @property User[] $editors
+ * @property SongbookSharing[] $songbookShares
+ * @property SongbookTaking[] $songbookTakes
+ * @property Song[] $songs
  * @property SongbookRating[] $songbookRatings
  * @property SongbookComment[] $songbookComments
- * @property Song[] $songs
+ * @property SongbookTag[] $tags
  *
  *
  * Songbook entity.

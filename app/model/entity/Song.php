@@ -25,13 +25,13 @@ use Doctrine\ORM\Mapping as ORM;
  * @property bool $public
  * @property string $note
  * @property User $owner
- * @property User[] $viewers
- * @property User[] $editors
+ * @property Songbook[] $songbooks
+ * @property SongSharing[] $songShares
+ * @property SongTaking[] $songTakes
  * @property BadContent[] $badContents
  * @property SongRating[] $songRatings
  * @property SongComment[] $songComments
  * @property Tag[] $tags
- * @property Songbook[] $songbooks
  *
  * Song entity.
  * @author Tomáš Jirásek
