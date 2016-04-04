@@ -410,9 +410,6 @@ class SongsResource extends FrontendResource {
             $text = 'obnovena';
         }
         else{
-            foreach ($song->songbooks as $songbook) { // tohle asi nebude úplně supr ;)
-                $this->em->remove($songbook);
-            }
             $song->archived = true;
             $text = 'smazána';
         }
@@ -477,17 +474,17 @@ class SongsResource extends FrontendResource {
             return $songbook['id'];
         }, $songbooks);
 
-        $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(['id' => $ids]);
+        $songbooks = $this->em->getDao(Songbook::getClassName())->findBy(['id' => $ids]); // songbooky, kam chci song pridat
 
-        foreach ($song->songbooks as $songsongbook) {
+        foreach ($song->songbooks as $songsongbook) { // prochazim songbooky, kde tenhle song je
             $keepit = false;
             foreach($songbooks as $songbook){
-                if($songsongbook->songbook->id == $songbook->id){
+                if($songsongbook->songbook->id == $songbook->id){ // pokud je songbook v obou mnozinach, tak ho tam necham
                     $keepit = true;
                     break;
                 }
             }
-            if($keepit){
+            if($keepit || $songsongbook->songbook->owner != $this->getActiveSession()->user){
                 continue;
             }
             $this->em->remove($songsongbook);
