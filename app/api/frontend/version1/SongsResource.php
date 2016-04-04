@@ -315,16 +315,20 @@ class SongsResource extends FrontendResource {
         }
 
         if($action = $this->request->getQuery('action')){
-            if($action == 'tags'){
-                $this->updateTags($song, $data['tags']);
-                $this->em->flush();
-                return Response::blank();
+            switch($action){
+                case 'tags':
+                    $this->updateTags($song, $data['tags']);
+                    break;
+                case 'songbooks':
+                    $this->updateSongbooks($song, $data['songbooks']);
+                    break;
+                case 'copy':
+                    $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $user, 'song' => $song]);
+                    $taking->songCopy = null;
+                    break;
             }
-            if($action == 'songbooks'){
-                $this->updateSongbooks($song, $data['songbooks']);
-                $this->em->flush();
-                return Response::blank();
-            }
+            $this->em->flush();
+            return Response::blank();
         }
 
 		if ($user !== $song->owner) {
