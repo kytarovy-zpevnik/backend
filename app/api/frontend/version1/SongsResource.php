@@ -487,16 +487,7 @@ class SongsResource extends FrontendResource {
             if($keepit || $songsongbook->songbook->owner != $this->getActiveSession()->user){
                 continue;
             }
-            $this->em->remove($songsongbook);
-            $this->em->flush($songsongbook);
-            $othersongs = $this->em->getDao(SongSongbook::getClassName())->findBy(['songbook' => $songsongbook->songbook], ['position' => 'ASC']);
-
-            foreach ($othersongs as $other){
-                if($other->position > $songsongbook->position){
-                    $other->position -= 1;
-                    $this->em->persist($other);
-                }
-            }
+            $this->removeSongFromSongbook($songsongbook);
             $song->removeSongbook($songsongbook);
 
         }
@@ -510,6 +501,23 @@ class SongsResource extends FrontendResource {
                 $songsongbook->position = count($songbook->songs) + 1;
                 $this->em->persist($songsongbook);
                 $song->addSongbook($songsongbook);
+            }
+        }
+    }
+
+    /**
+     * Removes song from songbook and alters position of remaining songs
+     * @param SongSongbook $songsongbook
+     */
+    private function removeSongFromSongbook(SongSongbook $songsongbook){
+        $this->em->remove($songsongbook);
+        $this->em->flush($songsongbook);
+        $othersongs = $this->em->getDao(SongSongbook::getClassName())->findBy(['songbook' => $songsongbook->songbook], ['position' => 'ASC']);
+
+        foreach ($othersongs as $other){
+            if($other->position > $songsongbook->position){
+                $other->position -= 1;
+                $this->em->persist($other);
             }
         }
     }
