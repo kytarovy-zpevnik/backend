@@ -57,6 +57,8 @@ class SongbooksResource extends FrontendResource {
 
         $songs = $this->em->getDao(Song::getClassName())->findBy(['id' => $ids]);
 
+        $curUser = $this->getActiveSession()->user;
+
         foreach ($songs as $song) {
             $songsongbook = new SongSongbook();
             $songsongbook->song = $song;
@@ -64,18 +66,25 @@ class SongbooksResource extends FrontendResource {
             $songsongbook->position = count($songbook->songs) + 1;
             $this->em->persist($songsongbook);
             $songbook->addSong($songsongbook);
+
+            if($song->owner != $curUser){
+                $taking = new SongTaking();
+                $taking->song = $song;
+                $taking->user = $curUser;
+                $this->em->persist($taking);
+            }
         }
 
         $tags = array_map(function ($tag) {
             $_tag = new SongbookTag();
             $_tag->tag = $tag['tag'];
             $_tag->public = $tag['public'];
-            $_tag->user = $this->getActiveSession()->user;
             return $_tag;
         }, $data['tags']);
 
         foreach ($tags as $tag) {
             $tag->songbook = $songbook;
+            $tag->user = $curUser;
             $songbook->addTag($tag);
             $this->em->persist($tag);
         }
@@ -85,7 +94,7 @@ class SongbooksResource extends FrontendResource {
         $songbook->modified = new DateTime();
         $songbook->archived = false;
         $songbook->public = $data['public'];
-        $songbook->owner = $this->getActiveSession()->user;
+        $songbook->owner = $curUser;
         $songbook->note = $data['note'];
 
         $this->em->persist($songbook);
@@ -98,15 +107,15 @@ class SongbooksResource extends FrontendResource {
             $copyNotification->user = $userFrom;
             $copyNotification->created = new DateTime();
             $copyNotification->read = false;
-            $copyNotification->song = $songbookFrom;
-            $copyNotification->text = 'Váš zpěvník "'.$songbookFrom->name.'" byl zkopírován uživatelem "'.$this->getActiveSession()->user->username.'".';
+            $copyNotification->songbook = $songbookFrom;
+            $copyNotification->text = 'Váš zpěvník "'.$songbookFrom->name.'" byl zkopírován uživatelem "'.$curUser->username.'".';
             $this->em->persist($copyNotification);
 
-            $taking = $this->em->getDao(SongbookTaking::getClassName())->findOneBy(['user' => $this->getActiveSession()->user, 'songbook' => $songbookFrom]);
+            $taking = $this->em->getDao(SongbookTaking::getClassName())->findOneBy(['user' => $curUser, 'songbook' => $songbookFrom]);
             if($taking){
                 $this->em->remove($taking);
                 foreach ($songbookFrom->tags as $tag) {
-                    if($tag->user == $this->getActiveSession()->user){
+                    if($tag->user == $curUser){
                         $songbookFrom->removeTag($tag);
                         $this->em->remove($tag);
                     }
