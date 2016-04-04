@@ -1197,6 +1197,15 @@ class SongsResource extends FrontendResource {
 
         $this->em->remove($taking);
 
+        foreach ($song->songbooks as $songsongbook) { // prochazim songbooky, kde tenhle song je
+            if($songsongbook->songbook->owner != $taking->user){
+                continue;
+            }
+            $this->removeSongFromSongbook($songsongbook);
+            $song->removeSongbook($songsongbook);
+
+        }
+
         $notification = new Notification();
         $notification->user = $taking->song->owner;
         $notification->created = new DateTime();
