@@ -120,6 +120,8 @@ class NotificationsResource extends FrontendResource
 		}
 
 		$this->em->flush();
+
+        return Response::blank();
 	}
 
     /**
@@ -173,5 +175,9 @@ class NotificationsResource extends FrontendResource
         $notification->read = TRUE;
 
         $this->em->flush();
+
+        return Response::json([
+            'id' => $notification->id
+        ]);
     }
 }

@@ -394,6 +394,10 @@ class SongsResource extends FrontendResource {
         $song->modified       = new DateTime();
 
         $this->em->flush();
+
+        return Response::json([
+            'id' => $song->id
+        ]);
 	}
 
     /**
@@ -1231,7 +1235,7 @@ class SongsResource extends FrontendResource {
 
         $song = $this->em->getDao(Song::getClassName())->find($id);
 
-        if (!$song || $song->archived) {
+        if (!$song) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG',
                 'message' => 'Song with given id not found.'
