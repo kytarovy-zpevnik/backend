@@ -342,10 +342,6 @@ class SongsResource extends FrontendResource {
                 case 'songbooks':
                     $this->updateSongbooks($song, $data['songbooks']);
                     break;
-                case 'copy':
-                    $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $user, 'song' => $song]);
-                    $taking->songCopy = null;
-                    break;
             }
             $this->em->flush();
             return Response::blank();
@@ -1179,6 +1175,49 @@ class SongsResource extends FrontendResource {
         return Response::json([
             'id' => $taking->id
         ])->setHttpStatus(Response::HTTP_CREATED);
+    }
+
+    /**
+     * Sets song copy to null in song taking by song id and active user id.
+     * @param int $id
+     * @return Response
+     */
+    public function updateAllTaking($id)
+    {
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::getClassName())->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+
+        /** @var SongTaking $taking */
+        $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $curUser, 'song' => $song]);
+
+        if (!$taking) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG_TAKING',
+                'message' => 'Song taking with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        if ($curUser !== $taking->user){
+            $this->assumeAdmin();
+        }
+
+        $taking->songCopy = null;
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $taking->id
+        ]);
     }
 
     /**
