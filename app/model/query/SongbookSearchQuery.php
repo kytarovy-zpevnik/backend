@@ -30,7 +30,7 @@ class SongbookSearchQuery extends QueryObject
 	 * @param string $search
      * @param bool $public
 	 */
-	public function __construct(User $user, $search, $public)
+	public function __construct($user, $search, $public)
 	{
 		$this->user   = $user;
 		$this->search = $search;
