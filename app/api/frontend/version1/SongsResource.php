@@ -1065,7 +1065,7 @@ class SongsResource extends FrontendResource {
 
         $data = $this->request->getData();
 
-        $user = $this->em->getDao(User::getClassName())->find($data['user']);
+        $user = $this->em->getDao(User::getClassName())->findOneBy(['username' => $data['user']]);
 
         if (!$user) {
             return Response::json([
