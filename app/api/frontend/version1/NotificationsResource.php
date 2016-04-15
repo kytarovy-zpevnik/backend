@@ -123,6 +123,32 @@ class NotificationsResource extends FrontendResource
 	}
 
     /**
+     * Deletes notifications, which ids came with request data.
+     */
+    public function deleteAll()
+    {
+        $this->assumeLoggedIn();
+
+        $user = $this->getActiveSession()->user;
+
+        $data = $this->request->getData();
+
+        $ids = array_map(function ($notification) {
+            return $notification['id'];
+        }, $data['notifications']);
+
+        $notifications = $this->em->getDao(Notification::getClassName())->findBy(['id' => $ids]);
+
+        foreach ($notifications as $notification) {
+            $this->em->remove($notification);
+        }
+
+        $this->em->flush();
+
+        return Response::blank();
+    }
+
+    /**
      * Marks given notification as read.
      * @param int $id
      */
