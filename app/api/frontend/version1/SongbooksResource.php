@@ -183,7 +183,7 @@ class SongbooksResource extends FrontendResource {
         }
         else {
             $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
-            if (!$public){
+            if (!$public && !$this->request->getQuery('justOwned')){
                 $takenSongbooks = $this->em->getDao(SongbookTaking::getClassName())
                     ->findBy(['user' => $user]);
                 $takenSongbooks = array_map(function(SongbookTaking $taking){
