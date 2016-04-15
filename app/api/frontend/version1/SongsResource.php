@@ -278,6 +278,26 @@ class SongsResource extends FrontendResource {
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
+        $session = $this->getActiveSession();
+        if ($this->request->getQuery('old') && $session) {
+            $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $session->user, 'song' => $song]);
+            if ($taking && $copy = $taking->songCopy) {
+                $song->title = $copy->title;
+                $song->author = $copy->author;
+                $song->originalAuthor = $copy->originalAuthor;
+                $song->album = $copy->album;
+                $song->year = $copy->year;
+                $song->lyrics = $copy->lyrics;
+                $song->chords = $copy->chords;
+            }
+            else {
+                return Response::json([
+                    'error' => 'NOT_FOUND',
+                    'message' => 'No older version of this song found.'
+                ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+            }
+        }
+
         // XML EXPORT
         /*if ($this->request->getQuery('export') === 'agama') {
             return Response::json([
