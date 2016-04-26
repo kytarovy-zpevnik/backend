@@ -175,7 +175,7 @@ class WishesResource extends FrontendResource
         $this->assumeLoggedIn();
 
         if ($this->getActiveSession()->user !== $wish->user) {
-            throw new AuthorizationException;
+            $this->assumeAdmin();
         }
 
         $this->em->remove($wish);
