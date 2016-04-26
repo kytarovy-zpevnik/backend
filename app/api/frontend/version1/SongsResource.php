@@ -114,30 +114,6 @@ class SongsResource extends FrontendResource {
 
 		$this->em->persist($song);
 
-        if ($songFromId = $this->request->getQuery('takenFrom')) {
-            /** @var Song $songFrom */
-            $songFrom = $this->em->getDao(Song::getClassName())->find($songFromId); // tohle bude chtít upravit při kopírování smazaného
-            $userFrom = $this->em->getDao(User::getClassName())->findOneBy(['username' => $songFrom->owner->username]);
-            $copyNotification = new Notification();
-            $copyNotification->user = $userFrom;
-            $copyNotification->created = new DateTime();
-            $copyNotification->read = false;
-            $copyNotification->song = $songFrom;
-            $copyNotification->text = 'Vaše píseň "'.$songFrom->title.'" byla zkopírována uživatelem "'.$this->getActiveSession()->user->username.'".';
-            $this->em->persist($copyNotification);
-
-            $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $this->getActiveSession()->user, 'song' => $songFrom]);
-            if($taking){
-                $this->em->remove($taking);
-                foreach ($songFrom->tags as $tag) {
-                    if($tag->user == $this->getActiveSession()->user){
-                        $songFrom->removeTag($tag);
-                        $this->em->remove($tag);
-                    }
-                }
-            }
-        }
-
         if ($song->public) {
             /** @var Wish[] $wishes */
             $wishes = $this->em->getDao(Wish::getClassName())->findBy(['name' => $song->title, 'interpret' => $song->author]);
@@ -1280,6 +1256,100 @@ class SongsResource extends FrontendResource {
         $this->em->flush();
 
         return Response::blank();
+    }
+
+    /**
+     * Creates copy of song with given id.
+     * @param int $id
+     * @return Response Response with Song object.
+     */
+    public function createCopy($id)
+    {
+        $this->assumeLoggedIn();
+
+        $song = $this->em->getDao(Song::getClassName())->find($id);
+
+        if (!$song) {
+            return Response::json([
+                'error' => 'UNKNOWN_SONG',
+                'message' => 'Song with given id not found.'
+            ])->setHttpStatus(Response::HTTP_NOT_FOUND);
+        }
+
+        $curUser = $this->getActiveSession()->user;
+        if ($curUser == $song->owner){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot copy his own songs.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
+        if (!$song->public &&
+            !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $curUser, 'song' => $song]) &&
+            !$this->em->getDao(SongTaking::getClassName())->findBy(['user' => $curUser, 'song' => $song])){
+            throw new AuthorizationException;
+        }
+
+        $newSong = new Song();
+        $newSong->lyrics         = $song->lyrics;
+        $newSong->chords         = $song->chords;
+        $newSong->title          = $song->title;
+        $newSong->album          = $song->album;
+        $newSong->author         = $song->author;
+        $newSong->originalAuthor = $song->originalAuthor;
+        $newSong->year           = $song->year;
+        $newSong->note           = $song->note;
+        $newSong->owner          = $curUser;
+        $newSong->public         = $song->public;
+        $newSong->created        = new DateTime();
+        $newSong->modified       = $song->created;
+        $newSong->archived       = false;
+
+        foreach ($song->tags as $tag) {
+            if($tag->public){
+                $_tag = new SongTag();
+                $_tag->tag = $tag->tag;
+                $_tag->public = $tag->public;
+                $_tag->user = $curUser;
+                $_tag->song = $newSong;
+                $newSong->addTag($_tag);
+                $this->em->persist($_tag);
+            }
+        }
+
+        $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $curUser, 'song' => $song]);
+        if($taking){
+            $this->em->remove($taking); // odstranit prevzeti
+            foreach ($song->tags as $tag) {     // presunout soukr. tagy
+                if($tag->user == $curUser){
+                    $song->removeTag($tag);
+                    $tag->song = $newSong;
+                    $newSong->addTag($tag);
+                }
+            }
+            foreach ($song->songbooks as $songsongbook) {     // presunout vlastní zpěvníky
+                if($songsongbook->songbook->owner == $curUser){
+                    $song->removeSongbook($songsongbook);
+                    $songsongbook->song = $newSong;
+                    $newSong->addSongbook($songsongbook);
+                }
+            }
+        }
+
+        $this->em->persist($newSong);
+
+        $copyNotification = new Notification();
+        $copyNotification->user = $song->owner;
+        $copyNotification->created = new DateTime();
+        $copyNotification->read = false;
+        $copyNotification->song = $song;
+        $copyNotification->text = 'Vaše píseň "'.$song->title.'" byla zkopírována uživatelem "'.$curUser->username.'".';
+        $this->em->persist($copyNotification);
+
+        $this->em->flush();
+
+        return Response::json([
+            'id' => $newSong->id
+        ])->setHttpStatus(Response::HTTP_CREATED);
     }
 
 }
