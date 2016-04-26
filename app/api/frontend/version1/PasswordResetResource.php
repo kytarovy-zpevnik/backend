@@ -86,23 +86,23 @@ class PasswordresetResource extends FrontendResource {
         $passwordReset->token = $this->generateToken();
 
 		$smtp = new SmtpMailer([
-			'host'     => 'smtp.google.com',
-			'username' => 'kontakt.kytarovy.zpevnik',
+			'host'     => 'smtp.gmail.com',
+			'username' => 'kontakt.kytarovy.zpevnik@gmail.com',
 			'password' => 'zdenekrybola',
 			'secure'   => 'ssl'
 		]);
 
 		$message = new Message();
-		$message->setSubject('Nastavení zapomenutého hesla');
+		$message->setSubject('Nastavení zapomenutého hesla | kz.markacz.com');
 		$message->addTo($user->email);
-		$message->setFrom('kytarovyzpevnik@email.cz');
+		$message->setFrom('kontakt.kytarovy.zpevnik@gmail.com');
 		$message->setBody("
 Dobrý den,
 
 přijali jsme požadavek na změnu hesla pro uživatelský účet $user->username.\n
 
 Nastavení hesla provedete na tomto odkazu:\n
-http://localhost/skola/kz/#/reset-password/step2/$passwordReset->token\n
+http://kz.markacz.com/#/reset-password/step2/$passwordReset->token\n
 
 Pokud tento požadavek nebyl iniciován z Vaší strany, jednoduše tento email ignorujte.\n
 
