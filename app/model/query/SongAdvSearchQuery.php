@@ -29,6 +29,12 @@ class SongAdvSearchQuery extends QueryObject
     /** @var string */
     private $author;
 
+    /** @var int */
+    private $year;
+
+    /** @var string */
+    private $owner;
+
     /** @var string */
     private $tag;
 
@@ -36,19 +42,23 @@ class SongAdvSearchQuery extends QueryObject
     private $public;
 
     /**
-     * @param User $user
+     * @param $user
      * @param $title
      * @param $album
      * @param $author
+     * @param $year
+     * @param $owner
      * @param $tag
      * @param bool $public
      */
-	public function __construct($user, $title, $album, $author, $tag, $public)
+	public function __construct($user, $title, $album, $author, $year, $owner, $tag, $public)
 	{
 		$this->user   = $user;
 	    $this->title  = $title;
         $this->album  = $album;
         $this->author = $author;
+        $this->year   = $year;
+        $this->owner  = $owner;
         $this->tag    = $tag;
         $this->public = $public;
 	}
@@ -80,18 +90,32 @@ class SongAdvSearchQuery extends QueryObject
         }
 
         if ($this->title != null)
-            $query->andWhere('s.title LIKE :title')->setParameter('title', "%$this->title%");
+            $query->andWhere('s.title LIKE :title')
+                ->setParameter('title', "%$this->title%");
 
 		if ($this->album != null)
-            $query->andWhere('s.album LIKE :album')->setParameter('album', "%$this->album%");
+            $query->andWhere('s.album LIKE :album')
+                ->setParameter('album', "%$this->album%");
 
         if ($this->author != null)
-            $query->andWhere('s.author LIKE :author')->setParameter('author', "%$this->author%");
+            $query->andWhere('s.author LIKE :author')
+                ->setParameter('author', "%$this->author%");
 
-        if ($this->tag != null) {
-            $query->innerJoin('s.tags', 't')->andWhere('t.tag LIKE :tag')->setParameter('tag', "%$this->tag%");
+        if ($this->year != null)
+            $query->andWhere('s.year LIKE :year')
+                ->setParameter('year', "%$this->year%");
+
+        if ($this->owner != null) {
+            $query->innerJoin('s.owner', 'u')
+                ->andWhere('u.username LIKE :owner')
+                ->setParameter('owner', "%$this->owner%");
         }
 
+        if ($this->tag != null) {
+            $query->innerJoin('s.tags', 't')
+                ->andWhere('t.tag LIKE :tag')
+                ->setParameter('tag', "%$this->tag%");
+        }
 
         return $query;
 	}

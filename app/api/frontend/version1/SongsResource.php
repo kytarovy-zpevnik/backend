@@ -181,13 +181,16 @@ class SongsResource extends FrontendResource {
                 ->getArrayCopy();
         }
         else if ($this->request->getQuery('title') || $this->request->getQuery('album') ||
-                  $this->request->getQuery('author') || $this->request->getQuery('tag')) {
+                  $this->request->getQuery('author') || $this->request->getQuery('year') ||
+                  $this->request->getQuery('owner') || $this->request->getQuery('tag')) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
             $author = $this->request->getQuery('author');
-            $tag    = $this->request->getQuery('tag');
+            $year  = $this->request->getQuery('year');
+            $owner  = $this->request->getQuery('owner');
+            $tag = $this->request->getQuery('tag');
             $songs  = $this->em->getDao(Song::getClassName())
-                ->fetch(new SongAdvSearchQuery($user, $title, $album, $author, $tag, $public))
+                ->fetch(new SongAdvSearchQuery($user, $title, $album, $author, $year, $owner, $tag, $public))
                 ->getIterator()
                 ->getArrayCopy();
         }
