@@ -603,6 +603,12 @@ class SongbooksResource extends FrontendResource {
                 'message' => 'User cannot rate his own songbooks.'
             ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
         }
+        if ($this->em->getDao(SongbookRating::getClassName())->findBy(['user' => $user, 'songbook' => $songbook])){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot rate songbook more than once.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
 
         if (!$songbook->public &&
             !$this->em->getDao(SongbookSharing::getClassName())->findBy(['user' => $user, 'songbook' => $songbook]) &&

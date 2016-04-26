@@ -709,6 +709,12 @@ class SongsResource extends FrontendResource {
                 'message' => 'User cannot rate his own songs.'
             ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
         }
+        if ($this->em->getDao(SongRating::getClassName())->findBy(['user' => $user, 'song' => $song])){
+            return Response::json([
+                'error' => 'BAD_REQUEST',
+                'message' => 'User cannot rate song more than once.'
+            ])->setHttpStatus(Response::HTTP_BAD_REQUEST);
+        }
 
         if (!$song->public &&
             !$this->em->getDao(SongSharing::getClassName())->findBy(['user' => $user, 'song' => $song]) &&
@@ -1054,7 +1060,6 @@ class SongsResource extends FrontendResource {
      */
     public function deleteComment($id, $relationId)
     {
-        $data = $this->request->getData();
 
         /** @var SongComment $comment */
         $comment = $this->em->getDao(SongComment::getClassName())->find($relationId);
