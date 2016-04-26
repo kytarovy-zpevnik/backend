@@ -180,7 +180,8 @@ class SongsResource extends FrontendResource {
                 ->getIterator()
                 ->getArrayCopy();
         }
-        else if ((!$public && count($this->request->getQuery()) > 0) || count($this->request->getQuery()) > 1) {
+        else if ($this->request->getQuery('title') || $this->request->getQuery('album') ||
+                  $this->request->getQuery('author') || $this->request->getQuery('tag')) {
             $title  = $this->request->getQuery('title');
             $album  = $this->request->getQuery('album');
             $author = $this->request->getQuery('author');
@@ -191,7 +192,7 @@ class SongsResource extends FrontendResource {
                 ->getArrayCopy();
         }
         else {
-            $songs = $this->em->getDao(Song::getClassName())->findBy($findBy, ['title' => 'ASC']);
+            $songs = $this->em->getDao(Song::getClassName())->findBy($findBy);
             if (!$public){
                 $takenSongs = $this->em->getDao(SongTaking::getClassName())
                     ->findBy(['user' => $user]);
@@ -201,6 +202,43 @@ class SongsResource extends FrontendResource {
                 $songs = array_merge($songs, $takenSongs);
             }
         }
+
+        @usort($songs, function(Song $a, Song $b){
+            $sort = $this->request->getQuery('sort');
+
+            if($this->request->getQuery('order') == 'desc') {
+                $c = $a;
+                $a = $b;
+                $b = $c;
+            }
+
+            switch($sort){
+                case 'title':
+                    return strcasecmp($a->title, $b->title);
+                    break;
+                case 'author':
+                    return strcasecmp($a->author, $b->author);
+                    break;
+                case 'album':
+                    return strcasecmp($a->album, $b->album);
+                    break;
+                case 'year':
+                    return ($a->year < $b->year) ? -1 : (($a->year > $b->year) ? 1 : 0);
+                    break;
+                case 'owner':
+                    return strcasecmp($a->owner->username, $b->owner->username);
+                    break;
+                default:
+                    return ($a->id < $b->id) ? -1 : (($a->id > $b->id) ? 1 : 0);
+                    break;
+            }
+        });
+
+        $offset = $this->request->getQuery('offset');
+        if(!$offset)
+            $offset = 0;
+        $length = $this->request->getQuery('length');
+        $songs = array_slice($songs, $offset, $length);
 
         $songs = array_map(function (Song $song){
 

@@ -149,7 +149,7 @@ class SongbooksResource extends FrontendResource {
                 ->getIterator()
                 ->getArrayCopy();
         }
-        else if ((!$public && count($this->request->getQuery()) > 0) || count($this->request->getQuery()) > 1) {
+        else if ($this->request->getQuery('name') || $this->request->getQuery('tag')) {
             $name  = $this->request->getQuery('name');
             $tag    = $this->request->getQuery('tag');
             $songbooks  = $this->em->getDao(Songbook::getClassName())
@@ -158,7 +158,7 @@ class SongbooksResource extends FrontendResource {
                 ->getArrayCopy();
         }
         else {
-            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy, ['name' => 'ASC']);
+            $songbooks = $this->em->getDao(Songbook::getClassName())->findBy($findBy);
             if (!$public && !$this->request->getQuery('justOwned')){
                 $takenSongbooks = $this->em->getDao(SongbookTaking::getClassName())
                     ->findBy(['user' => $user]);
@@ -168,6 +168,34 @@ class SongbooksResource extends FrontendResource {
                 $songbooks = array_merge($songbooks, $takenSongbooks);
             }
         }
+
+        @usort($songbooks, function(Songbook $a, Songbook $b){
+            $sort = $this->request->getQuery('sort');
+
+            if($this->request->getQuery('order') == 'desc') {
+                $c = $a;
+                $a = $b;
+                $b = $c;
+            }
+
+            switch($sort){
+                case 'name':
+                    return strcasecmp($a->name, $b->name);
+                    break;
+                case 'owner':
+                    return strcasecmp($a->owner->username, $b->owner->username);
+                    break;
+                default:
+                    return ($a->id < $b->id) ? -1 : (($a->id > $b->id) ? 1 : 0);
+                    break;
+            }
+        });
+
+        $offset = $this->request->getQuery('offset');
+        if(!$offset)
+            $offset = 0;
+        $length = $this->request->getQuery('length');
+        $songbooks = array_slice($songbooks, $offset, $length);
 
         $songbooks = array_map(function (Songbook $songbook){
 
