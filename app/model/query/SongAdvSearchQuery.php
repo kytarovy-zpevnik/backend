@@ -59,14 +59,25 @@ class SongAdvSearchQuery extends QueryObject
 	 */
 	protected function doCreateQuery(Queryable $repository)
 	{
-        $condition = $this->public ? 's.public = 1' : 's.owner = :owner';
 
         $query = $repository->createQueryBuilder()
 			->select('s')
 			->from(Song::getClassName(), 's')
             ->andWhere('s.archived = 0')
-			->andWhere($condition)
             ->orderBy('s.title');
+
+        if (!$this->public) {
+            $or = new Orx([
+                's.owner = :user',
+                'st.user = :user'
+            ]);
+            $query->leftJoin('s.songTakes', 'st')
+                ->andWhere($or)
+                ->setParameter('user', $this->user);
+        }
+        else {
+            $query->andWhere('s.public = 1');
+        }
 
         if ($this->title != null)
             $query->andWhere('s.title LIKE :title')->setParameter('title', "%$this->title%");
@@ -81,8 +92,6 @@ class SongAdvSearchQuery extends QueryObject
             $query->innerJoin('s.tags', 't')->andWhere('t.tag LIKE :tag')->setParameter('tag', "%$this->tag%");
         }
 
-        if(!$this->public)
-            $query->setParameter('owner', $this->user);
 
         return $query;
 	}
