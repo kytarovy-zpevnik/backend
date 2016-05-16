@@ -49,13 +49,13 @@ class Song extends BaseEntity
 
     /**
      * @var string
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     protected $lyrics;
 
 	/**
 	 * @var string
-	 * @ORM\Column(type="text")
+	 * @ORM\Column(type="text", nullable=true)
 	 */
 	protected $chords;
 

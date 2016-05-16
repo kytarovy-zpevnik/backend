@@ -1205,7 +1205,7 @@ class SongsResource extends FrontendResource {
         if (!$taking) {
             return Response::json([
                 'error' => 'UNKNOWN_SONG_TAKING',
-                'message' => 'Song taking with given id not found.'
+                'message' => 'Active user does not have taken given song.'
             ])->setHttpStatus(Response::HTTP_NOT_FOUND);
         }
 
