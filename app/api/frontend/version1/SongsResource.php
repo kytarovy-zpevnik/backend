@@ -1164,9 +1164,15 @@ class SongsResource extends FrontendResource {
             $this->assumeAdmin();
         }
 
+        $copy = $taking->songCopy;
         $taking->songCopy = null;
-
         $this->em->flush();
+
+        if (!$this->em->getDao(SongTaking::getClassName())->findBy(['songCopy' => $copy])) { // zkontrolovat, jestli to neni posledni pouziti kopie
+            $this->em->remove($copy);
+
+            $this->em->flush();
+        }
 
         return Response::json([
             'id' => $taking->id
@@ -1208,6 +1214,15 @@ class SongsResource extends FrontendResource {
         }
 
         $this->em->remove($taking);
+
+        if ($taking->songCopy != null) { // zkontrolovat, jestli to neni posledni pouziti kopie
+            $copy = $taking->songCopy;
+            $this->em->flush();
+
+            if (!$this->em->getDao(SongTaking::getClassName())->findBy(['songCopy' => $copy])) {
+                $this->em->remove($copy);
+            }
+        }
 
         foreach ($song->songbooks as $songsongbook) { // prochazim songbooky, kde tenhle song je
             if($songsongbook->songbook->owner != $taking->user){
@@ -1286,6 +1301,16 @@ class SongsResource extends FrontendResource {
         $taking = $this->em->getDao(SongTaking::getClassName())->findOneBy(['user' => $curUser, 'song' => $song]);
         if($taking){
             $this->em->remove($taking); // odstranit prevzeti
+
+            if ($taking->songCopy != null) { // zkontrolovat, jestli to neni posledni pouziti kopie
+                $copy = $taking->songCopy;
+                $this->em->flush();
+
+                if (!$this->em->getDao(SongTaking::getClassName())->findBy(['songCopy' => $copy])) {
+                    $this->em->remove($copy);
+                }
+            }
+
             foreach ($song->tags as $tag) {     // presunout soukr. tagy
                 if($tag->user == $curUser){
                     $song->removeTag($tag);
