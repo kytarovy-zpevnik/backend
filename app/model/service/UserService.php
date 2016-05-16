@@ -6,6 +6,7 @@ use App\DuplicateEmailException;
 use App\DuplicateUsernameException;
 use App\Model\Entity\Role;
 use App\Model\Entity\User;
+use App\Model\Entity\UserSettings;
 use App\SecurityException;
 use Kdyby\Doctrine\DuplicateEntryException;
 use Kdyby\Doctrine\EntityManager;
@@ -55,6 +56,8 @@ class UserService extends Object
 		$user->email        = $email;
 		$user->passwordHash = $this->getPasswordHash($password);
 		$user->role         = $role;
+        $user->settings     = new UserSettings();
+        $this->inserter->persist($user->settings);
 
 		$user = $this->inserter->persist($user); // reassign needed!
 

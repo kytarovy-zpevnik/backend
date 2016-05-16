@@ -12,12 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @property-read int $id
  * @property string $username
- * @property string $firstName
- * @property string $lastName
+ * @property string $displayName
  * @property string $email
  * @property string $passwordHash
  * @property DateTime $lastLogin
  * @property Role $role
+ * @property UserSettings $settings
  * @property Song[] $songs
  * @property Song[] $sharedNotEditableSongs
  * @property Song[] $sharedEditableSongs
@@ -49,13 +49,7 @@ class User extends BaseEntity
      * @var string
      * @ORM\Column(type="string", nullable=true)
      */
-    protected $firstName;
-
-    /**
-     * @var string
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $lastName;
+    protected $displayName;
 
 	/**
 	 * @var string
@@ -80,6 +74,12 @@ class User extends BaseEntity
 	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Role")
 	 */
 	protected $role;
+
+    /**
+     * @var UserSettings
+     * @ORM\OneToOne(targetEntity="App\Model\Entity\UserSettings", mappedBy="user", orphanRemoval=true)
+     */
+    protected $settings;
 
     /**
      * @var Song[]
