@@ -29,7 +29,6 @@ use Doctrine\ORM\Mapping as ORM;
  * @property SongSharing[] $songShares
  * @property SongTaking[] $songTakes
  * @property SongCopy[] $songCopies
- * @property BadContent[] $badContents
  * @property SongRating[] $songRatings
  * @property SongComment[] $songComments
  * @property Tag[] $tags
@@ -143,12 +142,6 @@ class Song extends BaseEntity
      * @ORM\OneToMany(targetEntity="App\Model\Entity\SongCopy", mappedBy="song")
      */
     protected $songCopiees;
-
-    /**
-     * @var BadContent[]
-     * @ORM\OneToMany(targetEntity="App\Model\Entity\BadContent", mappedBy="song")
-     */
-    protected $badContents;
 
     /**
      * @var SongRating[]

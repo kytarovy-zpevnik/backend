@@ -2,11 +2,14 @@
 
 namespace App\Model\Entity;
 
+use Kdyby\Doctrine\Entities\Attributes\Identifier;
+use Kdyby\Doctrine\Entities\BaseEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
  *
+ * @property-read int $id
  * @property Song $song
  * @property string $title
  * @property string $chords
@@ -21,8 +24,11 @@ use Doctrine\ORM\Mapping as ORM;
  * @author Jiří Mantlík
  */
 
-class SongCopy extends Copy
+class SongCopy extends BaseEntity
 {
+
+    use Identifier;
+
     /**
      * @var Song
      * @ORM\ManyToOne(targetEntity="App\Model\Entity\Song", inversedBy="songCopies")
