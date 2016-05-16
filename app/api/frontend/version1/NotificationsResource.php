@@ -70,12 +70,18 @@ class NotificationsResource extends FrontendResource
 				$target = NULL;
 			}
 
+            $username = null;
+            if($notification->mentionedUser)
+                $username = $notification->mentionedUser->username;
+
 			return [
 				'id'      => $notification->id,
 				'created' => self::formatDateTime($notification->created),
 				'read'    => $notification->read,
 				'text'    => $notification->text,
-				'target'  => $target
+				'target'  => $target,
+                'username'    => $username,
+                'action'  => $notification->type
 			];
 		}, $notifications);
 

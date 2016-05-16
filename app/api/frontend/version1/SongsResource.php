@@ -117,13 +117,7 @@ class SongsResource extends FrontendResource {
             $wishes = $this->em->getDao(Wish::getClassName())->findBy(['name' => $song->title, 'interpret' => $song->author]);
             foreach ($wishes as $wish) {
                 if ($wish->user != $song->owner) {
-                    $notification = new Notification();
-                    $notification->user = $wish->user;
-                    $notification->created = new DateTime();
-                    $notification->read = false;
-                    $notification->song = $song;
-                    $notification->text = '"'.$song->title.'" Píseň, která by se Vám mohla líbit.';
-                    $this->em->persist($notification);
+                    $this->notificationService->notify($wish->user, 'wished', $song);
                 }
             }
         }
@@ -383,14 +377,7 @@ class SongsResource extends FrontendResource {
 
             foreach ($takings as $taking) {
                 $taking->songCopy = $copy;
-
-                $notification = new Notification();
-                $notification->user = $taking->user;
-                $notification->created = new DateTime();
-                $notification->read = false;
-                $notification->song = $song;
-                $notification->text = 'Uživatel "'.$song->owner->username.'" upravil svou píseň "'.$song->title.'", kterou máte mezi převzatými.';
-                $this->em->persist($notification);
+                $this->notificationService->notify($taking->user, 'updated taken', $song, $user);
             }
         }
 
@@ -442,24 +429,20 @@ class SongsResource extends FrontendResource {
         $text = '';
         if($song->archived == true) {
             $song->archived = false;
-            $text = 'obnovena';
+            $text = 'restored';
         }
         else{
             $song->archived = true;
-            $text = 'smazána';
+            $text = 'deleted';
         }
         $song->modified = new DateTime();
 
         $takings = $this->em->getDao(SongTaking::getClassName())->findBy(['song' => $song]);
         foreach ($takings as $taking) {
-            $notification = new Notification();
-            $notification->user = $taking->user;
-            $notification->created = new DateTime();
-            $notification->read = false;
-            $notification->song = $song;
-            $notification->text = 'Píseň "'.$song->title.'", kterou máte mezi převzatými, byla '.$text.' uživatelem "'.$curUser->username.'".';
-            $this->em->persist($notification);
+            $this->notificationService->notify($taking->user, $text . ' taken', $song, $curUser);
         }
+        if($curUser !== $song->owner)
+            $this->notificationService->notify($song->owner, $text . ' by admin', $song, $curUser);
 
         $this->em->flush();
 
@@ -736,13 +719,7 @@ class SongsResource extends FrontendResource {
 
         $this->em->persist($rating);
 
-        $notification = new Notification();
-        $notification->user = $song->owner;
-        $notification->created = new DateTime();
-        $notification->read = false;
-        $notification->song = $song;
-        $notification->text = 'Uživatel "'.$user->username.'" ohodnotil Vaši píseň "'.$song->title.'".';
-        $this->em->persist($notification);
+        $this->notificationService->notify($song->owner, 'rated', $song, $user);
 
         $this->em->flush();
 
@@ -828,13 +805,7 @@ class SongsResource extends FrontendResource {
         $rating->rating = $data['rating'];
         $rating->modified = new DateTime();
 
-        $notification = new Notification();
-        $notification->user = $rating->song->owner;
-        $notification->created = new DateTime();
-        $notification->read = false;
-        $notification->song = $rating->song;
-        $notification->text = 'Uživatel "'.$user->username.'" upravil hodnocení Vaší písně "'.$rating->song->title.'".';
-        $this->em->persist($notification);
+        $this->notificationService->notify($rating->song->owner, 'updated rating', $rating->song, $user);
 
         $this->em->flush();
 
@@ -862,11 +833,14 @@ class SongsResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        if ($this->getActiveSession()->user !== $rating->user) {
+        $user = $this->getActiveSession()->user;
+        if ($user !== $rating->user){
             $this->assumeAdmin();
         }
 
         $this->em->remove($rating);
+
+        $this->notificationService->notify($rating->song->owner, 'deleted rating', $rating->song, $user);
 
         $this->em->flush();
 
@@ -911,13 +885,7 @@ class SongsResource extends FrontendResource {
         $this->em->persist($comment);
 
         if ($user !== $song->owner) {
-            $notification = new Notification();
-            $notification->user = $song->owner;
-            $notification->created = new DateTime();
-            $notification->read = false;
-            $notification->song = $song;
-            $notification->text = 'Uživatel "'.$user->username.'" okomentoval Vaši píseň "'.$song->title.'".';
-            $this->em->persist($notification);
+            $this->notificationService->notify($song->owner, 'commented', $song, $user);
         }
 
         $this->em->flush();
@@ -1038,13 +1006,7 @@ class SongsResource extends FrontendResource {
         $comment->modified = new DateTime();
 
         if ($user !== $comment->song->owner) {
-            $notification = new Notification();
-            $notification->user = $comment->song->owner;
-            $notification->created = new DateTime();
-            $notification->read = false;
-            $notification->song = $comment->song;
-            $notification->text = 'Uživatel "' . $user->username . '" upravil komentář u Vaší písně "' . $comment->song->title . '".';
-            $this->em->persist($notification);
+            $this->notificationService->notify($comment->song->owner, 'updated comment', $comment->song, $user);
         }
 
         $this->em->flush();
@@ -1074,11 +1036,16 @@ class SongsResource extends FrontendResource {
 
         $this->assumeLoggedIn();
 
-        if ($this->getActiveSession()->user !== $comment->user){
+        $user = $this->getActiveSession()->user;
+        if ($user !== $comment->user){
             $this->assumeAdmin();
         }
 
         $this->em->remove($comment);
+
+        if ($user !== $comment->song->owner) {
+            $this->notificationService->notify($comment->song->owner, 'deleted comment', $comment->song, $user);
+        }
 
         $this->em->flush();
 
@@ -1134,13 +1101,7 @@ class SongsResource extends FrontendResource {
 
         $this->em->persist($sharing);
 
-        $notification = new Notification();
-        $notification->user = $user;
-        $notification->created = new DateTime();
-        $notification->read = false;
-        $notification->song = $song;
-        $notification->text = 'Uživatel "'.$curUser->username.'" s vámi sdílel píseň "'.$song->title.'".';
-        $this->em->persist($notification);
+        $this->notificationService->notify($user, 'shared', $song, $curUser);
 
         $this->em->flush();
 
@@ -1186,13 +1147,7 @@ class SongsResource extends FrontendResource {
 
         $this->em->persist($taking);
 
-        $notification = new Notification();
-        $notification->user = $song->owner;
-        $notification->created = new DateTime();
-        $notification->read = false;
-        $notification->song = $song;
-        $notification->text = 'Uživatel "'.$curUser->username.'" převzal vaši píseň "'.$song->title.'".';
-        $this->em->persist($notification);
+        $this->notificationService->notify($song->owner, 'taken', $song, $curUser);
 
         $this->em->flush();
 
@@ -1289,13 +1244,7 @@ class SongsResource extends FrontendResource {
 
         }
 
-        $notification = new Notification();
-        $notification->user = $taking->song->owner;
-        $notification->created = new DateTime();
-        $notification->read = false;
-        $notification->song = $taking->song;
-        $notification->text = 'Uživatel "'.$taking->user->username.'" zrušil převzetí vaší písně "'.$taking->song->title.'".';
-        $this->em->persist($notification);
+        $this->notificationService->notify($song->owner, 'canceled taking', $song, $curUser);
 
         $this->em->flush();
 
@@ -1381,13 +1330,7 @@ class SongsResource extends FrontendResource {
 
         $this->em->persist($newSong);
 
-        $copyNotification = new Notification();
-        $copyNotification->user = $song->owner;
-        $copyNotification->created = new DateTime();
-        $copyNotification->read = false;
-        $copyNotification->song = $song;
-        $copyNotification->text = 'Vaše píseň "'.$song->title.'" byla zkopírována uživatelem "'.$curUser->username.'".';
-        $this->em->persist($copyNotification);
+        $this->notificationService->notify($song->owner, 'copied', $song, $curUser);
 
         $this->em->flush();
 

@@ -148,6 +148,12 @@ class User extends BaseEntity
      */
     protected $myRecommendations;
 
+    /*
+     * @var Notification[]
+     * @ORM\OneToMany(targetEntity="App\Model\Entity\Notification", mappedBy="mentionedUser")
+     */
+    protected $mentionedInNotifications;
+
     /**
      * @var PasswordReset
      * @ORM\OneToOne(targetEntity="PasswordReset", mappedBy="user")

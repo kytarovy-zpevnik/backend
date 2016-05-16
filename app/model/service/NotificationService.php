@@ -9,6 +9,7 @@ use App\Model\Entity\User;
 use InvalidArgumentException;
 use Kdyby\Doctrine\EntityManager;
 use Nette\Object;
+use Nette\Utils\DateTime;
 
 /**
  * Service for advanced operations with notifications.
@@ -29,19 +30,26 @@ class NotificationService extends Object
 	}
 
 	/**
-	 * Creates notification for given user with given text.
+	 * Creates notification for given user with given type.
 	 * If subject supplied, notification will link to it.
+     * If mentioned user supplied, notification will link to it.
 	 * @param User $user
-	 * @param string $text
+	 * @param string $type
 	 * @param Song|Songbook $subject
+     * @param User $mentionedUser
 	 * @return \App\Model\Entity\Notification
 	 */
-	public function notify(User $user, $text, $subject = NULL)
+	public function notify(User $user, $type, $subject = NULL, $mentionedUser = NULL)
 	{
 		$notification = new Notification;
 
 		$notification->user = $user;
-		$notification->text = $text;
+		$notification->type = $type;
+        $notification->text = '';
+        $notification->mentionedUser = $mentionedUser;
+
+        $notification->created = new DateTime();
+        $notification->read = false;
 
 		if ($subject instanceof Song) {
 			$notification->song = $subject;

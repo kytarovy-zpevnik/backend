@@ -17,6 +17,8 @@ use Doctrine\ORM\Mapping as ORM;
  * @property User $user
  * @property Song $song
  * @property Songbook $songbook
+ * @property string $type
+ * @property User $mentionedUser
  *
  * Notification entity.
  * @author Tomáš Jirásek
@@ -62,6 +64,18 @@ class Notification extends BaseEntity
 	 * @ORM\ManyToOne(targetEntity="App\Model\Entity\Songbook")
 	 */
 	protected $songbook;
+
+    /**
+     * @var string
+     * @ORM\Column(type="text")
+     */
+    protected $type;
+
+    /**
+     * @var User
+     * @ORM\ManyToOne(targetEntity="App\Model\Entity\User", inversedBy="mentionedInNotifications")
+     */
+    protected $mentionedUser;
 
 	/**
 	 */
