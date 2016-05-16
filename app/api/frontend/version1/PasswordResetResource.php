@@ -16,8 +16,8 @@ use App\Model\Service\NotificationService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
+use Nette\Mail\IMailer;
 use Nette\Mail\Message;
-use Nette\Mail\SmtpMailer;
 use Nette\Utils\DateTime;
 
 /**
@@ -29,15 +29,20 @@ class PasswordresetResource extends FrontendResource {
     /** @var string */
     const TOKEN_EXPIRATION = "-1day";
 
+    /** @var IMailer */
+    private $mailer;
+
     /**
      * @param SessionService $sessionService
      * @param NotificationService $notificationService
      * @param EntityManager $em
+     * @param IMailer $mailer
      */
-    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em)
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, IMailer $mailer)
     {
         parent::__construct($sessionService, $notificationService, $em);
 
+        $this->mailer = $mailer;
     }
 
     /**
@@ -70,6 +75,7 @@ class PasswordresetResource extends FrontendResource {
         if($user->passwordReset) {
             if($user->passwordReset->createdOn < new DateTime(self::TOKEN_EXPIRATION)) {
                 $this->em->remove($user->passwordReset);
+                $this->em->flush($user->passwordReset);
             }
             else {
                 return Response::json([
@@ -84,18 +90,13 @@ class PasswordresetResource extends FrontendResource {
         $passwordReset->createdOn = new DateTime();
         $passwordReset->token = $this->generateToken();
 
-		$smtp = new SmtpMailer([
-			'host'     => 'smtp.gmail.com',
-			'username' => 'kontakt.kytarovy.zpevnik@gmail.com',
-			'password' => 'zdenekrybola',
-			'secure'   => 'ssl'
-		]);
 
 		$message = new Message();
-		$message->setSubject('Nastavení zapomenutého hesla | kz.markacz.com');
-		$message->addTo($user->email);
-		$message->setFrom('kontakt.kytarovy.zpevnik@gmail.com');
-		$message->setBody("
+		$message->setSubject('Nastavení zapomenutého hesla | kz.markacz.com')
+                ->addTo($user->email)
+                ->setFrom('kz@markacz.com')
+                ->addReplyTo('kontakt.kytarovy.zpevnik@gmail.com')
+                ->setBody("
 Dobrý den,
 
 přijali jsme požadavek na změnu hesla pro uživatelský účet $user->username.\n
@@ -108,8 +109,7 @@ Pokud tento požadavek nebyl iniciován z Vaší strany, jednoduše tento email 
 Tým kytarového zpěvníku
 		");
 
-		$smtp->send($message);
-
+        $this->mailer->send($message);
         $this->em->persist($passwordReset);
         $this->em->flush();
 

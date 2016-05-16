@@ -2,3 +2,9 @@ doctrine:
     user: root
     password: my-secret-password
     dbname: kz
+
+nette:
+	mailer:
+		host: my-host
+		username: my-username
+		password: my-secret-password

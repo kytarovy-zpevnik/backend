@@ -13,6 +13,8 @@ use App\Model\Service\UserService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
+use Nette\Mail\IMailer;
+use Nette\Mail\Message;
 use Nette\Utils\DateTime;
 
 /**
@@ -26,17 +28,22 @@ class UsersResource extends FrontendResource
 	/** @var UserService */
 	private $userService;
 
+    /** @var IMailer */
+    private $mailer;
+
 	/**
 	 * @param SessionService $sessionService
      * @param NotificationService $notificationService
      * @param EntityManager $em
      * @param UserService $userService
+     * @param IMailer $mailer
 	 */
-	public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, UserService $userService)
+	public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, UserService $userService, IMailer $mailer)
 	{
         parent::__construct($sessionService, $notificationService, $em);
 
 		$this->userService    = $userService;
+        $this->mailer = $mailer;
 	}
 
 	/**
@@ -64,6 +71,27 @@ class UsersResource extends FrontendResource
 				'message' => 'User with given email already created.'
 			])->setHttpStatus(Response::HTTP_CONFLICT);
 		}
+
+        $message = new Message();
+        $message->setSubject('Registrace dokončena | kz.markacz.com')
+            ->addTo($user->email)
+            ->setFrom('kz@markacz.com')
+            ->addReplyTo('kontakt.kytarovy.zpevnik@gmail.com')
+            ->setBody("
+Dobrý den,
+
+Děkujeme za registraci do aplikace Kytarový zpěvník.\n
+Nyní se můžete přihlásit a začít vytvářet písně a zpěvníky.\n\n
+
+Vaše registrační údaje jsou následující:\n
+Login: $user->username\n
+E-mail: $user->email\n
+
+Tým kytarového zpěvníku\n
+kz.markacz.com
+		");
+
+        $this->mailer->send($message);
 
 		return response::json($this->mapEntity($user));
 	}

@@ -16,6 +16,9 @@ php:
 nette:
 	session:
 		expiration: 14 days
+	mailer:
+		smtp: true
+		secure: ssl
 
 extensions:
 	restApp: Markatom\RestApp\DI\Extension
