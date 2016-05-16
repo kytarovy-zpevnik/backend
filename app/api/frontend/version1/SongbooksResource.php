@@ -186,8 +186,14 @@ class SongbooksResource extends FrontendResource {
                 case 'name':
                     return strcasecmp($a->name, $b->name);
                     break;
+                case 'numOfSongs':
+                    return ($a->getNumOfSongs() < $b->getNumOfSongs()) ? -1 : (($a->getNumOfSongs() > $b->getNumOfSongs()) ? 1 : 0);
+                    break;
                 case 'owner':
                     return strcasecmp($a->owner->username, $b->owner->username);
+                    break;
+                case 'rating':
+                    return ($a->getAverageRating()['rating'] < $b->getAverageRating()['rating']) ? -1 : (($a->getAverageRating()['rating'] > $b->getAverageRating()['rating']) ? 1 : 0);
                     break;
                 default:
                     return ($a->id < $b->id) ? -1 : (($a->id > $b->id) ? 1 : 0);
