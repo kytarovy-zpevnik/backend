@@ -4,6 +4,7 @@ namespace App\Model\Query;
 
 use App\Model\Entity\Songbook;
 use App\Model\Entity\User;
+use Doctrine\ORM\Query\Expr\Orx;
 use Kdyby\Doctrine\QueryBuilder;
 use Kdyby\Doctrine\QueryObject;
 use Kdyby\Persistence\Queryable;
@@ -22,6 +23,9 @@ class SongbookAdvSearchQuery extends QueryObject
     private $name;
 
     /** @var string */
+    private $owner;
+
+    /** @var string */
     private $tag;
 
     /** @var bool */
@@ -30,13 +34,15 @@ class SongbookAdvSearchQuery extends QueryObject
     /**
      * @param User $user
      * @param $name
+     * @param $owner
      * @param $tag
      * @param bool $public
      */
-    public function __construct($user, $name, $tag, $public)
+    public function __construct($user, $name, $owner, $tag, $public)
     {
         $this->user   = $user;
         $this->name  = $name;
+        $this->owner  = $owner;
         $this->tag    = $tag;
         $this->public = $public;
     }
@@ -47,24 +53,40 @@ class SongbookAdvSearchQuery extends QueryObject
      */
     protected function doCreateQuery(Queryable $repository)
     {
-        $condition = $this->public ? 's.public = 1' : 's.owner = :owner';
-
         $query = $repository->createQueryBuilder()
             ->select('s')
             ->from(Songbook::getClassName(), 's')
             ->andWhere('s.archived = 0')
-            ->andWhere($condition)
             ->orderBy('s.name');
 
-        if ($this->name != null)
-            $query->andWhere('s.name LIKE :name')->setParameter('name', "%$this->name%");
-
-        if ($this->tag != null) {
-            $query->innerJoin('s.tags', 't')->andWhere('t.tag LIKE :tag')->setParameter('tag', "%$this->tag%");
+        if (!$this->public) {
+            $or = new Orx([
+                's.owner = :user',
+                'st.user = :user'
+            ]);
+            $query->leftJoin('s.songbookTakes', 'st')
+                ->andWhere($or)
+                ->setParameter('user', $this->user);
+        }
+        else {
+            $query->andWhere('s.public = 1');
         }
 
-        if(!$this->public)
-            $query->setParameter('owner', $this->user);
+        if ($this->name != null)
+            $query->andWhere('s.name LIKE :name')
+                ->setParameter('name', "%$this->name%");
+
+        if ($this->owner != null) {
+            $query->innerJoin('s.owner', 'u')
+                ->andWhere('u.username LIKE :owner')
+                ->setParameter('owner', "%$this->owner%");
+        }
+
+        if ($this->tag != null) {
+            $query->innerJoin('s.tags', 't')
+                ->andWhere('t.tag LIKE :tag')
+                ->setParameter('tag', "%$this->tag%");
+        }
 
         return $query;
     }

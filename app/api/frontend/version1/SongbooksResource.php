@@ -151,11 +151,13 @@ class SongbooksResource extends FrontendResource {
                 ->getIterator()
                 ->getArrayCopy();
         }
-        else if ($this->request->getQuery('name') || $this->request->getQuery('tag')) {
+        else if ($this->request->getQuery('name') ||
+                  $this->request->getQuery('owner') || $this->request->getQuery('tag')) {
             $name  = $this->request->getQuery('name');
+            $owner  = $this->request->getQuery('owner');
             $tag    = $this->request->getQuery('tag');
             $songbooks  = $this->em->getDao(Songbook::getClassName())
-                ->fetch(new SongbookAdvSearchQuery($user, $name, $tag, $public))
+                ->fetch(new SongbookAdvSearchQuery($user, $name, $owner, $tag, $public))
                 ->getIterator()
                 ->getArrayCopy();
         }

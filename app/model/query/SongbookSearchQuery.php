@@ -48,20 +48,27 @@ class SongbookSearchQuery extends QueryObject
             't.tag LIKE :query'
         ]);
 
-        $condition = $this->public ? 's.public = 1' : 's.owner = :owner';
-
-		$qb = $repository->createQueryBuilder()
-			->select('s')
-			->from(Songbook::getClassName(), 's')
+        $qb = $repository->createQueryBuilder()
+            ->select('s')
+            ->from(Songbook::getClassName(), 's')
             ->leftJoin('s.tags', 't')
             ->andWhere('s.archived = 0')
-            ->andWhere($condition)
             ->andWhere($or)
-			->setParameter('query', "%$this->search%")
-			->orderBy('s.name');
+            ->setParameter('query', "%$this->search%")
+            ->orderBy('s.title');
 
-        if(!$this->public)
-            $qb->setParameter('owner', $this->user);
+        if (!$this->public) {
+            $or2 = new Orx([
+                's.owner = :user',
+                'st.user = :user'
+            ]);
+            $qb->leftJoin('s.songbookTakes', 'st')
+                ->andWhere($or2)
+                ->setParameter('user', $this->user);
+        }
+        else {
+            $qb->andWhere('s.public = 1');
+        }
 
         return $qb;
 	}

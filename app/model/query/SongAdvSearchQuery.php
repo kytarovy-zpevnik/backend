@@ -3,7 +3,6 @@
 namespace App\Model\Query;
 
 use App\Model\Entity\Song;
-use App\Model\Entity\SongTag;
 use App\Model\Entity\User;
 use Doctrine\ORM\Query\Expr\Orx;
 use Kdyby\Doctrine\QueryBuilder;
