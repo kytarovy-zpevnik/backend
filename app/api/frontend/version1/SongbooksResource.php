@@ -19,6 +19,7 @@ use App\Model\Entity\User;
 use App\Model\Query\SongbookSearchQuery;
 use App\Model\Query\SongbookAdvSearchQuery;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
@@ -31,14 +32,15 @@ use Nette\Utils\DateTime;
  * @author  Pavel Peroutka
  */
 class SongbooksResource extends FrontendResource {
-    /** @var EntityManager */
-    private $em;
 
-    public function __construct(SessionService $sessionService, EntityManager $em)
+    /**
+     * @param SessionService $sessionService
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
+     */
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em)
     {
-        parent::__construct($sessionService);
-
-        $this->em = $em;
+        parent::__construct($sessionService, $notificationService, $em);
     }
 
 

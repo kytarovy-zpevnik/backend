@@ -16,23 +16,14 @@ use Markatom\RestApp\Api\Response;
 class NotificationsResource extends FrontendResource
 {
 
-	/** @var EntityManager */
-	private $em;
-
-	/** @var NotificationService */
-	private $notificationService;
-
 	/**
 	 * @param SessionService $sessionService
+     * @param NotificationService $notificationService
 	 * @param EntityManager $em
-	 * @param NotificationService $notificationService
 	 */
-    public function __construct(SessionService $sessionService, EntityManager $em, NotificationService $notificationService)
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em)
     {
-		parent::__construct($sessionService);
-
-		$this->em                  = $em;
-		$this->notificationService = $notificationService;
+		parent::__construct($sessionService, $notificationService, $em);
     }
 
 	/**

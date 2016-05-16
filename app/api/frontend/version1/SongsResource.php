@@ -17,6 +17,7 @@ use App\Model\Entity\SongTag;
 use App\Model\Query\SongAdvSearchQuery;
 use App\Model\Query\SongSearchQuery;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use App\Model\Service\SongService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
@@ -32,22 +33,19 @@ use Nette\Utils\DateTime;
  */
 class SongsResource extends FrontendResource {
 
-    /** @var EntityManager */
-    private $em;
-
 	/** @var SongService */
 	private $songService;
 
 	/**
 	 * @param SessionService $sessionService
-	 * @param EntityManager $em
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
 	 * @param SongService $songService
 	 */
-    public function __construct(SessionService $sessionService, EntityManager $em, SongService $songService)
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, SongService $songService)
     {
-        parent::__construct($sessionService);
+        parent::__construct($sessionService, $notificationService, $em);
 
-		$this->em          = $em;
 		$this->songService = $songService;
     }
 

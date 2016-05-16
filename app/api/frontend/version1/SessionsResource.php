@@ -5,14 +5,13 @@ namespace FrontendApi\Version1;
 use App\Model\Entity\Session;
 use App\Model\Entity\User;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use App\Model\Service\UserService;
 use App\SecurityException;
 use DateTime;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
-use Markatom\RestApp\Resource\Resource;
-use Markatom\RestApp\Routing\AuthenticationException;
 
 /**
  * Resource for managing user web sessions.
@@ -22,22 +21,19 @@ use Markatom\RestApp\Routing\AuthenticationException;
 class SessionsResource extends FrontendResource
 {
 
-	/** @var EntityManager */
-	private $em;
-
 	/** @var UserService */
 	private $userService;
 
 	/**
-	 * @param EntityManager $em
 	 * @param SessionService $sessionService
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
 	 * @param UserService $userService
 	 */
-	public function __construct(EntityManager $em, SessionService $sessionService, UserService $userService)
+	public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, UserService $userService)
 	{
-		parent::__construct($sessionService);
+        parent::__construct($sessionService, $notificationService, $em);
 
-		$this->em             = $em;
 		$this->userService    = $userService;
 	}
 

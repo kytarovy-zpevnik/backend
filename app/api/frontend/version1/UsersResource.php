@@ -6,12 +6,9 @@ use App\DuplicateEmailException;
 use App\DuplicateUsernameException;
 use App\Model\Entity\PasswordReset;
 use App\Model\Entity\Role;
-use App\Model\Entity\SongbookSharing;
-use App\Model\Entity\SongSharing;
 use App\Model\Entity\User;
-use App\Model\Entity\SongbookTag;
-use App\Model\Entity\SongTag;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use App\Model\Service\UserService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
@@ -26,22 +23,19 @@ use Nette\Utils\DateTime;
 class UsersResource extends FrontendResource
 {
 
-	/** @var EntityManager */
-	private $em;
-
 	/** @var UserService */
 	private $userService;
 
 	/**
-	 * @param EntityManager $em
-	 * @param UserService $userService
 	 * @param SessionService $sessionService
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
+     * @param UserService $userService
 	 */
-	public function __construct(EntityManager $em, UserService $userService, SessionService $sessionService)
+	public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em, UserService $userService)
 	{
-		parent::__construct($sessionService);
+        parent::__construct($sessionService, $notificationService, $em);
 
-		$this->em             = $em;
 		$this->userService    = $userService;
 	}
 

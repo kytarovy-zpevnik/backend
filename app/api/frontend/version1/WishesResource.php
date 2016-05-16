@@ -4,6 +4,7 @@ namespace FrontendApi\Version1;
 
 use App\Model\Entity\Wish;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
@@ -18,18 +19,14 @@ use Markatom\RestApp\Routing\AuthorizationException;
 class WishesResource extends FrontendResource
 {
 
-    /** @var EntityManager */
-    private $em;
-
     /**
-     * @param EntityManager $em
      * @param SessionService $sessionService
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
      */
-    public function __construct(EntityManager $em, SessionService $sessionService)
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em)
     {
-        parent::__construct($sessionService);
-
-        $this->em = $em;
+        parent::__construct($sessionService, $notificationService, $em);
     }
 
     /**

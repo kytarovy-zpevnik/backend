@@ -12,6 +12,7 @@ namespace FrontendApi\Version1;
 use App\Model\Entity\PasswordReset;
 use App\Model\Entity\User;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
 use FrontendApi\FrontendResource;
 use Kdyby\Doctrine\EntityManager;
 use Markatom\RestApp\Api\Response;
@@ -25,20 +26,18 @@ use Nette\Utils\DateTime;
  */
 class PasswordresetResource extends FrontendResource {
 
-    /** @var EntityManager */
-    private $em;
     /** @var string */
     const TOKEN_EXPIRATION = "-1day";
 
     /**
      * @param SessionService $sessionService
+     * @param NotificationService $notificationService
      * @param EntityManager $em
      */
-    public function __construct(SessionService $sessionService, EntityManager $em)
+    public function __construct(SessionService $sessionService, NotificationService $notificationService, EntityManager $em)
     {
-        parent::__construct($sessionService);
+        parent::__construct($sessionService, $notificationService, $em);
 
-        $this->em = $em;
     }
 
     /**

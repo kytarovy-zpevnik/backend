@@ -4,6 +4,8 @@ namespace FrontendApi;
 
 use App\Model\Entity\Session;
 use App\Model\Service\SessionService;
+use App\Model\Service\NotificationService;
+use Kdyby\Doctrine\EntityManager;
 use DateTime;
 use Markatom\RestApp\Api\Request;
 use Markatom\RestApp\Api\Response;
@@ -27,12 +29,22 @@ class FrontendResource extends Resource
 	/** @var Session */
 	private $activeSession;
 
+    /** @var EntityManager */
+    protected $em;
+
+    /** @var NotificationService */
+    protected $notificationService;
+
 	/**
 	 * @param SessionService $serviceService
+     * @param NotificationService $notificationService
+     * @param EntityManager $em
 	 */
-	public function __construct(SessionService $serviceService)
+	public function __construct(SessionService $serviceService, NotificationService $notificationService, EntityManager $em)
 	{
 		$this->sessionService = $serviceService;
+        $this->notificationService = $notificationService;
+        $this->em = $em;
 	}
 
 	/**
