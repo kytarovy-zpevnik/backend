@@ -218,8 +218,6 @@ class SongbooksResource extends FrontendResource {
                 ];
             }, $tags);
 
-            $averageRating = $this->getAverageRating($songbook);
-
             return [
                 'id'       => $songbook->id,
                 'name'     => $songbook->name,
@@ -227,8 +225,8 @@ class SongbooksResource extends FrontendResource {
                 'archived' => $songbook->archived,
                 'username' => $songbook->owner->username,
                 'tags'     => $tags,
-                'songs'    => count($songbook->songs),
-                'rating'   => $averageRating
+                'songs'    => $songbook->getNumOfSongs(),
+                'rating'   => $songbook->getAverageRating()
             ];
         }, $songbooks);
 
@@ -329,8 +327,6 @@ class SongbooksResource extends FrontendResource {
             ];
         }, $songs);
 
-        $averageRating = $this->getAverageRating($songbook);
-
         $taken = false;
         if($session && $this->em->getDao(SongbookTaking::getClassName())->findBy(['user' => $session->user, 'songbook' => $songbook])){
             $taken = true;
@@ -344,7 +340,7 @@ class SongbooksResource extends FrontendResource {
             'public'   => $songbook->public,
             'username' => $songbook->owner->username,
             'tags'     => $tags,
-            'rating'   => $averageRating,
+            'rating'   => $songbook->getAverageRating(),
             'taken'    => $taken
         ]);
     }
@@ -546,30 +542,7 @@ class SongbooksResource extends FrontendResource {
         }
     }
 
-    /**
-     * Counts average rating for given songbook
-     * @param Songbook $songbook
-     * @return int
-     */
-    private function getAverageRating(Songbook $songbook)
-    {
-        $ratings = $this->em->getDao(SongbookRating::getClassName())
-            ->findBy(['songbook' => $songbook]);
 
-        $average = 0;
-
-        foreach ($ratings as & $rating) {
-            $average += $rating->rating;
-        }
-
-        if(count($ratings) > 0)
-            $average /= count($ratings);
-
-        return [
-            'rating'      => $average,
-            'numOfRating' => count($ratings)
-        ];
-    }
 
     /**
      * Creates songbook rating by songbook id.

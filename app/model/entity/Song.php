@@ -182,4 +182,26 @@ class Song extends BaseEntity
     {
         $this->tags->clear();
     }
+
+    /**
+     * Counts average rating.
+     */
+    public function getAverageRating()
+    {
+        $average = 0;
+
+        foreach ($this->songRatings as & $rating) {
+            $average += $rating->rating;
+        }
+
+        $count = count($this->songRatings);
+
+        if($count > 0)
+            $average /= $count;
+
+        return [
+            'rating'      => $average,
+            'numOfRating' => $count
+        ];
+    }
 }

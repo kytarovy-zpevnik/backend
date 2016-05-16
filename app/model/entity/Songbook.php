@@ -134,4 +134,34 @@ class Songbook extends BaseEntity
     {
         $this->tags->clear();
     }
+
+    /**
+     * Counts average rating.
+     */
+    public function getAverageRating()
+    {
+        $average = 0;
+
+        foreach ($this->songbookRatings as & $rating) {
+            $average += $rating->rating;
+        }
+
+        $count = count($this->songbookRatings);
+
+        if($count > 0)
+            $average /= $count;
+
+        return [
+            'rating'      => $average,
+            'numOfRating' => $count
+        ];
+    }
+
+    /**
+     * Return number of songs in songbook.
+     */
+    public function getNumOfSongs()
+    {
+        return count($this->songs);
+    }
 }
