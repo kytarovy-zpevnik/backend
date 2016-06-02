@@ -122,7 +122,7 @@ kz.markacz.com
 
 		$this->assumeAdmin(); // only admin can list all users
 
-		$users = $this->em->getDao(User::getClassName())->findAll();
+		$users = $this->em->getDao(User::getClassName())->findBy(array(), ['id' => 'ASC']);
 
 		$data = array_map([$this, 'mapEntity'], $users);
 
